@@ -1,3 +1,4 @@
+using System;
 using BattleTech;
 using BTCantinaMissions.Domain;
 using HarmonyLib;
@@ -5,7 +6,7 @@ using HarmonyLib;
 namespace BTCantinaMissions.Patches
 {
     /// <summary>H3: tracks items entering the player's inventory (CollectItems progress).</summary>
-    [HarmonyPatch(typeof(SimGameState), nameof(SimGameState.AddItemStat))]
+    [HarmonyPatch(typeof(SimGameState), "AddItemStat", new Type[] { typeof(string), typeof(string), typeof(bool) })]
     public static class AddItemStatPatch
     {
         public static void Postfix(SimGameState __instance, string id, string type, bool damaged)
@@ -24,7 +25,7 @@ namespace BTCantinaMissions.Patches
     }
 
     /// <summary>H4: tracks complete mechs entering the bay (CollectMech progress).</summary>
-    [HarmonyPatch(typeof(SimGameState), nameof(BattleTech.SimGameState.AddMech))]
+    [HarmonyPatch(typeof(SimGameState), nameof(SimGameState.AddMech))]
     public static class AddMechPatch
     {
         public static void Postfix(SimGameState __instance, int idx, MechDef mech,
