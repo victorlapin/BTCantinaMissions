@@ -20,8 +20,7 @@ namespace BTCantinaMissions
         public static Settings Settings { get; private set; }
         public static CampaignState State { get; internal set; } = new CampaignState();
 
-        public static DataManager DM =>
-            BattleTech.UnityGameInstance.BattleTechGame?.DataManager;
+        public static DataManager DM { get; internal set; }
 
         public static bool IsCC { get; internal set; } = false;
         public static bool IsMA { get; internal set; } = false;
