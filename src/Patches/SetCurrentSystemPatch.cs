@@ -1,13 +1,14 @@
+using BattleTech;
 using BTCantinaMissions.Domain;
 using HarmonyLib;
 
 namespace BTCantinaMissions.Patches
 {
     /// <summary>H2: detects arrival at a cantina planet and generates/refreshes the board.</summary>
-    [HarmonyPatch(typeof(BattleTech.SimGameState), nameof(BattleTech.SimGameState.SetCurrentSystem))]
+    [HarmonyPatch(typeof(SimGameState), nameof(BattleTech.SimGameState.SetCurrentSystem))]
     public static class SetCurrentSystemPatch
     {
-        public static void Postfix(BattleTech.SimGameState __instance, BattleTech.StarSystem system)
+        public static void Postfix(SimGameState __instance, StarSystem system)
         {
             if (system == null) return;
             if (!system.Tags.Contains(Core.Settings.PlanetTag))
@@ -24,7 +25,7 @@ namespace BTCantinaMissions.Patches
         }
 
         /// <summary>Computes an absolute month number from the sim's current date.</summary>
-        private static int GetMonth(BattleTech.SimGameState sim)
+        private static int GetMonth(SimGameState sim)
         {
             var date = sim.CurrentDate;
             return date.Year * 12 + date.Month;
