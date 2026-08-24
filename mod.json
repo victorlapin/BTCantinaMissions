@@ -9,7 +9,6 @@
     "JwTweaks"
   ],
   "OptionallyDependsOn": [
-    "CustomComponents",
     "CustomSalvage"
   ],
   "DLL": "BTCantinaMissions.dll",

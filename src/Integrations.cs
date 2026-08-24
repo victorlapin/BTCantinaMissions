@@ -10,35 +10,11 @@ namespace BTCantinaMissions
         {
             foreach (string name in loadOrder)
             {
-
-                if (name.Equals("CustomComponents", StringComparison.InvariantCultureIgnoreCase))
-                {
-                    InitCC();
-                }
-
                 if (name.Equals("CustomSalvage", StringComparison.InvariantCultureIgnoreCase))
                 {
                     InitCS();
                 }
             }
-        }
-
-        private static void InitCC()
-        {
-            Core.Log(" -- Checking for CustomComponents Integration -- ");
-
-            Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
-            foreach (Assembly assembly in assemblies)
-            {
-                if (assembly.FullName.StartsWith("CustomComponents"))
-                {
-                    Core.Log("CustomComponents found");
-                    Core.IsCC = true;
-                    return;
-                }
-            }
-
-            Core.Log("CustomComponents NOT found");
         }
 
         private static void InitCS()
