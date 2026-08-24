@@ -38,29 +38,11 @@ namespace BTCantinaMissions.Patches
                 if (task.DefId == null) continue;
                 var def = TaskCatalog.GetDef(task.DefId);
                 if (def?.ObjectiveType != ObjectiveType.CollectMech) continue;
-                if (!ChassisMatchesFamily(mech, task.ResolvedTarget)) continue;
+                if (!ChassisFamilyResolver.MatchesFamily(mech, task.ResolvedTarget)) continue;
 
                 task.AddProgress(1, def.TargetCount);
                 Core.Log($"[H4] CollectMech progress: {task.ResolvedName} ({task.Progress}/{def.TargetCount})");
             }
-        }
-
-        private static bool ChassisMatchesFamily(MechDef mech, string family)
-        {
-            // Resolution: check unit_chassis tag → AssemblyVariant → PrefabIdentifier
-            var tags = mech.MechTags;
-            if (tags.Contains($"unit_chassis_{family}")) return true;
-
-            var chassis = mech.Chassis;
-            if (chassis == null) return false;
-
-            // TODO: AssemblyVariant custom component lookup
-            // For now: check PrefabBase
-            var prefab = chassis.PrefabBase;
-            if (!string.IsNullOrEmpty(prefab) && prefab.ToLower() == family.ToLower())
-                return true;
-
-            return false;
         }
     }
 
@@ -73,7 +55,10 @@ namespace BTCantinaMissions.Patches
             // id is the chassisdef id, e.g. "chassisdef_locust_LCT-1V"
             // TODO: AssemblyVariant custom component lookup
             // For now: check file name
-            var family = ExtractFamily(id);
+            var mechId = id.Replace("chassisdef_", "mechdef_");
+
+            if (!Core.DM.MechDefs.TryGet(mechId, out MechDef mechDef)) return;
+            var family = ChassisFamilyResolver.GetFamily(mechDef);
             if (family == null) return;
 
             foreach (var task in Core.State.ActiveTasks)
@@ -81,20 +66,11 @@ namespace BTCantinaMissions.Patches
                 if (task.DefId == null) continue;
                 var def = TaskCatalog.GetDef(task.DefId);
                 if (def?.ObjectiveType != ObjectiveType.CollectMechParts) continue;
-                if (!string.Equals(task.ResolvedTarget, family, System.StringComparison.OrdinalIgnoreCase)) continue;
+                if (!string.Equals(task.ResolvedTarget, family, StringComparison.OrdinalIgnoreCase)) continue;
 
                 task.AddProgress(1, def.TargetCount);
                 Core.Log($"[H4a] CollectMechParts progress: {task.ResolvedName} ({task.Progress}/{def.TargetCount})");
             }
-        }
-
-        /// <summary>Extracts the chassis family from a chassisdef id like "chassisdef_locust_LCT-1V" → "locust".</summary>
-        private static string ExtractFamily(string chassisDefId)
-        {
-            if (string.IsNullOrEmpty(chassisDefId) || !chassisDefId.StartsWith("chassisdef_")) return null;
-            var rest = chassisDefId.Substring("chassisdef_".Length);
-            var parts = rest.Split('_');
-            return parts.Length > 0 ? parts[0] : null;
         }
     }
 }
