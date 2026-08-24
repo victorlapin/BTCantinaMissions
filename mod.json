@@ -8,6 +8,10 @@
   "DependsOn": [
     "JwTweaks"
   ],
+  "OptionallyDependsOn": [
+    "CustomComponents",
+    "MechAffinity"
+  ],
   "DLL": "BTCantinaMissions.dll",
   "CustomResourceTypes": [
     "CantinaTaskDef"

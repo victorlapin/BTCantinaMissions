@@ -44,6 +44,14 @@
       <HintPath>$(ModsDir)\JwTweaks\JwTweaks.dll</HintPath>
       <Private>false</Private>
     </Reference>
+    <Reference Include="CustomComponents">
+      <HintPath>$(ModsDir)\CustomComponents\CustomComponents.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="CustomComponents">
+      <HintPath>$(ModsDir)\MechAffinity\MechAffinity.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
   </ItemGroup>
 
   <ItemGroup>
