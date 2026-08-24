@@ -23,7 +23,7 @@ namespace BTCantinaMissions
         public static DataManager DM { get; internal set; }
 
         public static bool IsCC { get; internal set; } = false;
-        public static bool IsMA { get; internal set; } = false;
+        public static bool IsCS { get; internal set; } = false;
 
         public static void Init(string modDir, string settingsJson)
         {

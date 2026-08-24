@@ -48,8 +48,8 @@
       <HintPath>$(ModsDir)\CustomComponents\CustomComponents.dll</HintPath>
       <Private>false</Private>
     </Reference>
-    <Reference Include="CustomComponents">
-      <HintPath>$(ModsDir)\MechAffinity\MechAffinity.dll</HintPath>
+    <Reference Include="CustomSalvage">
+      <HintPath>$(ModsDir)\CustomSalvage\CustomSalvage.dll</HintPath>
       <Private>false</Private>
     </Reference>
   </ItemGroup>

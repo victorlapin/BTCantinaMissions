@@ -10,7 +10,7 @@
   ],
   "OptionallyDependsOn": [
     "CustomComponents",
-    "MechAffinity"
+    "CustomSalvage"
   ],
   "DLL": "BTCantinaMissions.dll",
   "CustomResourceTypes": [

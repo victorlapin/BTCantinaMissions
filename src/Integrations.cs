@@ -16,9 +16,9 @@ namespace BTCantinaMissions
                     InitCC();
                 }
 
-                if (name.Equals("MechAffinity", StringComparison.InvariantCultureIgnoreCase))
+                if (name.Equals("CustomSalvage", StringComparison.InvariantCultureIgnoreCase))
                 {
-                    InitMA();
+                    InitCS();
                 }
             }
         }
@@ -41,22 +41,22 @@ namespace BTCantinaMissions
             Core.Log("CustomComponents NOT found");
         }
 
-        private static void InitMA()
+        private static void InitCS()
         {
-            Core.Log(" -- Checking for MechAffinity Integration -- ");
+            Core.Log(" -- Checking for CustomSalvage Integration -- ");
 
             Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
             foreach (Assembly assembly in assemblies)
             {
-                if (assembly.FullName.StartsWith("MechAffinity"))
+                if (assembly.FullName.StartsWith("CustomSalvage"))
                 {
-                    Core.Log("MechAffinity found");
-                    Core.IsMA = true;
+                    Core.Log("CustomSalvage found");
+                    Core.IsCS = true;
                     return;
                 }
             }
 
-            Core.Log("MechAffinity NOT found");
+            Core.Log("CustomSalvage NOT found");
         }
     }
 }
