@@ -7,8 +7,7 @@ using HBS.Collections;
 namespace BTCantinaMissions.Domain
 {
     /// <summary>Generates per-system task boards. Pure random — knows nothing about
-    /// the player's active tasks (ARCHITECTURE.md section 7). Duplicate prevention
-    /// is a take-time policy, not a generation-time concern.</summary>
+    /// the player's active tasks.</summary>
     public static class BoardGenerator
     {
         private static readonly Random random = new Random();

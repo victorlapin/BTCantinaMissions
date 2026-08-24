@@ -11,7 +11,7 @@ namespace BTCantinaMissions.Domain
         ReadyToDeliver    // progress == target, waiting for delivery
     }
 
-    /// <summary>Runtime instance of a cantina task (ARCHITECTURE.md section 5).</summary>
+    /// <summary>Runtime instance of a cantina task.</summary>
     public class TaskInstance
     {
         public string InstanceId { get; internal set; }
@@ -100,8 +100,7 @@ namespace BTCantinaMissions.Domain
         }
     }
 
-    /// <summary>Player's active task list + per-system boards (ARCHITECTURE.md section 5).
-    /// ActiveTasks is the player's "backpack" — independent of any board.</summary>
+    /// <summary>Player's active task list + per-system boards.</summary>
     public class CampaignState
     {
         public int SchemaVersion { get; internal set; } = 1;
