@@ -5,8 +5,8 @@ using HarmonyLib;
 namespace BTCantinaMissions.Patches
 {
     /// <summary>H2: detects arrival at a cantina planet and generates/refreshes the board.</summary>
-    [HarmonyPatch(typeof(SimGameState), nameof(BattleTech.SimGameState.SetCurrentSystem))]
-    public static class SetCurrentSystemPatch
+    [HarmonyPatch(typeof(SimGameState), nameof(SimGameState.SetCurrentSystem))]
+    public static class SetCurrentSystem
     {
         public static void Postfix(SimGameState __instance, StarSystem system)
         {
