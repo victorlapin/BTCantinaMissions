@@ -19,6 +19,7 @@ namespace BTCantinaMissions.Patches
 
         public static void Postfix(SimGameState __instance)
         {
+            var curSystem = __instance.CurSystem;
             var currentDate = __instance.CurrentDate;
             if (currentDate.Month == lastDate.Month && currentDate.Year == lastDate.Year)
                 return;
@@ -32,6 +33,12 @@ namespace BTCantinaMissions.Patches
                 var system = __instance.StarSystems.FirstOrDefault(s => s.ID == board.SystemId);
                 if (system == null) continue;
                 BoardGenerator.RefreshBoard(system, month);
+            }
+
+            if (curSystem.Tags.Contains(Core.Settings.PlanetTag) && !Core.State.Boards.ContainsKey(curSystem.ID))
+            {
+                Core.Debug($"Add missing board for current system");
+                BoardGenerator.RefreshBoard(curSystem, month);
             }
         }
     }
