@@ -1,3 +1,4 @@
+using BTCantinaMissions.Domain;
 using HarmonyLib;
 
 namespace BTCantinaMissions.Patches

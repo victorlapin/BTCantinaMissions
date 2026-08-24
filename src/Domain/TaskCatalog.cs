@@ -4,7 +4,7 @@ using System.IO;
 using BattleTech;
 using Newtonsoft.Json;
 
-namespace BTCantinaMissions
+namespace BTCantinaMissions.Domain
 {
     /// <summary>Loads and indexes CantinaTaskDef files from the custom resource manifest.</summary>
     public static class TaskCatalog

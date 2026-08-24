@@ -4,7 +4,7 @@ using System.Linq;
 using BattleTech;
 using HBS.Collections;
 
-namespace BTCantinaMissions
+namespace BTCantinaMissions.Domain
 {
     /// <summary>Generates per-system task boards. Pure random — knows nothing about
     /// the player's active tasks (ARCHITECTURE.md section 7). Duplicate prevention

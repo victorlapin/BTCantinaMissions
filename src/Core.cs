@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Reflection;
 using BattleTech.Data;
+using BTCantinaMissions.Domain;
 using HarmonyLib;
 using HBS.Logging;
 using Newtonsoft.Json;

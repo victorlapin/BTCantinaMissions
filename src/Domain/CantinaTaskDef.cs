@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace BTCantinaMissions
+namespace BTCantinaMissions.Domain
 {
     /// <summary>Type of objective a cantina task requires.</summary>
     public enum ObjectiveType
