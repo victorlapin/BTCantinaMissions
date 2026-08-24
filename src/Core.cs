@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Reflection;
 using BattleTech.Data;
+using HarmonyLib;
 using HBS.Logging;
 using Newtonsoft.Json;
 
@@ -26,7 +27,10 @@ namespace BTCantinaMissions
             ModDir = modDir;
             Settings = LoadSettings();
 
-            Log($"[Init] {ModName} loaded, modDir: {modDir}");
+            var harmony = new Harmony(ModName);
+            harmony.PatchAll(Assembly.GetExecutingAssembly());
+
+            Log($"[Init] {ModName} loaded, modDir: {modDir}, harmony patches applied");
             Log($"[Init] Settings: tag={Settings.PlanetTag}, slots={Settings.SlotsPerBoard}, " +
                     $"maxActive={Settings.MaxActiveTasks}, refresh={Settings.BoardRefresh}, " +
                     $"lazy={Settings.LazyBoardGeneration}");
