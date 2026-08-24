@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <GameDir>FULL_PATH_TO_BATTLETECH</GameDir>
+        <ManagedDir>$(GameDir)\BattleTech_Data\Managed</ManagedDir>
+        <ModsDir>$(GameDir)\Mods</ModsDir>
+
+        <!-- Set to a mod folder to auto-deploy the DLL after build (empty = no deploy) -->
+        <DeployDir>$(ModsDir)\BTCantinaMissions</DeployDir>
+    </PropertyGroup>
+</Project>

@@ -1,0 +1,12 @@
+{
+  "PlanetTag": "planet_other_cantina",
+  "SlotsPerBoard": 4,
+  "BoardRefresh": "Monthly",
+  "LazyBoardGeneration": true,
+  "MaxActiveTasks": 3,
+  "ShowBoardOnArrival": true,
+  "NotifyOnProgress": true,
+  "NotifyOnReady": true,
+  "DebugLogging": false,
+  "DumpStateOnSave": false
+}
