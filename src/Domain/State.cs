@@ -189,7 +189,8 @@ namespace BTCantinaMissions.Domain
         {
             if (!Boards.TryGetValue(systemId, out var board))
             {
-                board = new SystemBoard(systemId, month);
+                // LastRefreshMonth = 0 ensures RefreshBoard will process it immediately
+                board = new SystemBoard(systemId, 0);
                 Boards[systemId] = board;
             }
             return board;
