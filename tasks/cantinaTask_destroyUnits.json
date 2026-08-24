@@ -1,6 +1,6 @@
 {
   "Description": {
-    "Id": "cantinaTask_destroyVtol",
+    "Id": "cantinaTask_destroyUnits",
     "Name": "Destroy {target}",
     "Icon": ""
   },
@@ -14,6 +14,8 @@
   "MaxSystemDifficulty": 20,
   "Weight": 10,
   "UnitTagPool": [
-    "unit_vtol"
+    "unit_vtol",
+    "unit_light&unit_mech",
+    "unit_carrier&unit_vehicle"
   ]
 }

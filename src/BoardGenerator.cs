@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using BattleTech;
+using HBS.Collections;
 
 namespace BTCantinaMissions
 {
@@ -183,37 +184,52 @@ namespace BTCantinaMissions
             return null;
         }
 
-        /// <summary>Display names for common unit tags that don't humanize well.</summary>
-        private static readonly Dictionary<string, string> unitTagNames = new Dictionary<string, string>
+        /// <summary>Display names for tags that need special casing.</summary>
+        private static readonly Dictionary<string, string> tagOverrides = new Dictionary<string, string>
         {
             {"unit_vtol", "VTOL"},
-            {"unit_tracks", "Tracked"},
-            {"unit_wheels", "Wheeled"},
-            {"unit_hover", "Hover"},
-            {"unit_light", "Light Mech"},
-            {"unit_medium", "Medium Mech"},
-            {"unit_heavy", "Heavy Mech"},
-            {"unit_assault", "Assault Mech"},
-            {"unit_vehicle", "Vehicle"},
-            {"unit_mech", "Mech"},
-            {"unit_legendary", "Legendary Unit"},
-            {"unit_elite", "Elite Unit"},
-            {"unit_pirate", "Pirate"},
         };
 
-        /// <summary>Simple fallback: strip prefixes, insert spaces in CamelCase.</summary>
+        /// <summary>Splits a composite target ("unit_mech&unit_light") into individual tags.</summary>
+        public static string[] SplitTarget(string target)
+        {
+            return target?.Split('&') ?? new string[0];
+        }
+
+        /// <summary>Checks if a unit's tags match a target (all tags in a composite entry must be present).</summary>
+        public static bool MatchesTarget(TagSet unitTags, string target)
+        {
+            var parts = SplitTarget(target);
+            foreach (var tag in parts)
+                if (!unitTags.Contains(tag.Trim()))
+                    return false;
+            return true;
+        }
+
+        /// <summary>Humanizes a target by stripping unit_ prefixes, capitalizing, joining with spaces.
+        /// "unit_legendary&unit_assault&unit_mech" → "Legendary Assault Mech".</summary>
         private static string FallbackHumanize(string target)
         {
             if (string.IsNullOrEmpty(target)) return target;
 
-            // Known unit tags get proper display names
-            if (unitTagNames.TryGetValue(target, out var known))
-                return known;
+            var parts = SplitTarget(target);
+            var words = new List<string>();
 
-            var s = target;
-            if (s.StartsWith("unit_")) s = s.Substring(5);
-            s = s.Replace('_', ' ');
-            return char.ToUpper(s[0]) + s.Substring(1);
+            foreach (var part in parts)
+            {
+                var tag = part.Trim();
+                if (tagOverrides.TryGetValue(tag, out var known))
+                {
+                    words.Add(known);
+                    continue;
+                }
+                var s = tag;
+                if (s.StartsWith("unit_")) s = s.Substring(5);
+                if (string.IsNullOrEmpty(s)) continue;
+                words.Add(char.ToUpper(s[0]) + s.Substring(1));
+            }
+
+            return string.Join(" ", words);
         }
     }
 }
