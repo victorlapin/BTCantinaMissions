@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Reflection;
+using BattleTech.Data;
 using HBS.Logging;
 using Newtonsoft.Json;
 
@@ -15,6 +16,10 @@ namespace BTCantinaMissions
 
         public static string ModDir { get; private set; }
         public static Settings Settings { get; private set; }
+        public static CampaignState State { get; internal set; } = new CampaignState();
+
+        public static DataManager DM =>
+            BattleTech.UnityGameInstance.BattleTechGame?.DataManager;
 
         public static void Init(string modDir, string settingsJson)
         {

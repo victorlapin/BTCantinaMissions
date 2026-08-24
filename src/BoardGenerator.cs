@@ -1,0 +1,219 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using BattleTech;
+
+namespace BTCantinaMissions
+{
+    /// <summary>Generates per-system task boards. Pure random — knows nothing about
+    /// the player's active tasks (ARCHITECTURE.md section 7). Duplicate prevention
+    /// is a take-time policy, not a generation-time concern.</summary>
+    public static class BoardGenerator
+    {
+        private static readonly Random random = new Random();
+
+        /// <summary>Refreshes the board for a system if needed (monthly or first visit).</summary>
+        public static void RefreshBoard(StarSystem system, int currentMonth)
+        {
+            var board = Core.State.GetOrCreateBoard(system.ID, currentMonth);
+            if (board.LastRefreshMonth == currentMonth)
+                return;
+
+            board.ClearSlots();
+            board.LastRefreshMonth = currentMonth;
+
+            var eligible = FilterEligible(system);
+            if (eligible.Count == 0)
+            {
+                Core.Debug($"[BoardGenerator] No eligible defs for {system.Name}, board empty");
+                return;
+            }
+
+            var selected = WeightedSample(eligible, Core.Settings.SlotsPerBoard);
+
+            foreach (var def in selected)
+            {
+                var instance = CreateInstance(def, system.ID, currentMonth);
+                if (instance == null) continue;
+                board.Slots.Add(instance);
+                Core.Debug($"[BoardGenerator]   + {instance.DisplayString(def)}");
+            }
+
+            Core.Log($"[BoardGenerator] Board for {system.Name}: {board.Slots.Count} slot(s)");
+        }
+
+        /// <summary>Filters defs by system difficulty and required tags.</summary>
+        private static List<CantinaTaskDef> FilterEligible(StarSystem system)
+        {
+            var difficulty = system.Def.GetDifficulty(system.Sim.SimGameMode);
+            var result = new List<CantinaTaskDef>();
+
+            foreach (var def in TaskCatalog.AllDefs)
+            {
+                if (def.MinSystemDifficulty > difficulty || def.MaxSystemDifficulty < difficulty)
+                    continue;
+                if (def.RequiredSystemTags != null && def.RequiredSystemTags.Count > 0)
+                {
+                    var hasAll = def.RequiredSystemTags.All(tag => system.Tags.Contains(tag));
+                    if (!hasAll) continue;
+                }
+                result.Add(def);
+            }
+
+            return result;
+        }
+
+        /// <summary>Weighted random sample without replacement (same def can't appear twice on one board).</summary>
+        private static List<CantinaTaskDef> WeightedSample(List<CantinaTaskDef> eligible, int count)
+        {
+            var pool = new List<CantinaTaskDef>(eligible);
+            var selected = new List<CantinaTaskDef>();
+
+            while (selected.Count < count && pool.Count > 0)
+            {
+                var totalWeight = pool.Sum(d => d.Weight);
+                var roll = random.Next(totalWeight);
+                var cumulative = 0;
+
+                for (var i = 0; i < pool.Count; i++)
+                {
+                    cumulative += pool[i].Weight;
+                    if (roll < cumulative)
+                    {
+                        selected.Add(pool[i]);
+                        pool.RemoveAt(i);
+                        break;
+                    }
+                }
+            }
+
+            return selected;
+        }
+
+        /// <summary>Creates a TaskInstance, resolving the target from pools if present.</summary>
+        private static TaskInstance CreateInstance(CantinaTaskDef def, string systemId, int month)
+        {
+            var pool = def.GetTargetPool();
+            string target = null;
+
+            if (pool != null && pool.Count > 0)
+                target = pool[random.Next(pool.Count)];
+
+            var name = def.Name;
+            if (target != null && name.Contains("{target}"))
+                name = name.Replace("{target}", ResolveDisplayName(def, target));
+
+            return new TaskInstance(def.Id, target, name, systemId, month);
+        }
+
+        /// <summary>Resolves the human-readable display name for a pool target
+        /// by looking up actual game data via DataManager. Falls back to
+        /// simple humanization if lookup fails.</summary>
+        private static string ResolveDisplayName(CantinaTaskDef def, string target)
+        {
+            var dm = Core.DM;
+            if (dm == null) return FallbackHumanize(target);
+
+            switch (def.ObjectiveType)
+            {
+                case ObjectiveType.CollectMech:
+                case ObjectiveType.CollectMechParts:
+                    {
+                        // Find any chassisdef matching this family prefix
+                        var prefix = $"chassisdef_{target}_";
+                        foreach (var kvp in dm.ChassisDefs)
+                        {
+                            if (kvp.Key.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+                            {
+                                var name = kvp.Value.Description?.Name;
+                                if (!string.IsNullOrEmpty(name))
+                                    return name;
+                            }
+                        }
+                        break;
+                    }
+                case ObjectiveType.CollectItems:
+                    {
+                        var name = LookupItemName(dm, target);
+                        if (name != null) return name;
+                        break;
+                    }
+                case ObjectiveType.DestroyUnits:
+                    {
+                        // "unit_vtol" → strip prefix, capitalize
+                        if (target.StartsWith("unit_"))
+                            return FallbackHumanize(target);
+                        break;
+                    }
+            }
+
+            return FallbackHumanize(target);
+        }
+
+        /// <summary>Looks up a component's display name by its ComponentDefID,
+        /// searching across the relevant DataManager store.</summary>
+        private static string LookupItemName(BattleTech.Data.DataManager dm, string id)
+        {
+            // Route by ID prefix to the right store
+            if (id.StartsWith("Weapon_"))
+            {
+                if (dm.WeaponDefs.TryGet(id, out WeaponDef def))
+                    return def?.Description?.Name;
+            }
+            else if (id.StartsWith("Ammo_"))
+            {
+                if (dm.AmmoBoxDefs.TryGet(id, out AmmunitionBoxDef def))
+                    return def?.Description?.Name;
+            }
+            else if (id.StartsWith("Gear_HeatSink"))
+            {
+                if (dm.HeatSinkDefs.TryGet(id, out HeatSinkDef def))
+                    return def?.Description?.Name;
+            }
+            else if (id.StartsWith("Gear_JumpJet"))
+            {
+                if (dm.JumpJetDefs.TryGet(id, out JumpJetDef def))
+                    return def?.Description?.Name;
+            }
+            else if (id.StartsWith("Gear_"))
+            {
+                if (dm.UpgradeDefs.TryGet(id, out UpgradeDef def))
+                    return def?.Description?.Name;
+            }
+            return null;
+        }
+
+        /// <summary>Display names for common unit tags that don't humanize well.</summary>
+        private static readonly Dictionary<string, string> unitTagNames = new Dictionary<string, string>
+        {
+            {"unit_vtol", "VTOL"},
+            {"unit_tracks", "Tracked"},
+            {"unit_wheels", "Wheeled"},
+            {"unit_hover", "Hover"},
+            {"unit_light", "Light Mech"},
+            {"unit_medium", "Medium Mech"},
+            {"unit_heavy", "Heavy Mech"},
+            {"unit_assault", "Assault Mech"},
+            {"unit_vehicle", "Vehicle"},
+            {"unit_mech", "Mech"},
+            {"unit_legendary", "Legendary Unit"},
+            {"unit_elite", "Elite Unit"},
+            {"unit_pirate", "Pirate"},
+        };
+
+        /// <summary>Simple fallback: strip prefixes, insert spaces in CamelCase.</summary>
+        private static string FallbackHumanize(string target)
+        {
+            if (string.IsNullOrEmpty(target)) return target;
+
+            // Known unit tags get proper display names
+            if (unitTagNames.TryGetValue(target, out var known))
+                return known;
+
+            var s = target;
+            if (s.StartsWith("unit_")) s = s.Substring(5);
+            s = s.Replace('_', ' ');
+            return char.ToUpper(s[0]) + s.Substring(1);
+        }
+    }
+}
