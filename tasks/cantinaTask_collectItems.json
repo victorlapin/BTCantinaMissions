@@ -1,0 +1,21 @@
+{
+  "Description": {
+    "Id": "cantinaTask_collectItems",
+    "Name": "Collect {target}",
+    "Icon": ""
+  },
+  "ObjectiveType": "CollectItems",
+  "TargetCount": 10,
+  "ItemMode": "Deliver",
+  "Reward": {
+    "CBills": 150000,
+    "ItemCollection": "CantinaReward_Tier1"
+  },
+  "MinSystemDifficulty": 1,
+  "MaxSystemDifficulty": 20,
+  "Weight": 8,
+  "ItemPool": [
+    "Weapon_Laser_Medium",
+    "Weapon_Laser_Small"
+  ]
+}

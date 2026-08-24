@@ -1,0 +1,20 @@
+{
+  "Description": {
+    "Id": "cantinaTask_collectMech",
+    "Name": "Collect {target}",
+    "Icon": ""
+  },
+  "ObjectiveType": "CollectMech",
+  "TargetCount": 1,
+  "Reward": {
+    "CBills": 100000
+  },
+  "MinSystemDifficulty": 1,
+  "MaxSystemDifficulty": 8,
+  "Weight": 5,
+  "ChassisPool": [
+    "locust",
+    "stinger",
+    "wasp"
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "Description": {
+    "Id": "cantinaTask_destroyVtol",
+    "Name": "Destroy {target}",
+    "Icon": ""
+  },
+  "ObjectiveType": "DestroyUnits",
+  "TargetCount": 5,
+  "Reward": {
+    "CBills": 250000,
+    "ItemCollection": "CantinaReward_Tier1"
+  },
+  "MinSystemDifficulty": 1,
+  "MaxSystemDifficulty": 20,
+  "Weight": 10,
+  "UnitTagPool": [
+    "unit_vtol"
+  ]
+}
