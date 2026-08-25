@@ -122,17 +122,8 @@ namespace BTCantinaMissions.Domain
                 case ObjectiveType.CollectMech:
                 case ObjectiveType.CollectMechParts:
                     {
-                        // Find any chassisdef matching this family prefix
-                        var prefix = $"chassisdef_{target}_";
-                        foreach (var kvp in dm.ChassisDefs)
-                        {
-                            if (kvp.Key.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
-                            {
-                                var name = kvp.Value.Description?.Name;
-                                if (!string.IsNullOrEmpty(name))
-                                    return name;
-                            }
-                        }
+                        var name = FindChassisName(dm, target);
+                        if (name != null) return name;
                         break;
                     }
                 case ObjectiveType.CollectItems:
@@ -151,6 +142,57 @@ namespace BTCantinaMissions.Domain
             }
 
             return FallbackHumanize(target);
+        }
+
+        /// <summary>Finds a chassis display name by family. Two passes:
+        /// 1) exact prefix match with sub-family exclusion (wasp ≠ wasp_lam)
+        /// 2) normalized match: strip _ and - from both sides (hermesii → hermes_ii)</summary>
+        private static string FindChassisName(BattleTech.Data.DataManager dm, string target)
+        {
+            // Pass 1: exact prefix, skip sub-families (variant code starts uppercase)
+            var prefix = $"chassisdef_{target}_";
+            foreach (var kvp in dm.ChassisDefs)
+            {
+                if (!kvp.Key.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+                    continue;
+                var rest = kvp.Key.Substring(prefix.Length);
+                if (string.IsNullOrEmpty(rest) || char.IsLower(rest[0]))
+                    continue; // sub-family like "lam_", "iic_"
+                var name = kvp.Value.Description?.Name;
+                if (!string.IsNullOrEmpty(name))
+                    return name;
+            }
+
+            // Pass 2: normalized — strip separators from both sides
+            var normalizedTarget = NormalizeChassisKey(target);
+            foreach (var kvp in dm.ChassisDefs)
+            {
+                if (!kvp.Key.StartsWith("chassisdef_", StringComparison.OrdinalIgnoreCase))
+                    continue;
+                var rest = kvp.Key.Substring("chassisdef_".Length);
+                // Find variant code start (first uppercase char)
+                int variantStart = -1;
+                for (int i = 0; i < rest.Length; i++)
+                {
+                    if (char.IsUpper(rest[i])) { variantStart = i; break; }
+                }
+                if (variantStart <= 0) continue;
+                var familyPart = rest.Substring(0, variantStart).TrimEnd('_');
+                if (NormalizeChassisKey(familyPart) == normalizedTarget)
+                {
+                    var name = kvp.Value.Description?.Name;
+                    if (!string.IsNullOrEmpty(name))
+                        return name;
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>Normalizes a chassis key fragment: lowercase, strip _ and -.</summary>
+        private static string NormalizeChassisKey(string s)
+        {
+            return s?.Replace("_", "").Replace("-", "").ToLowerInvariant() ?? "";
         }
 
         /// <summary>Looks up a component's display name by its ComponentDefID,
