@@ -8,6 +8,8 @@ namespace BTCantinaMissions.Patches
     [HarmonyPatch(typeof(SimGameState), "OnNewQuarterBegin")]
     public static class OnNewQuarterBegin
     {
+        public static bool Prepare() => Core.Settings.BoardRefresh == BoardRefreshType.Monthly;
+
         public static void Postfix(SimGameState __instance)
         {
             var curSystem = __instance.CurSystem;
