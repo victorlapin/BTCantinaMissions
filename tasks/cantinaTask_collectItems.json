@@ -5,7 +5,8 @@
     "Icon": ""
   },
   "ObjectiveType": "CollectItems",
-  "TargetCount": 10,
+  "MinTargetCount": 5,
+  "MaxTargetCount": 10,
   "ItemMode": "Deliver",
   "Reward": {
     "CBills": 150000,

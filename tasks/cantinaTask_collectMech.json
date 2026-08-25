@@ -5,7 +5,8 @@
     "Icon": ""
   },
   "ObjectiveType": "CollectMech",
-  "TargetCount": 1,
+  "MinTargetCount": 1,
+  "MaxTargetCount": 1,
   "Reward": {
     "CBills": 100000
   },

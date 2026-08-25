@@ -37,7 +37,7 @@ namespace BTCantinaMissions.Domain
                 var instance = CreateInstance(def, system.ID);
                 if (instance == null) continue;
                 Core.State.Board.Slots.Add(instance);
-                Core.Debug($"[BoardGenerator]   + {instance.DisplayString(def)}");
+                Core.Debug($"[BoardGenerator]   + {instance.DisplayString()}");
             }
 
             Core.Log($"[BoardGenerator] Board for {system.Name}: {Core.State.Board.Slots.Count} slot(s)");
@@ -104,7 +104,9 @@ namespace BTCantinaMissions.Domain
             if (target != null && name.Contains("{target}"))
                 name = name.Replace("{target}", ResolveDisplayName(def, target));
 
-            return new TaskInstance(def.Id, target, name, systemId);
+            var targetCount = random.Next(def.MinTargetCount, def.MaxTargetCount + 1);
+
+            return new TaskInstance(def.Id, target, name, targetCount, systemId);
         }
 
         /// <summary>Resolves the human-readable display name for a pool target

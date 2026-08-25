@@ -18,8 +18,8 @@ namespace BTCantinaMissions.Patches
                 if (def?.ObjectiveType != ObjectiveType.CollectItems) continue;
                 if (def.ItemPool == null || !def.ItemPool.Contains(id)) continue;
 
-                task.AddProgress(1, def.TargetCount);
-                Core.Log($"[H3] CollectItems progress: {task.ResolvedName} ({task.Progress}/{def.TargetCount})");
+                task.AddProgress(1);
+                Core.Log($"[H3] CollectItems progress: {task.ResolvedName} ({task.Progress}/{task.TargetCount})");
             }
         }
     }
@@ -40,8 +40,8 @@ namespace BTCantinaMissions.Patches
                 if (def?.ObjectiveType != ObjectiveType.CollectMech) continue;
                 if (!ChassisFamilyResolver.MatchesFamily(mech, task.ResolvedTarget)) continue;
 
-                task.AddProgress(1, def.TargetCount);
-                Core.Log($"[H4] CollectMech progress: {task.ResolvedName} ({task.Progress}/{def.TargetCount})");
+                task.AddProgress(1);
+                Core.Log($"[H4] CollectMech progress: {task.ResolvedName} ({task.Progress}/{task.TargetCount})");
             }
         }
     }
@@ -68,8 +68,8 @@ namespace BTCantinaMissions.Patches
                 if (def?.ObjectiveType != ObjectiveType.CollectMechParts) continue;
                 if (!string.Equals(task.ResolvedTarget, family, StringComparison.OrdinalIgnoreCase)) continue;
 
-                task.AddProgress(1, def.TargetCount);
-                Core.Log($"[H4a] CollectMechParts progress: {task.ResolvedName} ({task.Progress}/{def.TargetCount})");
+                task.AddProgress(1);
+                Core.Log($"[H4a] CollectMechParts progress: {task.ResolvedName} ({task.Progress}/{task.TargetCount})");
             }
         }
     }

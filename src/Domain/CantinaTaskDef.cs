@@ -24,7 +24,8 @@ namespace BTCantinaMissions.Domain
         public List<string> ChassisPool;   // CollectMech/Parts: chassis families ("locust")
         public List<string> ItemPool;      // CollectItems: ComponentDefID ("Weapon_Laser_Medium")
 
-        public int TargetCount;
+        public int MinTargetCount;
+        public int MaxTargetCount;
         public string ItemMode;            // Acquire | Deliver (CollectItems only)
 
         public RewardDef Reward;

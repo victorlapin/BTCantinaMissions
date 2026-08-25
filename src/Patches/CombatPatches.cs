@@ -60,8 +60,8 @@ namespace BTCantinaMissions.Patches
 
                 if (count > 0)
                 {
-                    task.AddProgress(count, def.TargetCount);
-                    Core.Log($"[H5-H6] {task.ResolvedName}: +{count} → {task.Progress}/{def.TargetCount}");
+                    task.AddProgress(count);
+                    Core.Log($"[H5-H6] {task.ResolvedName}: +{count} → {task.Progress}/{task.TargetCount}");
                 }
             }
         }

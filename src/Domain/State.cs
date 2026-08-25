@@ -17,6 +17,7 @@ namespace BTCantinaMissions.Domain
         public string InstanceId { get; internal set; }
         public string DefId { get; internal set; }
         public TaskState State { get; internal set; }
+        public int TargetCount { get; internal set; }
         public int Progress { get; internal set; }
         /// <summary>Target resolved from a pool (e.g. "locust", "MediumLaser", "unit_vtol").</summary>
         public string ResolvedTarget { get; internal set; }
@@ -28,7 +29,7 @@ namespace BTCantinaMissions.Domain
         public TaskInstance() { }
 
         public TaskInstance(string defId, string resolvedTarget, string resolvedName,
-            string originSystemId)
+            int targetCount, string originSystemId)
         {
             InstanceId = Guid.NewGuid().ToString("N");
             DefId = defId;
@@ -36,6 +37,7 @@ namespace BTCantinaMissions.Domain
             Progress = 0;
             ResolvedTarget = resolvedTarget;
             ResolvedName = resolvedName;
+            TargetCount = targetCount;
             OriginSystemId = originSystemId;
         }
 
@@ -45,11 +47,11 @@ namespace BTCantinaMissions.Domain
             State = TaskState.Taken;
         }
 
-        public void AddProgress(int amount, int targetCount)
+        public void AddProgress(int amount)
         {
             if (State != TaskState.Taken) return;
-            Progress = Math.Min(Progress + amount, targetCount);
-            if (Progress >= targetCount)
+            Progress = Math.Min(Progress + amount, TargetCount);
+            if (Progress >= TargetCount)
                 State = TaskState.ReadyToDeliver;
         }
 
@@ -61,9 +63,9 @@ namespace BTCantinaMissions.Domain
         }
 
         /// <summary>Display string: "Kill VTOLs (3/5)".</summary>
-        public string DisplayString(CantinaTaskDef def)
+        public string DisplayString()
         {
-            return $"{ResolvedName} ({Progress}/{def?.TargetCount ?? 0})";
+            return $"{ResolvedName} ({Progress}/{TargetCount})";
         }
     }
 

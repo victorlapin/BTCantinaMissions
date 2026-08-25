@@ -5,7 +5,8 @@
     "Icon": ""
   },
   "ObjectiveType": "DestroyUnits",
-  "TargetCount": 5,
+  "MinTargetCount": 2,
+  "MaxTargetCount": 5,
   "Reward": {
     "CBills": 250000,
     "ItemCollection": "CantinaReward_Tier1"
