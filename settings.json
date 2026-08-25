@@ -3,7 +3,6 @@
   "SlotsPerBoard": 4,
   "BoardRefresh": "Monthly",
   "MaxActiveTasks": 3,
-  "ShowBoardOnArrival": true,
   "NotifyOnProgress": true,
   "NotifyOnReady": true,
   "DebugLogging": false,

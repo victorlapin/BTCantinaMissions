@@ -6,7 +6,6 @@ namespace BTCantinaMissions
         public int SlotsPerBoard = 4;
         public BoardRefreshType BoardRefresh = BoardRefreshType.Monthly;
         public int MaxActiveTasks = 3;
-        public bool ShowBoardOnArrival = true;
         public bool NotifyOnProgress = true;
         public bool NotifyOnReady = true;
         public bool DebugLogging = false;
