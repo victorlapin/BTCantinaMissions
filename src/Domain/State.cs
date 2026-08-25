@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Newtonsoft.Json;
 
 namespace BTCantinaMissions.Domain
 {
@@ -101,9 +102,11 @@ namespace BTCantinaMissions.Domain
         /// <summary>Player's taken tasks (Taken / ReadyToDeliver). Removed on delivery.</summary>
         public List<TaskInstance> ActiveTasks { get; internal set; } = new List<TaskInstance>();
 
+        [JsonIgnore]
         public IEnumerable<TaskInstance> InProgress =>
             ActiveTasks.Where(t => t.State == TaskState.Taken);
 
+        [JsonIgnore]
         public IEnumerable<TaskInstance> Deliverable =>
             ActiveTasks.Where(t => t.State == TaskState.ReadyToDeliver);
 
