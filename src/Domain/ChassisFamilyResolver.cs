@@ -32,7 +32,7 @@ namespace BTCantinaMissions.Domain
                 }
             }
 
-            // Main path: AssemblyVariant via CustomComponents + MechAffinity
+            // Main path: AssemblyVariant via CustomComponents + CustomSalvage
             if (family == null && Core.IsCS)
                 family = GetAssemblyVariantFamily(mechDef.Chassis);
 
@@ -55,7 +55,7 @@ namespace BTCantinaMissions.Domain
         /// <summary>AssemblyVariant lookup via CustomComponents (requires CC + CS loaded).</summary>
         private static string GetAssemblyVariantFamily(ChassisDef chassisDef)
         {
-            if (chassisDef.Is(out AssemblyVariant assemblyVariant))
+            if (chassisDef.Is<AssemblyVariant>(out var assemblyVariant))
             {
                 return assemblyVariant.PrefabID;
             }

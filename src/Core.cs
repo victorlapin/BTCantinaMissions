@@ -34,8 +34,7 @@ namespace BTCantinaMissions
 
             Log($"[Init] {ModName} loaded, modDir: {modDir}, harmony patches applied");
             Log($"[Init] Settings: tag={Settings.PlanetTag}, slots={Settings.SlotsPerBoard}, " +
-                    $"maxActive={Settings.MaxActiveTasks}, refresh={Settings.BoardRefresh}, " +
-                    $"lazy={Settings.LazyBoardGeneration}");
+                    $"maxActive={Settings.MaxActiveTasks}, refresh={Settings.BoardRefresh}");
         }
 
         private static Settings LoadSettings()

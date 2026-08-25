@@ -19,16 +19,12 @@ namespace BTCantinaMissions.Patches
 
             Core.Log($"[H2] Arrived at cantina planet: {system.Name} (diff {system.Def.GetDifficulty(__instance.SimGameMode)})");
 
-            // Compute current month from sim date
-            var month = GetMonth(__instance);
-            BoardGenerator.RefreshBoard(system, month);
-        }
+            if (Core.State.Board == null)
+            {
+                Core.State.Board = new SystemBoard();
+            }
 
-        /// <summary>Computes an absolute month number from the sim's current date.</summary>
-        private static int GetMonth(SimGameState sim)
-        {
-            var date = sim.CurrentDate;
-            return date.Year * 12 + date.Month;
+            BoardGenerator.RefreshBoard(system);
         }
     }
 }

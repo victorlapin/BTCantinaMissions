@@ -6,21 +6,22 @@ using HBS.Collections;
 
 namespace BTCantinaMissions.Domain
 {
-    /// <summary>Generates per-system task boards. Pure random — knows nothing about
+    /// <summary>Generates task board. Pure random — knows nothing about
     /// the player's active tasks.</summary>
     public static class BoardGenerator
     {
         private static readonly Random random = new Random();
 
-        /// <summary>Refreshes the board for a system if needed (monthly or first visit).</summary>
-        public static void RefreshBoard(StarSystem system, int currentMonth)
+        /// <summary>Refreshes the board (monthly or first visit).</summary>
+        public static void RefreshBoard(StarSystem system)
         {
-            var board = Core.State.GetOrCreateBoard(system.ID, currentMonth);
-            if (board.LastRefreshMonth == currentMonth)
+            if (Core.State.Board == null)
+            {
+                Core.LogWarning("Board is null, nothing to refresh");
                 return;
+            }
 
-            board.ClearSlots();
-            board.LastRefreshMonth = currentMonth;
+            Core.State.Board.ClearSlots();
 
             var eligible = FilterEligible(system);
             if (eligible.Count == 0)
@@ -33,13 +34,13 @@ namespace BTCantinaMissions.Domain
 
             foreach (var def in selected)
             {
-                var instance = CreateInstance(def, system.ID, currentMonth);
+                var instance = CreateInstance(def, system.ID);
                 if (instance == null) continue;
-                board.Slots.Add(instance);
+                Core.State.Board.Slots.Add(instance);
                 Core.Debug($"[BoardGenerator]   + {instance.DisplayString(def)}");
             }
 
-            Core.Log($"[BoardGenerator] Board for {system.Name}: {board.Slots.Count} slot(s)");
+            Core.Log($"[BoardGenerator] Board for {system.Name}: {Core.State.Board.Slots.Count} slot(s)");
         }
 
         /// <summary>Filters defs by system difficulty and required tags.</summary>
@@ -91,7 +92,7 @@ namespace BTCantinaMissions.Domain
         }
 
         /// <summary>Creates a TaskInstance, resolving the target from pools if present.</summary>
-        private static TaskInstance CreateInstance(CantinaTaskDef def, string systemId, int month)
+        private static TaskInstance CreateInstance(CantinaTaskDef def, string systemId)
         {
             var pool = def.GetTargetPool();
             string target = null;
@@ -103,7 +104,7 @@ namespace BTCantinaMissions.Domain
             if (target != null && name.Contains("{target}"))
                 name = name.Replace("{target}", ResolveDisplayName(def, target));
 
-            return new TaskInstance(def.Id, target, name, systemId, month);
+            return new TaskInstance(def.Id, target, name, systemId);
         }
 
         /// <summary>Resolves the human-readable display name for a pool target

@@ -24,13 +24,11 @@ namespace BTCantinaMissions.Domain
         public string ResolvedName { get; internal set; }
         /// <summary>System where this task was originally offered (flavor only).</summary>
         public string OriginSystemId { get; internal set; }
-        public int CreatedMonth { get; internal set; }
-        public int? TakenMonth { get; internal set; }
 
         public TaskInstance() { }
 
         public TaskInstance(string defId, string resolvedTarget, string resolvedName,
-            string originSystemId, int month)
+            string originSystemId)
         {
             InstanceId = Guid.NewGuid().ToString("N");
             DefId = defId;
@@ -39,14 +37,12 @@ namespace BTCantinaMissions.Domain
             ResolvedTarget = resolvedTarget;
             ResolvedName = resolvedName;
             OriginSystemId = originSystemId;
-            CreatedMonth = month;
         }
 
-        public void Take(int month)
+        public void Take()
         {
             if (State != TaskState.Offered) return;
             State = TaskState.Taken;
-            TakenMonth = month;
         }
 
         public void AddProgress(int amount, int targetCount)
@@ -74,18 +70,10 @@ namespace BTCantinaMissions.Domain
     /// <summary>Per-system board: what's currently offered at this cantina.</summary>
     public class SystemBoard
     {
-        public string SystemId { get; internal set; }
-        public int LastRefreshMonth { get; internal set; }
         /// <summary>Currently offered (Offered state) tasks on this board.</summary>
         public List<TaskInstance> Slots { get; internal set; } = new List<TaskInstance>();
 
         public SystemBoard() { }
-
-        public SystemBoard(string systemId, int month)
-        {
-            SystemId = systemId;
-            LastRefreshMonth = month;
-        }
 
         /// <summary>Removes all offered slots (monthly refresh).</summary>
         public void ClearSlots()
@@ -105,8 +93,8 @@ namespace BTCantinaMissions.Domain
     {
         public int SchemaVersion { get; internal set; } = 1;
 
-        /// <summary>All boards, keyed by system ID. Only contains Offered tasks.</summary>
-        public Dictionary<string, SystemBoard> Boards { get; internal set; } = new Dictionary<string, SystemBoard>();
+        /// <summary>Current global board.</summary>
+        public SystemBoard Board { get; internal set; }
 
         /// <summary>Player's taken tasks (Taken / ReadyToDeliver). Removed on delivery.</summary>
         public List<TaskInstance> ActiveTasks { get; internal set; } = new List<TaskInstance>();
@@ -119,16 +107,13 @@ namespace BTCantinaMissions.Domain
 
         /// <summary>Moves a task from a board to the player's active list.
         /// Checks MaxActiveTasks limit and duplicate (defId, resolvedTarget).</summary>
-        public TakeResult TryTake(string instanceId, int currentMonth)
+        public TakeResult TryTake(string instanceId)
         {
             // find on a board
-            TaskInstance task = null;
-            SystemBoard sourceBoard = null;
-            foreach (var board in Boards.Values)
-            {
-                task = board.Slots.FirstOrDefault(t => t.InstanceId == instanceId);
-                if (task != null) { sourceBoard = board; break; }
-            }
+            if (Board == null)
+                return TakeResult.NotFound;
+            TaskInstance task = Board.Slots.FirstOrDefault(t => t.InstanceId == instanceId);
+
             if (task == null)
                 return TakeResult.NotFound;
 
@@ -142,8 +127,8 @@ namespace BTCantinaMissions.Domain
                 return TakeResult.Duplicate;
 
             // move: board → player
-            sourceBoard.RemoveSlot(instanceId);
-            task.Take(currentMonth);
+            Board.RemoveSlot(instanceId);
+            task.Take();
             ActiveTasks.Add(task);
             return TakeResult.Success;
         }
@@ -173,28 +158,14 @@ namespace BTCantinaMissions.Domain
             return ActiveTasks.FirstOrDefault(t => t.InstanceId == instanceId);
         }
 
-        /// <summary>Finds a task by instanceId on any board (offered).</summary>
+        /// <summary>Finds a task by instanceId (offered).</summary>
         public TaskInstance FindOffered(string instanceId)
         {
-            foreach (var board in Boards.Values)
-            {
-                var task = board.Slots.FirstOrDefault(t => t.InstanceId == instanceId);
-                if (task != null) return task;
-            }
-            return null;
-        }
+            if (Board == null)
+                return null;
 
-        public SystemBoard GetOrCreateBoard(string systemId, int month)
-        {
-            if (!Boards.TryGetValue(systemId, out var board))
-            {
-                // LastRefreshMonth = 0 ensures RefreshBoard will process it immediately
-                board = new SystemBoard(systemId, 0);
-                Boards[systemId] = board;
-            }
-            return board;
+            return Board.Slots.FirstOrDefault(t => t.InstanceId == instanceId);
         }
-
     }
 
     /// <summary>Result of a Take attempt.</summary>
