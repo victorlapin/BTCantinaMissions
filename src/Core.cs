@@ -5,6 +5,8 @@ using BattleTech.Data;
 using BTCantinaMissions.Domain;
 using HarmonyLib;
 using HBS.Logging;
+using JwTweaks.Data;
+using JwTweaks.Features;
 using Newtonsoft.Json;
 
 [assembly: AssemblyVersion("0.1.0")]
@@ -35,6 +37,12 @@ namespace BTCantinaMissions
             Log($"[Init] {ModName} loaded, modDir: {modDir}, harmony patches applied");
             Log($"[Init] Settings: tag={Settings.PlanetTag}, slots={Settings.SlotsPerBoard}, " +
                     $"maxActive={Settings.MaxActiveTasks}, refresh={Settings.BoardRefresh}");
+
+            JsonSaveBlock<CampaignState> saveBlock = new JsonSaveBlock<CampaignState>
+            {
+                Data = State
+            };
+            SaveSerializationManager.RegisterCustomSaveBlock(saveBlock, ModName);
         }
 
         private static Settings LoadSettings()
