@@ -12,7 +12,9 @@ namespace BTCantinaMissions.Domain
     {
         private static readonly Random random = new Random();
 
-        /// <summary>Refreshes the board (monthly or first visit).</summary>
+        /// <summary>Refreshes the board (monthly or first visit).
+        /// Same def can appear multiple times with different resolved targets
+        /// (e.g. "Collect Locust" and "Collect Cicada" from one collectMech def).</summary>
         public static void RefreshBoard(StarSystem system)
         {
             if (Core.State.Board == null)
@@ -30,13 +32,28 @@ namespace BTCantinaMissions.Domain
                 return;
             }
 
-            var selected = WeightedSample(eligible, Core.Settings.SlotsPerBoard);
+            // Track used (defId, target) pairs to ensure variety on this board
+            var usedOnBoard = new HashSet<string>();
 
-            foreach (var def in selected)
+            for (int slot = 0; slot < Core.Settings.SlotsPerBoard; slot++)
             {
-                var instance = CreateInstance(def, system.ID);
-                if (instance == null) continue;
+                var def = WeightedPick(eligible);
+                if (def == null) break;
+
+                var instance = CreateInstance(def, system.ID, usedOnBoard);
+                if (instance == null)
+                {
+                    // All targets of this def exhausted on this board — try another def
+                    var alternatives = eligible.Where(d => d != def).ToList();
+                    if (alternatives.Count == 0) break;
+                    def = WeightedPick(alternatives);
+                    if (def == null) break;
+                    instance = CreateInstance(def, system.ID, usedOnBoard);
+                    if (instance == null) continue;
+                }
+
                 Core.State.Board.Slots.Add(instance);
+                usedOnBoard.Add($"{def.Id}|{instance.ResolvedTarget}");
                 Core.Debug($"[BoardGenerator]   + {instance.DisplayString()}");
             }
 
@@ -64,42 +81,39 @@ namespace BTCantinaMissions.Domain
             return result;
         }
 
-        /// <summary>Weighted random sample without replacement (same def can't appear twice on one board).</summary>
-        private static List<CantinaTaskDef> WeightedSample(List<CantinaTaskDef> eligible, int count)
+        /// <summary>Single weighted random pick (with replacement — same def can be picked again).</summary>
+        private static CantinaTaskDef WeightedPick(List<CantinaTaskDef> pool)
         {
-            var pool = new List<CantinaTaskDef>(eligible);
-            var selected = new List<CantinaTaskDef>();
-
-            while (selected.Count < count && pool.Count > 0)
+            if (pool.Count == 0) return null;
+            var totalWeight = pool.Sum(d => d.Weight);
+            var roll = random.Next(totalWeight);
+            var cumulative = 0;
+            for (var i = 0; i < pool.Count; i++)
             {
-                var totalWeight = pool.Sum(d => d.Weight);
-                var roll = random.Next(totalWeight);
-                var cumulative = 0;
-
-                for (var i = 0; i < pool.Count; i++)
-                {
-                    cumulative += pool[i].Weight;
-                    if (roll < cumulative)
-                    {
-                        selected.Add(pool[i]);
-                        pool.RemoveAt(i);
-                        break;
-                    }
-                }
+                cumulative += pool[i].Weight;
+                if (roll < cumulative) return pool[i];
             }
-
-            return selected;
+            return pool[pool.Count - 1];
         }
 
-        /// <summary>Creates a TaskInstance, resolving the target from pools if present.</summary>
-        private static TaskInstance CreateInstance(CantinaTaskDef def, string systemId)
+        /// <summary>Creates a TaskInstance, resolving a target from pools.
+        /// Skips targets already used on this board to ensure variety.</summary>
+        private static TaskInstance CreateInstance(CantinaTaskDef def, string systemId, HashSet<string> usedOnBoard)
         {
             var pool = def.GetTargetPool();
             string target = null;
 
             if (pool != null && pool.Count > 0)
-                target = pool[random.Next(pool.Count)];
-
+            {
+                var available = pool.Where(t => !usedOnBoard.Contains($"{def.Id}|{t}")).ToList();
+                if (available.Count == 0) return null;
+                target = available[random.Next(available.Count)];
+            }
+            else if (usedOnBoard.Contains($"{def.Id}|"))
+            {
+                // Fixed-mode def already on this board
+                return null;
+            }
             var name = def.Name;
             if (target != null && name.Contains("{target}"))
                 name = name.Replace("{target}", ResolveDisplayName(def, target));
