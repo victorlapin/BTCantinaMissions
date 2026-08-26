@@ -1,6 +1,7 @@
 using System;
 using BattleTech;
 using BTCantinaMissions.Domain;
+using BTCantinaMissions.UI;
 using HarmonyLib;
 
 namespace BTCantinaMissions.Patches
@@ -20,6 +21,7 @@ namespace BTCantinaMissions.Patches
 
                 task.AddProgress(1);
                 Core.Log($"[H3] CollectItems progress: {task.ResolvedName} ({task.Progress}/{task.TargetCount})");
+                Notifications.OnProgress(task);
             }
         }
     }
@@ -42,6 +44,7 @@ namespace BTCantinaMissions.Patches
 
                 task.AddProgress(1);
                 Core.Log($"[H4] CollectMech progress: {task.ResolvedName} ({task.Progress}/{task.TargetCount})");
+                Notifications.OnProgress(task);
             }
         }
     }
@@ -70,6 +73,7 @@ namespace BTCantinaMissions.Patches
 
                 task.AddProgress(1);
                 Core.Log($"[H4a] CollectMechParts progress: {task.ResolvedName} ({task.Progress}/{task.TargetCount})");
+                Notifications.OnProgress(task);
             }
         }
     }

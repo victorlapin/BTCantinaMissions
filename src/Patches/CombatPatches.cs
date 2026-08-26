@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using BattleTech;
 using BTCantinaMissions.Domain;
+using BTCantinaMissions.UI;
 using HarmonyLib;
 
 namespace BTCantinaMissions.Patches
@@ -62,6 +63,7 @@ namespace BTCantinaMissions.Patches
                 {
                     task.AddProgress(count);
                     Core.Log($"[H5-H6] {task.ResolvedName}: +{count} → {task.Progress}/{task.TargetCount}");
+                    Notifications.OnProgress(task);
                 }
             }
         }
