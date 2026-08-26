@@ -6,20 +6,23 @@ using HarmonyLib;
 
 namespace BTCantinaMissions.Patches
 {
-    /// <summary>H3: tracks items entering the player's inventory (CollectItems progress).</summary>
+    /// <summary>H3: tracks items entering the player's inventory (CollectItems progress).
+    /// Fires in bulk on salvage/shop — cheapest checks first, dictionary lookups only on match.</summary>
     [HarmonyPatch(typeof(SimGameState), "AddItemStat", new Type[] { typeof(string), typeof(string), typeof(bool) })]
     public static class AddItemStatPatch
     {
         public static void Postfix(SimGameState __instance, string id, string type, bool damaged)
         {
-            foreach (var task in Core.State.ActiveTasks)
+            var tasks = Core.State.ActiveTasks;
+            if (tasks.Count == 0) return;
+
+            foreach (var task in tasks)
             {
-                if (task.DefId == null) continue;
-                var def = TaskCatalog.GetDef(task.DefId);
-                if (def?.ObjectiveType != ObjectiveType.CollectItems) continue;
-                // exact target match: a def's pool may hold several item kinds, but the
+                // exact target match first: a def's pool may hold several item kinds, but the
                 // task instance tracks only its own resolved target
                 if (task.ResolvedTarget != id) continue;
+                var def = TaskCatalog.GetDef(task.DefId);
+                if (def?.ObjectiveType != ObjectiveType.CollectItems) continue;
 
                 task.AddProgress(1);
                 Core.Log($"[H3] CollectItems progress: {task.ResolvedName} ({task.Progress}/{task.TargetCount})");
@@ -36,13 +39,15 @@ namespace BTCantinaMissions.Patches
     {
         public static void Postfix(SimGameState __instance, string id, Type type, bool damaged)
         {
-            foreach (var task in Core.State.ActiveTasks)
+            var tasks = Core.State.ActiveTasks;
+            if (tasks.Count == 0) return;
+
+            foreach (var task in tasks)
             {
-                if (task.DefId == null) continue;
+                if (task.ResolvedTarget != id) continue;
                 var def = TaskCatalog.GetDef(task.DefId);
                 if (def?.ObjectiveType != ObjectiveType.CollectItems) continue;
                 if (def.ItemMode != ItemModeType.Deliver) continue;
-                if (task.ResolvedTarget != id) continue;
 
                 var wasReady = task.State == TaskState.ReadyToDeliver;
                 task.RemoveProgress(1);
@@ -62,7 +67,10 @@ namespace BTCantinaMissions.Patches
         {
             if (mech?.Chassis == null) return;
 
-            foreach (var task in Core.State.ActiveTasks)
+            var tasks = Core.State.ActiveTasks;
+            if (tasks.Count == 0) return;
+
+            foreach (var task in tasks)
             {
                 if (task.DefId == null) continue;
                 var def = TaskCatalog.GetDef(task.DefId);
@@ -82,9 +90,10 @@ namespace BTCantinaMissions.Patches
     {
         public static void Postfix(SimGameState __instance, string id)
         {
+            var tasks = Core.State.ActiveTasks;
+            if (tasks.Count == 0) return;
+
             // id is the chassisdef id, e.g. "chassisdef_locust_LCT-1V"
-            // TODO: AssemblyVariant custom component lookup
-            // For now: check file name
             var mechId = id.Replace("chassisdef_", "mechdef_");
             var dm = UnityGameInstance.BattleTechGame.Simulation.DataManager;
 
@@ -92,7 +101,7 @@ namespace BTCantinaMissions.Patches
             var family = ChassisFamilyResolver.GetFamily(mechDef);
             if (family == null) return;
 
-            foreach (var task in Core.State.ActiveTasks)
+            foreach (var task in tasks)
             {
                 if (task.DefId == null) continue;
                 var def = TaskCatalog.GetDef(task.DefId);

@@ -161,10 +161,24 @@ namespace BTCantinaMissions.Domain
             return FallbackHumanize(target);
         }
 
+        /// <summary>Display-name cache per chassis family — FindChassisName scans the
+        /// whole ChassisDefs store (thousands of entries in modded games) twice per call.</summary>
+        private static readonly Dictionary<string, string> chassisNameCache = new Dictionary<string, string>();
+
         /// <summary>Finds a chassis display name by family. Two passes:
         /// 1) exact prefix match with sub-family exclusion (wasp ≠ wasp_lam)
         /// 2) normalized match: strip _ and - from both sides (hermesii → hermes_ii)</summary>
         private static string FindChassisName(BattleTech.Data.DataManager dm, string target)
+        {
+            if (chassisNameCache.TryGetValue(target, out var cached))
+                return cached;
+
+            var name = FindChassisNameUncached(dm, target);
+            chassisNameCache[target] = name;
+            return name;
+        }
+
+        private static string FindChassisNameUncached(BattleTech.Data.DataManager dm, string target)
         {
             // Pass 1: exact prefix, skip sub-families (variant code starts uppercase)
             var prefix = $"chassisdef_{target}_";
