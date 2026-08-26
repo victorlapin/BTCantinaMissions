@@ -1,68 +1,59 @@
-using System.Collections.Generic;
 using BattleTech;
+using BattleTech.UI;
 using BTCantinaMissions.Domain;
+using UnityEngine.Events;
 
 namespace BTCantinaMissions.UI
 {
     /// <summary>Cantina UI via SGEventPanel: vertical options, H8 intercept for Take/Deliver.</summary>
     public static class CantinaPopup
     {
+        private static readonly SimGameEventTracker eventTracker = new SimGameEventTracker();
+        private static bool isTrackerReady = false;
+
         public static void Show()
         {
             var state = Core.State;
             var sim = UnityGameInstance.BattleTechGame.Simulation;
-            var options = new List<SimGameEventOption>();
 
-            // ── Board: Take options ────────────────────────
-            var atLimit = state.ActiveTasks.Count >= Core.Settings.MaxActiveTasks;
-            if (state.Board?.Slots.Count > 0 && !atLimit)
+            // ── Option stubs ──────────────────────────────
+            var optionsCount = state.Board.Slots.Count + state.ActiveTasks.Count + 1;
+            var options = new SimGameEventOption[optionsCount];
+            for (int i = 0; i < optionsCount; i++)
             {
-                foreach (var task in state.Board.Slots)
+                options[i] = new SimGameEventOption
                 {
-                    options.Add(CreateOption(
-                        $"cantina_take_{task.InstanceId}",
-                        $"Take: {task.DisplayString()}"));
-                }
+                    Description = new BaseDescriptionDef($"cantina_option_{i}", $"cantina_option_{i}", "", ""),
+                    RequirementList = null,
+                    ResultSets = null
+                };
             }
-
-            // ── Active: Deliver / Abandon options ─────────
-            foreach (var task in state.ActiveTasks)
-            {
-                if (task.State == TaskState.ReadyToDeliver)
-                    options.Add(CreateOption(
-                        $"cantina_deliver_{task.InstanceId}",
-                        $"Deliver: {task.DisplayString()}"));
-                else
-                    options.Add(CreateOption(
-                        $"cantina_abandon_{task.InstanceId}",
-                        $"Abandon: {task.DisplayString()}"));
-            }
-
-            // ── Leave ─────────────────────────────────────
-            options.Add(CreateOption("cantina_leave", "Leave"));
 
             // ── Build event ───────────────────────────────
-            var body = BuildBody(state);
-            var desc = new BaseDescriptionDef("cantina_board", "Cantina", body, "uixTxrSpot_HiringHall");
+            var desc = new BaseDescriptionDef("cantina_board", "Cantina", "", "uixTxrSpot_HiringHall");
 
             var evt = new SimGameEventDef(
                 SimGameEventDef.EventPublishState.PUBLISHED,
-                SimGameEventDef.SimEventType.NORMAL,
+                SimGameEventDef.SimEventType.UNSELECTABLE,
                 EventScope.Company,
                 desc,
-                default,
+                new RequirementDef { Scope = EventScope.Company },
                 new RequirementDef[0],
                 new SimGameEventObject[0],
-                options.ToArray(),
+                options,
                 0, true, null);
 
-            var tracker = new SimGameEventTracker();
-            tracker.Init(
-                new EventScope[] { EventScope.Company },
-                0f, 0f,
-                SimGameEventDef.SimEventType.NORMAL,
-                sim);
-            sim.OnEventTriggered(evt, EventScope.Company, tracker);
+            if (!isTrackerReady)
+            {
+                eventTracker.Init(
+                    new EventScope[] { EventScope.Company },
+                    0f, 0f,
+                    SimGameEventDef.SimEventType.NORMAL,
+                    sim);
+                isTrackerReady = true;
+            }
+
+            sim.InterruptQueue.QueueEventPopup(evt, EventScope.Company, eventTracker);
         }
 
         private static string BuildBody(CampaignState state)
@@ -80,6 +71,7 @@ namespace BTCantinaMissions.UI
                     else
                         sb.AppendLine($"  {task.DisplayString()} — in progress");
                 }
+                sb.AppendLine();
                 sb.AppendLine($"({state.ActiveTasks.Count}/{Core.Settings.MaxActiveTasks} slots used)");
             }
 
@@ -108,22 +100,70 @@ namespace BTCantinaMissions.UI
             return sb.ToString();
         }
 
-        private static SimGameEventOption CreateOption(string id, string name)
+        public static void MakeOptions(SGEventPanel sgEventPanel)
         {
-            return new SimGameEventOption
+            var state = Core.State;
+            var atLimit = state.ActiveTasks.Count >= Core.Settings.MaxActiveTasks;
+            sgEventPanel.eventDescription.SetText(BuildBody(state));
+
+            var optionsList = sgEventPanel.optionsList;
+            var optionsCount = optionsList.Count;
+            var index = 0;
+
+            foreach (var task in state.Board.Slots)
             {
-                Description = new BaseDescriptionDef(id, name, "", ""),
-                RequirementList = new RequirementDef[0],
-                ResultSets = new SimGameEventResultSet[]
+                SetOption(optionsList[index], $"Take: {task.DisplayString()}", !atLimit, arg =>
                 {
-                    new SimGameEventResultSet
+                    var result = Core.State.TryTake(task.InstanceId);
+                    Core.Log($"[H8] Take: {result}");
+                    if (result == TakeResult.Success) MakeOptions(sgEventPanel);
+                });
+                index++;
+            }
+
+            foreach (var task in state.ActiveTasks)
+            {
+                if (task.State == TaskState.ReadyToDeliver)
+                {
+                    SetOption(optionsList[index], $"Deliver: {task.DisplayString()}", true, arg =>
                     {
-                        Description = new BaseDescriptionDef(id + "_result", name, "", ""),
-                        Weight = 1,
-                        Results = new SimGameEventResult[0]
-                    }
+                        var ok = Core.State.Deliver(task.InstanceId);
+                        Core.Log($"[H8] Deliver: {(ok ? "success" : "failed")}");
+                        if (ok) MakeOptions(sgEventPanel);
+                    });
+                    index++;
                 }
-            };
+                else
+                {
+                    SetOption(optionsList[index], $"Abandon: {task.DisplayString()}", true, arg =>
+                    {
+                        var ok = Core.State.Abandon(task.InstanceId);
+                        Core.Log($"[H8] Abandon: {(ok ? "success" : "failed")}");
+                        if (ok) MakeOptions(sgEventPanel);
+                    });
+                    index++;
+                }
+            }
+
+            for (int i = index; i < optionsCount; i++)
+            {
+                if (i == optionsCount - 1)
+                {
+                    SetOption(optionsList[i], "Leave", true, arg => { sgEventPanel.Dismiss(); });
+                }
+                else
+                {
+                    SetOption(optionsList[i], "---", false, arg => { });
+                }
+            }
+        }
+
+        private static void SetOption(SGEventOption option, string text, bool enabled, UnityAction<SimGameEventOption> action)
+        {
+            option.description.SetText(text);
+            option.button.enabled = enabled;
+            option.OptionSelected.RemoveAllListeners();
+            if (enabled) option.OptionSelected.AddListener(action);
         }
     }
 }

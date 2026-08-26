@@ -1,11 +1,10 @@
-using System.Collections.Generic;
 using BattleTech;
 using BattleTech.UI;
 using BattleTech.UI.TMProWrapper;
 using BattleTech.UI.Tooltips;
-using BTCantinaMissions.Domain;
 using BTCantinaMissions.UI;
 using HarmonyLib;
+using UnityEngine;
 
 namespace BTCantinaMissions.Patches
 {
@@ -16,8 +15,7 @@ namespace BTCantinaMissions.Patches
     {
         public static void Postfix(SGLocationWidget __instance, StarSystem currSystem)
         {
-            var button = AccessTools.Field(typeof(SGLocationWidget), "storeButton")
-                .GetValue(__instance) as HBSDOTweenButton;
+            var button = __instance.storeButton;
             if (button == null) return;
 
             SetButtonText(button, "Cantina");
@@ -63,7 +61,7 @@ namespace BTCantinaMissions.Patches
     {
         public static bool Prefix(string button)
         {
-            Core.Debug($"[Cantina UI] Button pressed: {button}");
+            Core.Debug($"[UI] Button pressed: {button}");
             if (button != "Store") return true;
             if (!IsCantinaPlanetEnabled) return true;
 
@@ -93,16 +91,17 @@ namespace BTCantinaMissions.Patches
     {
         public static void Prefix(SGEventPanel __instance, SimGameEventDef evt)
         {
+            if (evt?.Description?.Id != "cantina_board") return;
             if (evt?.Options == null) return;
 
-            if (!(AccessTools.Field(typeof(SGEventPanel), "availableOptionButtons")
-                .GetValue(__instance) is List<SGEventOption> avail) || avail.Count == 0) return;
+            var avail = __instance.availableOptionButtons;
+            if (avail == null || avail.Count == 0) return;
 
             var created = 0;
             while (avail.Count < evt.Options.Length)
             {
                 var template = avail[0];
-                var clone = UnityEngine.Object.Instantiate(template.gameObject, template.transform.parent);
+                var clone = Object.Instantiate(template.gameObject, template.transform.parent);
                 clone.name = template.gameObject.name;
                 avail.Add(clone.GetComponent<SGEventOption>());
                 created++;
@@ -110,43 +109,13 @@ namespace BTCantinaMissions.Patches
             if (created > 0)
                 Core.Debug($"[UI] Extended SGEventPanel option pool by {created} for {evt.Options.Length} options");
         }
-    }
 
-    /// <summary>H8: handles cantina option selection (Take / Deliver / Leave) from event popup.</summary>
-    [HarmonyPatch(typeof(SimGameState), nameof(SimGameState.OnEventOptionSelected))]
-    public static class SimGameState_OnEventOptionSelected
-    {
-        public static void Postfix(SimGameEventOption option)
+        public static void Postfix(SGEventPanel __instance, SimGameEventDef evt)
         {
-            var id = option?.Description?.Id;
-            if (string.IsNullOrEmpty(id) || !id.StartsWith("cantina_")) return;
+            if (evt?.Description?.Id != "cantina_board") return;
 
-            Core.Debug($"[H8] Cantina option: {id}");
-
-            if (id == "cantina_leave") return;
-
-            if (id.StartsWith("cantina_take_"))
-            {
-                var instanceId = id.Substring("cantina_take_".Length);
-                var result = Core.State.TryTake(instanceId);
-                Core.Log($"[H8] Take: {result}");
-                // Re-show only on success — a second press (double-click) must not queue another popup
-                if (result == TakeResult.Success) CantinaPopup.Show();
-            }
-            else if (id.StartsWith("cantina_deliver_"))
-            {
-                var instanceId = id.Substring("cantina_deliver_".Length);
-                var ok = Core.State.Deliver(instanceId);
-                Core.Log($"[H8] Deliver: {(ok ? "success" : "failed")}");
-                if (ok) CantinaPopup.Show();
-            }
-            else if (id.StartsWith("cantina_abandon_"))
-            {
-                var instanceId = id.Substring("cantina_abandon_".Length);
-                var ok = Core.State.Abandon(instanceId);
-                Core.Log($"[H8] Abandon: {(ok ? "success" : "failed")}");
-                if (ok) CantinaPopup.Show();
-            }
+            Core.Debug($"[UI] Event started");
+            CantinaPopup.MakeOptions(__instance);
         }
     }
 }
