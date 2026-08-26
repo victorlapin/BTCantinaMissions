@@ -1,0 +1,61 @@
+{
+  "Description": {
+    "Id": "cantinaJob_collectItemsCheap",
+    "Name": "Collect {target}",
+    "Icon": ""
+  },
+  "ObjectiveType": "CollectItems",
+  "MinTargetCount": 6,
+  "MaxTargetCount": 12,
+  "ItemMode": "Deliver",
+  "Reward": {
+    "CBills": 120000,
+    "ItemCollection": "CantinaReward_Tier1",
+    "ItemCount": 1
+  },
+  "MinSystemDifficulty": 1,
+  "MaxSystemDifficulty": 6,
+  "Weight": 7,
+  "ItemPool": [
+    {
+      "Id": "Gear_HeatSink_Single",
+      "ItemType": "HeatSink"
+    },
+    {
+      "Id": "Ammo_AmmunitionBox_AC_5",
+      "ItemType": "AmmunitionBox"
+    },
+    {
+      "Id": "Weapon_MachineGun",
+      "ItemType": "Weapon"
+    },
+    {
+      "Id": "Gear_HeatSink_Double",
+      "ItemType": "HeatSink"
+    },
+    {
+      "Id": "Weapon_Flamer",
+      "ItemType": "Weapon"
+    },
+    {
+      "Id": "Weapon_Gauss_Magshot",
+      "ItemType": "Weapon"
+    },
+    {
+      "Id": "Weapon_SRM_2",
+      "ItemType": "Weapon"
+    },
+    {
+      "Id": "Gear_JumpJet_Standard",
+      "ItemType": "JumpJet"
+    },
+    {
+      "Id": "Weapon_Laser_Small",
+      "ItemType": "Weapon"
+    },
+    {
+      "Id": "Weapon_Laser_ER_Small",
+      "ItemType": "Weapon"
+    }
+  ]
+}

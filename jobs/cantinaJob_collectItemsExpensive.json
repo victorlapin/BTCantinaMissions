@@ -1,0 +1,61 @@
+{
+  "Description": {
+    "Id": "cantinaJob_collectItemsExpensive",
+    "Name": "Collect {target}",
+    "Icon": ""
+  },
+  "ObjectiveType": "CollectItems",
+  "MinTargetCount": 3,
+  "MaxTargetCount": 5,
+  "ItemMode": "Deliver",
+  "Reward": {
+    "CBills": 650000,
+    "ItemCollection": "CantinaReward_Tier3",
+    "ItemCount": 1
+  },
+  "MinSystemDifficulty": 6,
+  "MaxSystemDifficulty": 20,
+  "Weight": 4,
+  "ItemPool": [
+    {
+      "Id": "Weapon_Laser_Large",
+      "ItemType": "Weapon"
+    },
+    {
+      "Id": "Weapon_LRM_10",
+      "ItemType": "Weapon"
+    },
+    {
+      "Id": "Weapon_AMS",
+      "ItemType": "Weapon"
+    },
+    {
+      "Id": "Weapon_NARC",
+      "ItemType": "Weapon"
+    },
+    {
+      "Id": "Gear_Attachment_ArtemisIV",
+      "ItemType": "Upgrade"
+    },
+    {
+      "Id": "Weapon_MML_7",
+      "ItemType": "Weapon"
+    },
+    {
+      "Id": "Weapon_Mortar_4",
+      "ItemType": "Weapon"
+    },
+    {
+      "Id": "Weapon_SRM_6_Streak",
+      "ItemType": "Weapon"
+    },
+    {
+      "Id": "Weapon_Autocannon_UAC_2",
+      "ItemType": "Weapon"
+    },
+    {
+      "Id": "Weapon_Autocannon_AC_5",
+      "ItemType": "Weapon"
+    }
+  ]
+}

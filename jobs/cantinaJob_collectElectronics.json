@@ -1,0 +1,64 @@
+{
+  "Description": {
+    "Id": "cantinaJob_collectElectronics",
+    "Name": "Collect {target}",
+    "Icon": ""
+  },
+  "ObjectiveType": "CollectItems",
+  "MinTargetCount": 3,
+  "MaxTargetCount": 5,
+  "ItemMode": "Deliver",
+  "Reward": {
+    "CBills": 550000,
+    "ItemCollection": "CantinaReward_ComStar",
+    "ItemCount": 2
+  },
+  "MinSystemDifficulty": 5,
+  "MaxSystemDifficulty": 18,
+  "Weight": 5,
+  "RequiredSystemTags": [
+    "planet_other_comstar"
+  ],
+  "ItemPool": [
+    {
+      "Id": "Gear_Sensors_Improved",
+      "ItemType": "Upgrade"
+    },
+    {
+      "Id": "Gear_Sensors_Identify",
+      "ItemType": "Upgrade"
+    },
+    {
+      "Id": "Gear_Sensors_Passive",
+      "ItemType": "Upgrade"
+    },
+    {
+      "Id": "Gear_Sensors_ECM",
+      "ItemType": "Upgrade"
+    },
+    {
+      "Id": "Gear_Sensors_BallisticRange",
+      "ItemType": "Upgrade"
+    },
+    {
+      "Id": "Gear_Sensors_MissileRange",
+      "ItemType": "Upgrade"
+    },
+    {
+      "Id": "Gear_Sensors_HighPowered",
+      "ItemType": "Upgrade"
+    },
+    {
+      "Id": "Gear_Cockpit_CommSuite",
+      "ItemType": "Upgrade"
+    },
+    {
+      "Id": "Gear_Cockpit_CommSuite_Plus",
+      "ItemType": "Upgrade"
+    },
+    {
+      "Id": "Gear_ECM_Pirate",
+      "ItemType": "Upgrade"
+    }
+  ]
+}

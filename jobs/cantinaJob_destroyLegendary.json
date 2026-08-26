@@ -1,0 +1,21 @@
+{
+  "Description": {
+    "Id": "cantinaJob_destroyLegendary",
+    "Name": "Hunt {target}",
+    "Icon": ""
+  },
+  "ObjectiveType": "DestroyUnits",
+  "MinTargetCount": 1,
+  "MaxTargetCount": 2,
+  "Reward": {
+    "CBills": 600000,
+    "ItemCollection": "CantinaReward_Tier3",
+    "ItemCount": 2
+  },
+  "MinSystemDifficulty": 8,
+  "MaxSystemDifficulty": 20,
+  "Weight": 3,
+  "UnitTagPool": [
+    "unit_legendary"
+  ]
+}

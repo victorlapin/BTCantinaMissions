@@ -1,2 +1,12 @@
 CantinaReward_Tier1,,,
-CantinaReward_Tier1_Items,Reference,1,1
+Gear_HeatSink_Single,HeatSink,4,8
+Gear_HeatSink_Double,HeatSink,3,8
+Ammo_AmmunitionBox_AC_5,AmmunitionBox,4,8
+Weapon_MachineGun_Heavy,Weapon,2,6
+Weapon_Gauss_Magshot,Weapon,2,6
+Weapon_SRM_2,Weapon,2,8
+Weapon_Laser_Small,Weapon,2,8
+Gear_JumpJet_Standard,JumpJet,2,6
+Ammo_AmmunitionBox_SRM,AmmunitionBox,1,5
+Weapon_LRM_5,Weapon,1,4
+Gear_HeatSink_Compact,HeatSink,3,6

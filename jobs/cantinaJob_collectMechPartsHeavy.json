@@ -1,0 +1,29 @@
+{
+  "Description": {
+    "Id": "cantinaJob_collectMechPartsHeavy",
+    "Name": "Collect {target} parts",
+    "Icon": ""
+  },
+  "ObjectiveType": "CollectMechParts",
+  "MinTargetCount": 2,
+  "MaxTargetCount": 3,
+  "Reward": {
+    "CBills": 450000
+  },
+  "MinSystemDifficulty": 12,
+  "MaxSystemDifficulty": 20,
+  "Weight": 4,
+  "ChassisPool": [
+    "catapult",
+    "orion",
+    "quickdraw",
+    "thunderbolt",
+    "jagermech",
+    "grasshopper",
+    "warhammer",
+    "crusader",
+    "marauder",
+    "cataphract",
+    "archer"
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "Description": {
+    "Id": "cantinaJob_collectItemsMid",
+    "Name": "Collect {target}",
+    "Icon": ""
+  },
+  "ObjectiveType": "CollectItems",
+  "MinTargetCount": 4,
+  "MaxTargetCount": 8,
+  "ItemMode": "Deliver",
+  "Reward": {
+    "CBills": 320000,
+    "ItemCollection": "CantinaReward_Tier2",
+    "ItemCount": 1
+  },
+  "MinSystemDifficulty": 3,
+  "MaxSystemDifficulty": 12,
+  "Weight": 6,
+  "ItemPool": [
+    {
+      "Id": "Ammo_AmmunitionBox_SRM",
+      "ItemType": "AmmunitionBox"
+    },
+    {
+      "Id": "Gear_JumpJet_Standard_Improved",
+      "ItemType": "JumpJet"
+    },
+    {
+      "Id": "Ammo_AmmunitionBox_Mortar",
+      "ItemType": "AmmunitionBox"
+    },
+    {
+      "Id": "Weapon_LRM_5",
+      "ItemType": "Weapon"
+    },
+    {
+      "Id": "Ammo_AmmunitionBox_LRM",
+      "ItemType": "AmmunitionBox"
+    },
+    {
+      "Id": "Weapon_Mortar_2",
+      "ItemType": "Weapon"
+    },
+    {
+      "Id": "Weapon_Rocket_Pack_10",
+      "ItemType": "Weapon"
+    },
+    {
+      "Id": "Weapon_Laser_XPulse_Small",
+      "ItemType": "Weapon"
+    },
+    {
+      "Id": "Weapon_Laser_Medium",
+      "ItemType": "Weapon"
+    }
+  ]
+}

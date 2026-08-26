@@ -1,0 +1,64 @@
+{
+  "Description": {
+    "Id": "cantinaJob_collectExotics",
+    "Name": "Collect {target}",
+    "Icon": ""
+  },
+  "ObjectiveType": "CollectItems",
+  "MinTargetCount": 1,
+  "MaxTargetCount": 4,
+  "ItemMode": "Deliver",
+  "Reward": {
+    "CBills": 300000,
+    "ItemCollection": "CantinaReward_Exotic",
+    "ItemCount": 1
+  },
+  "MinSystemDifficulty": 4,
+  "MaxSystemDifficulty": 14,
+  "Weight": 5,
+  "RequiredSystemTags": [
+    "planet_other_blackmarket"
+  ],
+  "ItemPool": [
+    {
+      "Id": "BoltOn_Weapon_Thunderbolt_10_x2",
+      "ItemType": "Weapon"
+    },
+    {
+      "Id": "BoltOn_Weapon_Thunderbolt_5_x4",
+      "ItemType": "Weapon"
+    },
+    {
+      "Id": "BoltOn_Weapon_Rocket_15",
+      "ItemType": "Weapon"
+    },
+    {
+      "Id": "Weapon_WingMount_Bomb_Guided_x1",
+      "ItemType": "Weapon"
+    },
+    {
+      "Id": "Weapon_WingMount_Bomb_HE_x2",
+      "ItemType": "Weapon"
+    },
+    {
+      "Id": "Weapon_WingMount_QuadMissile",
+      "ItemType": "Weapon"
+    },
+    {
+      "Id": "BoltOn_Weapon_Rocket_20",
+      "ItemType": "Weapon"
+    },
+    {
+      "Id": "Weapon_WingMount_Bomb_Inferno_x2",
+      "ItemType": "Weapon"
+    },
+    {
+      "Id": "Weapon_WingMount_Rocket_AA_25",
+      "ItemType": "Weapon"
+    },
+    {
+      "Id": "Weapon_WingMount_Bomb_Cluster_x2",
+      "ItemType": "Weapon"
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "Description": {
+    "Id": "cantinaJob_destroyLight",
+    "Name": "Destroy {target}",
+    "Icon": ""
+  },
+  "ObjectiveType": "DestroyUnits",
+  "MinTargetCount": 4,
+  "MaxTargetCount": 8,
+  "Reward": {
+    "CBills": 200000,
+    "ItemCollection": "CantinaReward_Tier1",
+    "ItemCount": 1
+  },
+  "MinSystemDifficulty": 1,
+  "MaxSystemDifficulty": 6,
+  "Weight": 8,
+  "UnitTagPool": [
+    "unit_vtol",
+    "unit_light&unit_vehicle",
+    "unit_light&unit_mech"
+  ]
+}

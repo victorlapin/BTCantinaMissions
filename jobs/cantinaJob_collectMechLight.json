@@ -1,6 +1,6 @@
 {
   "Description": {
-    "Id": "cantinaJob_collectMech",
+    "Id": "cantinaJob_collectMechLight",
     "Name": "Collect {target}",
     "Icon": ""
   },
@@ -8,7 +8,7 @@
   "MinTargetCount": 1,
   "MaxTargetCount": 1,
   "Reward": {
-    "CBills": 100000
+    "CBills": 150000
   },
   "MinSystemDifficulty": 1,
   "MaxSystemDifficulty": 8,
@@ -16,6 +16,14 @@
   "ChassisPool": [
     "locust",
     "stinger",
-    "wasp"
+    "wasp",
+    "spider",
+    "jenner",
+    "panther",
+    "commando",
+    "firestarter",
+    "javelin",
+    "raven",
+    "urbanmech"
   ]
 }

@@ -1,0 +1,29 @@
+{
+  "Description": {
+    "Id": "cantinaJob_collectMechPartsLight",
+    "Name": "Collect {target} parts",
+    "Icon": ""
+  },
+  "ObjectiveType": "CollectMechParts",
+  "MinTargetCount": 3,
+  "MaxTargetCount": 5,
+  "Reward": {
+    "CBills": 200000
+  },
+  "MinSystemDifficulty": 3,
+  "MaxSystemDifficulty": 10,
+  "Weight": 6,
+  "ChassisPool": [
+    "locust",
+    "stinger",
+    "wasp",
+    "spider",
+    "jenner",
+    "panther",
+    "commando",
+    "firestarter",
+    "javelin",
+    "raven",
+    "urbanmech"
+  ]
+}
