@@ -142,7 +142,10 @@ namespace BTCantinaMissions.Domain
                     }
                 case ObjectiveType.CollectItems:
                     {
-                        var name = LookupItemName(dm, target);
+                        // explicit catalog from the def — the ID prefix is not reliable
+                        // for modded items (e.g. Gear_Engine_* in the HeatSink store)
+                        var entry = def.FindItemTarget(target);
+                        var name = entry != null ? ItemCatalog.LookupName(dm, target, entry.ItemType) : null;
                         if (name != null) return name;
                         break;
                     }
@@ -207,39 +210,6 @@ namespace BTCantinaMissions.Domain
         private static string NormalizeChassisKey(string s)
         {
             return s?.Replace("_", "").Replace("-", "").ToLowerInvariant() ?? "";
-        }
-
-        /// <summary>Looks up a component's display name by its ComponentDefID,
-        /// searching across the relevant DataManager store.</summary>
-        private static string LookupItemName(BattleTech.Data.DataManager dm, string id)
-        {
-            // Route by ID prefix to the right store
-            if (id.StartsWith("Weapon_"))
-            {
-                if (dm.WeaponDefs.TryGet(id, out WeaponDef def))
-                    return def?.Description?.Name;
-            }
-            else if (id.StartsWith("Ammo_"))
-            {
-                if (dm.AmmoBoxDefs.TryGet(id, out AmmunitionBoxDef def))
-                    return def?.Description?.Name;
-            }
-            else if (id.StartsWith("Gear_HeatSink"))
-            {
-                if (dm.HeatSinkDefs.TryGet(id, out HeatSinkDef def))
-                    return def?.Description?.Name;
-            }
-            else if (id.StartsWith("Gear_JumpJet"))
-            {
-                if (dm.JumpJetDefs.TryGet(id, out JumpJetDef def))
-                    return def?.Description?.Name;
-            }
-            else if (id.StartsWith("Gear_"))
-            {
-                if (dm.UpgradeDefs.TryGet(id, out UpgradeDef def))
-                    return def?.Description?.Name;
-            }
-            return null;
         }
 
         /// <summary>Display names for tags that need special casing.</summary>

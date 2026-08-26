@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using System.Linq;
+using BattleTech;
 
 namespace BTCantinaMissions.Domain
 {
@@ -17,6 +19,15 @@ namespace BTCantinaMissions.Domain
         Deliver
     }
 
+    /// <summary>An item target: the modder explicitly names the catalog to search in —
+    /// the ID prefix alone is not reliable for modded items (e.g. Gear_Engine_*
+    /// living in the HeatSink store).</summary>
+    public class TargetItemDef
+    {
+        public string Id;                 // ComponentDefID, e.g. "Weapon_Laser_Medium"
+        public ComponentType ItemType;    // vanilla enum: Weapon | AmmunitionBox | HeatSink | JumpJet | Upgrade
+    }
+
     /// <summary>Static definition of a cantina task, loaded from a CantinaTaskDef JSON.</summary>
     public class CantinaTaskDef
     {
@@ -26,9 +37,9 @@ namespace BTCantinaMissions.Domain
 
         // Target pool: generator picks a random entry.
         // Single-element pool = static target.
-        public List<string> UnitTagPool;   // DestroyUnits: unit tags ("unit_vtol")
-        public List<string> ChassisPool;   // CollectMech/Parts: chassis families ("locust")
-        public List<string> ItemPool;      // CollectItems: ComponentDefID ("Weapon_Laser_Medium")
+        public List<string> UnitTagPool;            // DestroyUnits: unit tags ("unit_vtol")
+        public List<string> ChassisPool;            // CollectMech/Parts: chassis families ("locust")
+        public List<TargetItemDef> ItemPool;        // CollectItems: explicit id + catalog
 
         public int MinTargetCount;
         public int MaxTargetCount;
@@ -44,13 +55,20 @@ namespace BTCantinaMissions.Domain
         public string Id => Description?.Id ?? "<no-id>";
         public string Name => Description?.Name ?? Id;
 
-        /// <summary>Returns the target pool for this def's objective type.</summary>
+        /// <summary>Returns the target pool (as plain target strings) for this def's objective type.</summary>
         public List<string> GetTargetPool()
         {
             if (UnitTagPool != null && UnitTagPool.Count > 0) return UnitTagPool;
             if (ChassisPool != null && ChassisPool.Count > 0) return ChassisPool;
-            if (ItemPool != null && ItemPool.Count > 0) return ItemPool;
+            if (ItemPool != null && ItemPool.Count > 0)
+                return ItemPool.Select(t => t.Id).ToList();
             return null;
+        }
+
+        /// <summary>Finds the pool entry for an item target (Id match).</summary>
+        public TargetItemDef FindItemTarget(string id)
+        {
+            return ItemPool?.FirstOrDefault(t => t.Id == id);
         }
 
         public class DescriptionDef

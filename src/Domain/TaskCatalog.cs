@@ -64,6 +64,15 @@ namespace BTCantinaMissions.Domain
                     Core.LogWarning($"[{nameof(TaskCatalog)}] Duplicate def id '{def.Description.Id}', skipping {path}");
                     return;
                 }
+                if (def.ObjectiveType == ObjectiveType.CollectItems && def.ItemPool != null)
+                {
+                    foreach (var item in def.ItemPool)
+                    {
+                        if (!ItemCatalog.TryResolveType(item.ItemType, out _))
+                            Core.LogWarning($"[{nameof(TaskCatalog)}] ItemType '{item.ItemType}' for '{item.Id}' in {path} " +
+                                "has no inventory store (expected Weapon | AmmunitionBox | HeatSink | JumpJet | Upgrade)");
+                    }
+                }
                 defs.Add(def.Description.Id, def);
                 Core.Debug($"[{nameof(TaskCatalog)}]   {def.Description.Id}: {def.Description.Name} ({def.ObjectiveType})");
             }

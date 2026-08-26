@@ -34,7 +34,7 @@ namespace BTCantinaMissions.Domain
                 Core.LogWarning($"[Reward] Deliver is not supported for {def.ObjectiveType}, treating as Acquire ({def.Id})");
             }
 
-            if (deliverItems && !HasEnoughItems(sim, task))
+            if (deliverItems && !HasEnoughItems(sim, task, def))
                 return false;
 
             // Remove the task from the active list BEFORE taking the items, so the
@@ -43,7 +43,7 @@ namespace BTCantinaMissions.Domain
                 return false;
 
             if (deliverItems)
-                RemoveItems(sim, task);
+                RemoveItems(sim, task, def);
 
             Grant(sim, task, def);
             return true;
@@ -127,12 +127,25 @@ namespace BTCantinaMissions.Domain
             return item.ID;
         }
 
-        private static bool HasEnoughItems(SimGameState sim, TaskInstance task)
+        /// <summary>The stat type for a task's item target — taken from the def's
+        /// explicit pool entry (FindItemTarget), not from the ID prefix: modded items
+        /// do not follow the vanilla prefix conventions.</summary>
+        private static bool TryGetStatType(TaskInstance task, CantinaTaskDef def, out Type type)
         {
-            var type = ComponentType(task.ResolvedTarget);
-            if (type == null)
+            var entry = def?.FindItemTarget(task.ResolvedTarget);
+            if (entry == null)
             {
-                Core.LogWarning($"[Reward] Unknown component type for '{task.ResolvedTarget}' — cannot deliver");
+                type = null;
+                return false;
+            }
+            return ItemCatalog.TryResolveType(entry.ItemType, out type);
+        }
+
+        private static bool HasEnoughItems(SimGameState sim, TaskInstance task, CantinaTaskDef def)
+        {
+            if (!TryGetStatType(task, def, out var type))
+            {
+                Core.LogWarning($"[Reward] Unknown item type for '{task.ResolvedTarget}' — cannot deliver");
                 return false;
             }
 
@@ -145,10 +158,10 @@ namespace BTCantinaMissions.Domain
 
         /// <summary>Removes TargetCount items (undamaged first). Precondition:
         /// HasEnoughItems passed and the task already left the active list.</summary>
-        private static void RemoveItems(SimGameState sim, TaskInstance task)
+        private static void RemoveItems(SimGameState sim, TaskInstance task, CantinaTaskDef def)
         {
             var id = task.ResolvedTarget;
-            var type = ComponentType(id);
+            TryGetStatType(task, def, out var type);
             var undamaged = sim.GetItemCount(id, type, SimGameState.ItemCountType.UNDAMAGED_ONLY);
 
             var clean = Math.Min(undamaged, task.TargetCount);
@@ -156,17 +169,6 @@ namespace BTCantinaMissions.Domain
                 sim.RemoveItemStat(id, type, false);
             for (var i = clean; i < task.TargetCount; i++)
                 sim.RemoveItemStat(id, type, true);
-        }
-
-        /// <summary>Maps a ComponentDefID prefix to the def type used by inventory stats.</summary>
-        private static Type ComponentType(string id)
-        {
-            if (id.StartsWith("Weapon_")) return typeof(WeaponDef);
-            if (id.StartsWith("Ammo_")) return typeof(AmmunitionBoxDef);
-            if (id.StartsWith("Gear_HeatSink")) return typeof(HeatSinkDef);
-            if (id.StartsWith("Gear_JumpJet")) return typeof(JumpJetDef);
-            if (id.StartsWith("Gear_")) return typeof(UpgradeDef);
-            return null;
         }
     }
 }

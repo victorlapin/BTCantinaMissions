@@ -16,7 +16,13 @@
   "MaxSystemDifficulty": 20,
   "Weight": 8,
   "ItemPool": [
-    "Weapon_Laser_Medium",
-    "Weapon_Laser_Small"
+    {
+      "Id": "Weapon_Laser_Medium",
+      "ItemType": "Weapon"
+    },
+    {
+      "Id": "Weapon_Laser_Small",
+      "ItemType": "Weapon"
+    }
   ]
 }
