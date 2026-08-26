@@ -1,3 +1,4 @@
+using System.Text;
 using BattleTech;
 using BattleTech.UI;
 using BTCantinaMissions.Domain;
@@ -37,6 +38,16 @@ namespace BTCantinaMissions.UI
         public static void OnReverted(TaskInstance task)
         {
             Show(UIColors.Wrap($"{task.ResolvedName}: items left the inventory — job no longer ready", UIColor.Red));
+        }
+
+        public static void OnReward(TaskInstance task, int cbills, int items)
+        {
+            var summary = new StringBuilder();
+            summary.Append($"Reward: {cbills:N0} C-Bills");
+            if (items > 0) summary.Append($" + {items} item(s)");
+
+            Core.Log($"[Reward] {task.ResolvedName}: {summary}");
+            Show(UIColors.Wrap(summary.ToString(), UIColor.Gold));
         }
 
         private static void Show(string message)

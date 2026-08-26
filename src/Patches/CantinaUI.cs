@@ -121,10 +121,17 @@ namespace BTCantinaMissions.Patches
 
         public static void Postfix(SGEventPanel __instance, SimGameEventDef evt)
         {
-            if (evt?.Description?.Id != "cantina_board") return;
-
-            Core.Debug($"[UI] Event started");
-            CantinaPopup.MakeOptions(__instance);
+            var id = evt?.Description?.Id;
+            if (id == "cantina_board")
+            {
+                Core.Debug("[UI] Event started");
+                CantinaPopup.MakeOptions(__instance);
+            }
+            else if (id == "cantina_reward")
+            {
+                Core.Debug("[UI] Reward event started");
+                CantinaPopup.MakeRewardOptions(__instance);
+            }
         }
     }
 }

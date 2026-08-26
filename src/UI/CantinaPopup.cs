@@ -87,6 +87,45 @@ namespace BTCantinaMissions.UI
             sim.InterruptQueue.AddInterrupt(new BoardPopupEntry(evt, EventScope.Company, eventTracker), true);
         }
 
+        /// <summary>Post-delivery reward popup: shows the full breakdown (CBills +
+        /// rolled items). Queued behind the board popup — displayed after Leave.</summary>
+        public static void ShowReward(string title, string body)
+        {
+            var sim = UnityGameInstance.BattleTechGame.Simulation;
+
+            var desc = new BaseDescriptionDef("cantina_reward", title, body, "uixTxrSpot_HiringHall");
+            var options = new SimGameEventOption[1];
+            options[0] = new SimGameEventOption
+            {
+                Description = new BaseDescriptionDef("cantina_reward_continue", "Continue", "", ""),
+                RequirementList = null,
+                ResultSets = null
+            };
+
+            var evt = new SimGameEventDef(
+                SimGameEventDef.EventPublishState.PUBLISHED,
+                SimGameEventDef.SimEventType.UNSELECTABLE,
+                EventScope.Company,
+                desc,
+                new RequirementDef { Scope = EventScope.Company },
+                new RequirementDef[0],
+                new SimGameEventObject[0],
+                options,
+                0, true, null);
+
+            if (!isTrackerReady)
+            {
+                eventTracker.Init(
+                    new EventScope[] { EventScope.Company },
+                    0f, 0f,
+                    SimGameEventDef.SimEventType.NORMAL,
+                    sim);
+                isTrackerReady = true;
+            }
+
+            sim.InterruptQueue.AddInterrupt(new BoardPopupEntry(evt, EventScope.Company, eventTracker), true);
+        }
+
         private static string BuildBody(CampaignState state)
         {
             var sb = new System.Text.StringBuilder();
@@ -159,7 +198,7 @@ namespace BTCantinaMissions.UI
                 {
                     entries.Add(new OptionEntry($"{UIColors.Wrap("[Deliver]", UIColor.Green)} {task.DisplayString()}", true, arg =>
                     {
-                        var ok = Core.State.Deliver(task.InstanceId);
+                        var ok = RewardService.Deliver(task.InstanceId);
                         Core.Log($"[Board] Deliver: {(ok ? "success" : "failed")}");
                         if (ok) MakeOptions(sgEventPanel);
                     }));
@@ -206,6 +245,17 @@ namespace BTCantinaMissions.UI
 
             // Hide the leftover stub buttons — their empty frames still stretch the popup
             for (int i = index; i < optionsList.Count; i++)
+                optionsList[i].gameObject.SetActive(false);
+        }
+
+        /// <summary>Wires the single Continue button of the reward popup.
+        /// The body comes from the event's Description.Details (rendered by SetEvent).</summary>
+        public static void MakeRewardOptions(SGEventPanel sgEventPanel)
+        {
+            var optionsList = sgEventPanel.optionsList;
+            if (optionsList.Count == 0) return;
+            SetOption(optionsList[0], "Continue", true, arg => { sgEventPanel.Dismiss(); });
+            for (int i = 1; i < optionsList.Count; i++)
                 optionsList[i].gameObject.SetActive(false);
         }
 
