@@ -5,25 +5,25 @@ using BTCantinaMissions.Domain;
 
 namespace BTCantinaMissions.UI
 {
-    /// <summary>Task progress/readiness toasts via the ship room's native floaty toast
+    /// <summary>Job progress/readiness toasts via the ship room's native floaty toast
     /// queue (SGTimePlayPause → SGTimeFloatyStack). The queue is drained in Update —
     /// toasts fired during combat or while the room is hidden show up when the player
     /// is back at the ship, so no own buffering is needed.</summary>
     public static class Notifications
     {
-        /// <summary>Called after every AddProgress: shows a READY toast when the task
+        /// <summary>Called after every AddProgress: shows a READY toast when the job
         /// just completed, otherwise a progress toast. Gated by NotifyOnReady /
         /// NotifyOnProgress settings.</summary>
-        public static void OnProgress(TaskInstance task)
+        public static void OnProgress(JobInstance job)
         {
-            if (task.State == TaskState.ReadyToDeliver)
+            if (job.State == JobState.ReadyToDeliver)
             {
                 if (Core.Settings.NotifyOnReady)
-                    Show(UIColors.Wrap($"{task.DisplayString()} — READY", UIColor.Green));
+                    Show(UIColors.Wrap($"{job.DisplayString()} — READY", UIColor.Green));
             }
             else if (Core.Settings.NotifyOnProgress)
             {
-                Show(task.DisplayString());
+                Show(job.DisplayString());
             }
         }
 
@@ -33,20 +33,20 @@ namespace BTCantinaMissions.UI
             Show(message);
         }
 
-        /// <summary>Toast for a task that dropped back from READY because its items
+        /// <summary>Toast for a job that dropped back from READY because its items
         /// left the inventory (sold / installed) — Deliver-mode tracking.</summary>
-        public static void OnReverted(TaskInstance task)
+        public static void OnReverted(JobInstance job)
         {
-            Show(UIColors.Wrap($"{task.ResolvedName}: items left the inventory — job no longer ready", UIColor.Red));
+            Show(UIColors.Wrap($"{job.ResolvedName}: items left the inventory — job no longer ready", UIColor.Red));
         }
 
-        public static void OnReward(TaskInstance task, int cbills, int items)
+        public static void OnReward(JobInstance job, int cbills, int items)
         {
             var summary = new StringBuilder();
             summary.Append($"Reward: {cbills:N0} C-Bills");
             if (items > 0) summary.Append($" + {items} item(s)");
 
-            Core.Log($"[Reward] {task.ResolvedName}: {summary}");
+            Core.Log($"[Reward] {job.ResolvedName}: {summary}");
             Show(UIColors.Wrap(summary.ToString(), UIColor.Gold));
         }
 

@@ -7,7 +7,7 @@ using HarmonyLib;
 namespace BTCantinaMissions.Patches
 {
     /// <summary>H5-H6: scans dead hostile units at contract completion and applies progress
-    /// to active DestroyUnits tasks. Works regardless of mission result.</summary>
+    /// to active DestroyUnits jobs. Works regardless of mission result.</summary>
     [HarmonyPatch(typeof(Contract), nameof(Contract.CompleteContract))]
     public static class CompleteContractPatch
     {
@@ -45,9 +45,9 @@ namespace BTCantinaMissions.Patches
             if (deadTags.Count == 0) return;
             Core.Log($"[H5-H6] Mission ended ({result}), {deadTags.Count} hostile units destroyed");
 
-            foreach (var task in Core.State.ActiveTasks)
+            foreach (var job in Core.State.ActiveJobs)
             {
-                var def = TaskCatalog.GetDef(task.DefId);
+                var def = JobCatalog.GetDef(job.DefId);
                 if (def?.ObjectiveType != ObjectiveType.DestroyUnits) continue;
 
                 var count = 0;
@@ -55,15 +55,15 @@ namespace BTCantinaMissions.Patches
                 {
                     var tagSet = new HBS.Collections.TagSet();
                     foreach (var t in tags) tagSet.Add(t);
-                    if (BoardGenerator.MatchesTarget(tagSet, task.ResolvedTarget))
+                    if (BoardGenerator.MatchesTarget(tagSet, job.ResolvedTarget))
                         count++;
                 }
 
                 if (count > 0)
                 {
-                    task.AddProgress(count);
-                    Core.Log($"[H5-H6] {task.ResolvedName}: +{count} → {task.Progress}/{task.TargetCount}");
-                    Notifications.OnProgress(task);
+                    job.AddProgress(count);
+                    Core.Log($"[H5-H6] {job.ResolvedName}: +{count} → {job.Progress}/{job.TargetCount}");
+                    Notifications.OnProgress(job);
                 }
             }
         }

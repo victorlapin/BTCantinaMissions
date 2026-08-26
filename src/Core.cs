@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using System.Reflection;
-using BattleTech.Data;
 using BTCantinaMissions.Domain;
 using HarmonyLib;
 using HBS.Logging;
@@ -31,8 +30,8 @@ namespace BTCantinaMissions
             harmony.PatchAll(Assembly.GetExecutingAssembly());
 
             Log($"[Init] {ModName} loaded, modDir: {modDir}, harmony patches applied");
-            Log($"[Init] Settings: tag={Settings.PlanetTag}, slots={Settings.SlotsPerBoard}, " +
-                    $"maxActive={Settings.MaxActiveTasks}, refresh={Settings.BoardRefresh}");
+            Log($"[Init] Settings: tag={Settings.PlanetTag}, jobsPerBoard={Settings.JobsPerBoard}, " +
+                    $"maxActive={Settings.MaxActiveJobs}, refresh={Settings.BoardRefresh}");
 
             JsonSaveBlock<CampaignState> saveBlock = new JsonSaveBlock<CampaignState>
             {
@@ -66,7 +65,7 @@ namespace BTCantinaMissions
         public static void ResetState()
         {
             State.Board = null;
-            State.ActiveTasks.Clear();
+            State.ActiveJobs.Clear();
             State.SchemaVersion = 1;
             Log("[Core] Campaign state reset");
         }

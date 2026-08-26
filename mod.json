@@ -14,12 +14,12 @@
   ],
   "DLL": "BTCantinaMissions.dll",
   "CustomResourceTypes": [
-    "CantinaTaskDef"
+    "CantinaJobDef"
   ],
   "Manifest": [
     {
-      "Type": "CantinaTaskDef",
-      "Path": "tasks"
+      "Type": "CantinaJobDef",
+      "Path": "jobs"
     },
     {
       "Type": "ItemCollectionDef",

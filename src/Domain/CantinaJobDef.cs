@@ -4,7 +4,7 @@ using BattleTech;
 
 namespace BTCantinaMissions.Domain
 {
-    /// <summary>Type of objective a cantina task requires.</summary>
+    /// <summary>Type of objective a cantina job requires.</summary>
     public enum ObjectiveType
     {
         DestroyUnits,
@@ -28,8 +28,8 @@ namespace BTCantinaMissions.Domain
         public ComponentType ItemType;    // vanilla enum: Weapon | AmmunitionBox | HeatSink | JumpJet | Upgrade
     }
 
-    /// <summary>Static definition of a cantina task, loaded from a CantinaTaskDef JSON.</summary>
-    public class CantinaTaskDef
+    /// <summary>Static definition of a cantina job, loaded from a CantinaJobDef JSON.</summary>
+    public class CantinaJobDef
     {
         public DescriptionDef Description;
 

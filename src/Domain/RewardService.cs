@@ -6,10 +6,10 @@ using BTCantinaMissions.UI;
 
 namespace BTCantinaMissions.Domain
 {
-    /// <summary>Issues rewards when a task is delivered (ARCHITECTURE.md section 10).
+    /// <summary>Issues rewards when a job is delivered (ARCHITECTURE.md section 10).
     /// Acquire: inventory untouched — the reward is paid purely for reaching the goal.
     /// Deliver (CollectItems only): the collected items are removed from inventory
-    /// before payout; mech / mech-part tasks never remove anything — picking the exact
+    /// before payout; mech / mech-part jobs never remove anything — picking the exact
     /// unit or splitting family parts is not feasible.</summary>
     public static class RewardService
     {
@@ -17,15 +17,15 @@ namespace BTCantinaMissions.Domain
         /// payout. Returns false (with a toast) when the player no longer has the items.</summary>
         public static bool Deliver(string instanceId)
         {
-            var task = Core.State.FindActive(instanceId);
-            if (task == null || task.State != TaskState.ReadyToDeliver)
+            var job = Core.State.FindActive(instanceId);
+            if (job == null || job.State != JobState.ReadyToDeliver)
             {
-                Core.LogWarning($"[Reward] Task not ready: {instanceId}");
+                Core.LogWarning($"[Reward] Job not ready: {instanceId}");
                 return false;
             }
 
             var sim = UnityGameInstance.BattleTechGame.Simulation;
-            var def = TaskCatalog.GetDef(task.DefId);
+            var def = JobCatalog.GetDef(job.DefId);
             var deliverItems = def?.ItemMode == ItemModeType.Deliver
                 && def.ObjectiveType == ObjectiveType.CollectItems;
 
@@ -34,48 +34,48 @@ namespace BTCantinaMissions.Domain
                 Core.LogWarning($"[Reward] Deliver is not supported for {def.ObjectiveType}, treating as Acquire ({def.Id})");
             }
 
-            if (deliverItems && !HasEnoughItems(sim, task, def))
+            if (deliverItems && !HasEnoughItems(sim, job, def))
                 return false;
 
-            // Remove the task from the active list BEFORE taking the items, so the
-            // removal tracker (H3a) does not fire on the task being delivered
+            // Remove the job from the active list BEFORE taking the items, so the
+            // removal tracker (H3a) does not fire on the job being delivered
             if (!Core.State.Deliver(instanceId))
                 return false;
 
             if (deliverItems)
-                RemoveItems(sim, task, def);
+                RemoveItems(sim, job, def);
 
-            Grant(sim, task, def);
+            Grant(sim, job, def);
             return true;
         }
 
-        private static void Grant(SimGameState sim, TaskInstance task, CantinaTaskDef def)
+        private static void Grant(SimGameState sim, JobInstance job, CantinaJobDef def)
         {
             var reward = def?.Reward;
             if (reward == null)
             {
-                Core.LogWarning($"[Reward] No reward defined for {def?.Id ?? task.DefId}");
+                Core.LogWarning($"[Reward] No reward defined for {def?.Id ?? job.DefId}");
                 return;
             }
 
             if (reward.CBills != 0)
-                sim.AddFunds(reward.CBills, task.ResolvedName);
+                sim.AddFunds(reward.CBills, job.ResolvedName);
 
             if (string.IsNullOrEmpty(reward.ItemCollection))
             {
-                Announce(task, reward.CBills, null, 0);
+                Announce(job, reward.CBills, null, 0);
                 return;
             }
 
             if (!sim.DataManager.ItemCollectionDefs.TryGet(reward.ItemCollection, out var collection))
             {
                 Core.LogWarning($"[Reward] ItemCollection '{reward.ItemCollection}' not found, items skipped ({def.Id})");
-                Announce(task, reward.CBills, null, 0);
+                Announce(job, reward.CBills, null, 0);
                 return;
             }
 
             // The vanilla RewardsPopup roll, granted directly: QueueRewardsPopup is a
-            // unique-typed queue entry and would silently drop when several tasks with
+            // unique-typed queue entry and would silently drop when several jobs with
             // collections are delivered in one visit. The callback always fires —
             // synchronously for flat collections, async for nested Reference ones.
             sim.ItemCollectionResultGen.GenerateItemCollection(collection, 0, result =>
@@ -88,17 +88,17 @@ namespace BTCantinaMissions.Domain
                     items.AppendLine($"  {RewardItemName(item)} ×{item.Count}");
                     count += item.Count;
                 }
-                Announce(task, reward.CBills, count > 0 ? items.ToString() : null, count);
+                Announce(job, reward.CBills, count > 0 ? items.ToString() : null, count);
             });
         }
 
         /// <summary>Instant gold toast (Notifications.OnReward) + a reward popup with
         /// the full breakdown — queued behind the board popup, shown after Leave.</summary>
-        private static void Announce(TaskInstance task, int cbills, string itemsBlock, int itemCount)
+        private static void Announce(JobInstance job, int cbills, string itemsBlock, int itemCount)
         {
             var body = new StringBuilder();
             body.AppendLine("Job completed:");
-            body.AppendLine($"  {task.ResolvedName}");
+            body.AppendLine($"  {job.ResolvedName}");
             body.AppendLine();
             body.AppendLine("You receive:");
             body.AppendLine($"  {UIColors.Wrap($"{cbills:N0} C-Bills", UIColor.Gold)}");
@@ -106,7 +106,7 @@ namespace BTCantinaMissions.Domain
                 body.Append(itemsBlock);
 
             CantinaPopup.ShowReward("Cantina Reward", body.ToString());
-            Notifications.OnReward(task, cbills, itemCount);
+            Notifications.OnReward(job, cbills, itemCount);
         }
 
         /// <summary>Display name for a rolled reward item via the vanilla
@@ -127,12 +127,12 @@ namespace BTCantinaMissions.Domain
             return item.ID;
         }
 
-        /// <summary>The stat type for a task's item target — taken from the def's
+        /// <summary>The stat type for a job's item target — taken from the def's
         /// explicit pool entry (FindItemTarget), not from the ID prefix: modded items
         /// do not follow the vanilla prefix conventions.</summary>
-        private static bool TryGetStatType(TaskInstance task, CantinaTaskDef def, out Type type)
+        private static bool TryGetStatType(JobInstance job, CantinaJobDef def, out Type type)
         {
-            var entry = def?.FindItemTarget(task.ResolvedTarget);
+            var entry = def?.FindItemTarget(job.ResolvedTarget);
             if (entry == null)
             {
                 type = null;
@@ -141,33 +141,33 @@ namespace BTCantinaMissions.Domain
             return ItemCatalog.TryResolveType(entry.ItemType, out type);
         }
 
-        private static bool HasEnoughItems(SimGameState sim, TaskInstance task, CantinaTaskDef def)
+        private static bool HasEnoughItems(SimGameState sim, JobInstance job, CantinaJobDef def)
         {
-            if (!TryGetStatType(task, def, out var type))
+            if (!TryGetStatType(job, def, out var type))
             {
-                Core.LogWarning($"[Reward] Unknown item type for '{task.ResolvedTarget}' — cannot deliver");
+                Core.LogWarning($"[Reward] Unknown item type for '{job.ResolvedTarget}' — cannot deliver");
                 return false;
             }
 
-            var total = sim.GetItemCount(task.ResolvedTarget, type, SimGameState.ItemCountType.ALL);
-            if (total >= task.TargetCount) return true;
+            var total = sim.GetItemCount(job.ResolvedTarget, type, SimGameState.ItemCountType.ALL);
+            if (total >= job.TargetCount) return true;
 
-            Core.LogWarning($"[Reward] Not enough '{task.ResolvedTarget}': {total}/{task.TargetCount}");
+            Core.LogWarning($"[Reward] Not enough '{job.ResolvedTarget}': {total}/{job.TargetCount}");
             return false;
         }
 
         /// <summary>Removes TargetCount items (undamaged first). Precondition:
-        /// HasEnoughItems passed and the task already left the active list.</summary>
-        private static void RemoveItems(SimGameState sim, TaskInstance task, CantinaTaskDef def)
+        /// HasEnoughItems passed and the job already left the active list.</summary>
+        private static void RemoveItems(SimGameState sim, JobInstance job, CantinaJobDef def)
         {
-            var id = task.ResolvedTarget;
-            TryGetStatType(task, def, out var type);
+            var id = job.ResolvedTarget;
+            TryGetStatType(job, def, out var type);
             var undamaged = sim.GetItemCount(id, type, SimGameState.ItemCountType.UNDAMAGED_ONLY);
 
-            var clean = Math.Min(undamaged, task.TargetCount);
+            var clean = Math.Min(undamaged, job.TargetCount);
             for (var i = 0; i < clean; i++)
                 sim.RemoveItemStat(id, type, false);
-            for (var i = clean; i < task.TargetCount; i++)
+            for (var i = clean; i < job.TargetCount; i++)
                 sim.RemoveItemStat(id, type, true);
         }
     }

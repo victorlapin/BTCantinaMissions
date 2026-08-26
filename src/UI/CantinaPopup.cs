@@ -69,7 +69,7 @@ namespace BTCantinaMissions.UI
             // ── Option stubs ──────────────────────────────
             // No more stubs than the popup can display: pagination renders at most MAX_BUTTONS
             var optionsCount = Math.Min(
-                state.Board.Slots.Count + state.ActiveTasks.Count + 1,
+                state.Board.Slots.Count + state.ActiveJobs.Count + 1,
                 MAX_BUTTONS);
             var options = new SimGameEventOption[optionsCount];
             for (int i = 0; i < optionsCount; i++)
@@ -160,9 +160,9 @@ namespace BTCantinaMissions.UI
         }
 
         /// <summary>Reward suffix for a board listing line: "— 150,000 C-Bills + items".</summary>
-        private static string RewardSuffix(TaskInstance task)
+        private static string RewardSuffix(JobInstance job)
         {
-            var reward = TaskCatalog.GetDef(task.DefId)?.Reward;
+            var reward = JobCatalog.GetDef(job.DefId)?.Reward;
             if (reward == null) return "";
 
             var parts = new StringBuilder();
@@ -187,7 +187,7 @@ namespace BTCantinaMissions.UI
             sb.AppendLine();
             sb.AppendLine();
 
-            if (state.ActiveTasks.Count >= Core.Settings.MaxActiveTasks)
+            if (state.ActiveJobs.Count >= Core.Settings.MaxActiveJobs)
             {
                 sb.AppendLine("<b>Available jobs (limit reached — deliver or abandon a job first):</b>");
             }
@@ -200,8 +200,8 @@ namespace BTCantinaMissions.UI
 
             if (state.Board?.Slots.Count > 0)
             {
-                foreach (var task in state.Board.Slots)
-                    sb.AppendLine($"  {task.DisplayString()}{RewardSuffix(task)}");
+                foreach (var job in state.Board.Slots)
+                    sb.AppendLine($"  {job.DisplayString()}{RewardSuffix(job)}");
             }
             else
             {
@@ -211,17 +211,17 @@ namespace BTCantinaMissions.UI
             sb.AppendLine();
             sb.AppendLine();
 
-            sb.AppendLine($"<b>Your active jobs (max. {Core.Settings.MaxActiveTasks})</b>:");
+            sb.AppendLine($"<b>Your active jobs (max. {Core.Settings.MaxActiveJobs})</b>:");
             sb.AppendLine();
 
-            if (state.ActiveTasks.Count > 0)
+            if (state.ActiveJobs.Count > 0)
             {
-                foreach (var task in state.ActiveTasks)
+                foreach (var job in state.ActiveJobs)
                 {
-                    if (task.State == TaskState.ReadyToDeliver)
-                        sb.AppendLine(UIColors.Wrap($"  {task.DisplayString()} — READY", UIColor.Green));
+                    if (job.State == JobState.ReadyToDeliver)
+                        sb.AppendLine(UIColors.Wrap($"  {job.DisplayString()} — READY", UIColor.Green));
                     else
-                        sb.AppendLine($"  {task.DisplayString()} — in progress");
+                        sb.AppendLine($"  {job.DisplayString()} — in progress");
                 }
             }
             else
@@ -235,36 +235,36 @@ namespace BTCantinaMissions.UI
         public static void MakeOptions(SGEventPanel sgEventPanel)
         {
             var state = Core.State;
-            var atLimit = state.ActiveTasks.Count >= Core.Settings.MaxActiveTasks;
+            var atLimit = state.ActiveJobs.Count >= Core.Settings.MaxActiveJobs;
             sgEventPanel.eventDescription.SetText(BuildBody(state));
 
             // Content entries in display order: board offers first, then active jobs
             var entries = new List<OptionEntry>();
-            foreach (var task in state.Board.Slots)
+            foreach (var job in state.Board.Slots)
             {
-                entries.Add(new OptionEntry($"{UIColors.Wrap("[Take]", UIColor.Blue)} {task.ResolvedName}", !atLimit, arg =>
+                entries.Add(new OptionEntry($"{UIColors.Wrap("[Take]", UIColor.Blue)} {job.ResolvedName}", !atLimit, arg =>
                 {
-                    var result = Core.State.TryTake(task.InstanceId);
+                    var result = Core.State.TryTake(job.InstanceId);
                     Core.Log($"[Board] Take: {result}");
                     if (result == TakeResult.Success) MakeOptions(sgEventPanel);
                 }));
             }
-            foreach (var task in state.ActiveTasks)
+            foreach (var job in state.ActiveJobs)
             {
-                if (task.State == TaskState.ReadyToDeliver)
+                if (job.State == JobState.ReadyToDeliver)
                 {
-                    entries.Add(new OptionEntry($"{UIColors.Wrap("[Deliver]", UIColor.Green)} {task.DisplayString()}", true, arg =>
+                    entries.Add(new OptionEntry($"{UIColors.Wrap("[Deliver]", UIColor.Green)} {job.DisplayString()}", true, arg =>
                     {
-                        var ok = RewardService.Deliver(task.InstanceId);
+                        var ok = RewardService.Deliver(job.InstanceId);
                         Core.Log($"[Board] Deliver: {(ok ? "success" : "failed")}");
                         if (ok) MakeOptions(sgEventPanel);
                     }));
                 }
                 else
                 {
-                    entries.Add(new OptionEntry($"{UIColors.Wrap("[Abandon]", UIColor.Red)} {task.DisplayString()}", true, arg =>
+                    entries.Add(new OptionEntry($"{UIColors.Wrap("[Abandon]", UIColor.Red)} {job.DisplayString()}", true, arg =>
                     {
-                        var ok = Core.State.Abandon(task.InstanceId);
+                        var ok = Core.State.Abandon(job.InstanceId);
                         Core.Log($"[Board] Abandon: {(ok ? "success" : "failed")}");
                         if (ok) MakeOptions(sgEventPanel);
                     }));

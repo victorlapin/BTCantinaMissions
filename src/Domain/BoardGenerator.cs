@@ -6,8 +6,8 @@ using HBS.Collections;
 
 namespace BTCantinaMissions.Domain
 {
-    /// <summary>Generates task board. Pure random — knows nothing about
-    /// the player's active tasks.</summary>
+    /// <summary>Generates job board. Pure random — knows nothing about
+    /// the player's active jobs.</summary>
     public static class BoardGenerator
     {
         private static readonly Random random = new Random();
@@ -35,7 +35,7 @@ namespace BTCantinaMissions.Domain
             // Track used (defId, target) pairs to ensure variety on this board
             var usedOnBoard = new HashSet<string>();
 
-            for (int slot = 0; slot < Core.Settings.SlotsPerBoard; slot++)
+            for (int slot = 0; slot < Core.Settings.JobsPerBoard; slot++)
             {
                 var def = WeightedPick(eligible);
                 if (def == null) break;
@@ -61,12 +61,12 @@ namespace BTCantinaMissions.Domain
         }
 
         /// <summary>Filters defs by system difficulty and required tags.</summary>
-        private static List<CantinaTaskDef> FilterEligible(StarSystem system)
+        private static List<CantinaJobDef> FilterEligible(StarSystem system)
         {
             var difficulty = system.Def.GetDifficulty(system.Sim.SimGameMode);
-            var result = new List<CantinaTaskDef>();
+            var result = new List<CantinaJobDef>();
 
-            foreach (var def in TaskCatalog.AllDefs)
+            foreach (var def in JobCatalog.AllDefs)
             {
                 if (def.MinSystemDifficulty > difficulty || def.MaxSystemDifficulty < difficulty)
                     continue;
@@ -82,7 +82,7 @@ namespace BTCantinaMissions.Domain
         }
 
         /// <summary>Single weighted random pick (with replacement — same def can be picked again).</summary>
-        private static CantinaTaskDef WeightedPick(List<CantinaTaskDef> pool)
+        private static CantinaJobDef WeightedPick(List<CantinaJobDef> pool)
         {
             if (pool.Count == 0) return null;
             var totalWeight = pool.Sum(d => d.Weight);
@@ -96,9 +96,9 @@ namespace BTCantinaMissions.Domain
             return pool[pool.Count - 1];
         }
 
-        /// <summary>Creates a TaskInstance, resolving a target from pools.
+        /// <summary>Creates a JobInstance, resolving a target from pools.
         /// Skips targets already used on this board to ensure variety.</summary>
-        private static TaskInstance CreateInstance(CantinaTaskDef def, string systemId, HashSet<string> usedOnBoard)
+        private static JobInstance CreateInstance(CantinaJobDef def, string systemId, HashSet<string> usedOnBoard)
         {
             var pool = def.GetTargetPool();
             string target = null;
@@ -120,13 +120,13 @@ namespace BTCantinaMissions.Domain
 
             var targetCount = random.Next(def.MinTargetCount, def.MaxTargetCount + 1);
 
-            return new TaskInstance(def.Id, target, name, targetCount, systemId);
+            return new JobInstance(def.Id, target, name, targetCount, systemId);
         }
 
         /// <summary>Resolves the human-readable display name for a pool target
         /// by looking up actual game data via DataManager. Falls back to
         /// simple humanization if lookup fails.</summary>
-        private static string ResolveDisplayName(CantinaTaskDef def, string target)
+        private static string ResolveDisplayName(CantinaJobDef def, string target)
         {
             var dm = UnityGameInstance.BattleTechGame.Simulation.DataManager;
             if (dm == null) return FallbackHumanize(target);

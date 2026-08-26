@@ -1,6 +1,6 @@
 {
   "Description": {
-    "Id": "cantinaTask_destroyUnits",
+    "Id": "cantinaJob_destroyUnits",
     "Name": "Destroy {target}",
     "Icon": ""
   },

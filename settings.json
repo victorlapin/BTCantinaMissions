@@ -1,8 +1,8 @@
 {
   "PlanetTag": "planet_other_cantina",
-  "SlotsPerBoard": 4,
+  "JobsPerBoard": 4,
   "BoardRefresh": "Monthly",
-  "MaxActiveTasks": 3,
+  "MaxActiveJobs": 3,
   "NotifyOnProgress": true,
   "NotifyOnReady": true,
   "DebugLogging": false,

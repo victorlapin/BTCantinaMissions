@@ -1,6 +1,6 @@
 {
   "Description": {
-    "Id": "cantinaTask_collectMech",
+    "Id": "cantinaJob_collectMech",
     "Name": "Collect {target}",
     "Icon": ""
   },
