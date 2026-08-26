@@ -128,7 +128,7 @@ namespace BTCantinaMissions.Domain
         /// simple humanization if lookup fails.</summary>
         private static string ResolveDisplayName(CantinaTaskDef def, string target)
         {
-            var dm = Core.DM;
+            var dm = UnityGameInstance.BattleTechGame.Simulation.DataManager;
             if (dm == null) return FallbackHumanize(target);
 
             switch (def.ObjectiveType)

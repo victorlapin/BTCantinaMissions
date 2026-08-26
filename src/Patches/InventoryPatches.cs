@@ -59,8 +59,9 @@ namespace BTCantinaMissions.Patches
             // TODO: AssemblyVariant custom component lookup
             // For now: check file name
             var mechId = id.Replace("chassisdef_", "mechdef_");
+            var dm = UnityGameInstance.BattleTechGame.Simulation.DataManager;
 
-            if (!Core.DM.MechDefs.TryGet(mechId, out MechDef mechDef)) return;
+            if (!dm.MechDefs.TryGet(mechId, out MechDef mechDef)) return;
             var family = ChassisFamilyResolver.GetFamily(mechDef);
             if (family == null) return;
 

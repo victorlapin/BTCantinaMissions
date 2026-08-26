@@ -22,8 +22,6 @@ namespace BTCantinaMissions
         public static Settings Settings { get; private set; }
         public static CampaignState State { get; internal set; } = new CampaignState();
 
-        public static DataManager DM { get; internal set; }
-
         public static bool IsCS { get; internal set; } = false;
 
         public static void Init(string modDir, string settingsJson)
