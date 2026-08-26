@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text;
 using BattleTech;
 using BattleTech.UI;
 using BTCantinaMissions.Domain;
@@ -16,6 +17,26 @@ namespace BTCantinaMissions.UI
         /// <summary>Max option buttons rendered at once — more would overflow the popup.</summary>
         private const int MAX_BUTTONS = 5;
         private static int currentPage = 0;
+        private static string currentFlavor = "";
+
+        private static readonly string[] boardFlavor =
+{
+            "The cantina's notice board is cluttered with scribbled job offers.",
+            "A wiry bartender nods at the board by the door — fresh work, fresh pay.",
+            "Holo-ads flicker over a board thick with mercenary job slips.",
+            "The smell of fried synth-protein hangs over a wall of contracts.",
+            "Half the board is pin-up holos; the other half is honest work."
+        };
+
+        private static readonly string[] rewardFlavor =
+        {
+            "The bartender slides a cred-chip across the counter.",
+            "Payment lands in the company account with a satisfied chime.",
+            "\"Pleasure doing business,\" the bartender grins.",
+            "Somewhere in the back, a jukebox plays a victory tune."
+        };
+
+        private static readonly Random random = new Random();
 
         /// <summary>Event popup without the SIM_GAME_EVENT_RESOLVED autosave that
         /// QueueEventPopup attaches to every event (the board is not a real event).</summary>
@@ -43,6 +64,7 @@ namespace BTCantinaMissions.UI
             }
 
             currentPage = 0;   // fresh open always starts at the first page
+            currentFlavor = Flavor(boardFlavor);
 
             // ── Option stubs ──────────────────────────────
             // No more stubs than the popup can display: pagination renders at most MAX_BUTTONS
@@ -93,7 +115,12 @@ namespace BTCantinaMissions.UI
         {
             var sim = UnityGameInstance.BattleTechGame.Simulation;
 
-            var desc = new BaseDescriptionDef("cantina_reward", title, body, "uixTxrSpot_HiringHall");
+            var sbBody = new StringBuilder();
+            sbBody.AppendLine(UIColors.Wrap($"<i>{Flavor(rewardFlavor)}</i>", UIColor.LightGray));
+            sbBody.AppendLine();
+            sbBody.Append(body);
+
+            var desc = new BaseDescriptionDef("cantina_reward", title, sbBody.ToString(), "uixTxrSpot_HiringHall");
             var options = new SimGameEventOption[1];
             options[0] = new SimGameEventOption
             {
@@ -126,9 +153,37 @@ namespace BTCantinaMissions.UI
             sim.InterruptQueue.AddInterrupt(new BoardPopupEntry(evt, EventScope.Company, eventTracker), true);
         }
 
+        private static string Flavor(string[] pool)
+        {
+            return pool[random.Next(pool.Length)];
+        }
+
+        /// <summary>Reward suffix for a board listing line: "— 150,000 C-Bills + items".</summary>
+        private static string RewardSuffix(TaskInstance task)
+        {
+            var reward = TaskCatalog.GetDef(task.DefId)?.Reward;
+            if (reward == null) return "";
+
+            var parts = new StringBuilder();
+            if (reward.CBills != 0)
+            {
+                parts.Append(UIColors.Wrap($"{reward.CBills:N0} C-Bills", UIColor.Gold));
+            }
+            if (!string.IsNullOrEmpty(reward.ItemCollection))
+            {
+                if (parts.Length > 0) parts.Append(UIColors.Wrap(" + ", UIColor.LightGray));
+                parts.Append(UIColors.Wrap("items", UIColor.LightGray));
+            }
+
+            return parts.Length > 0 ? $" — {parts}" : "";
+        }
+
         private static string BuildBody(CampaignState state)
         {
             var sb = new System.Text.StringBuilder();
+
+            sb.AppendLine(UIColors.Wrap($"<i>{currentFlavor}</i>", UIColor.LightGray));
+            sb.AppendLine();
 
             if (state.ActiveTasks.Count >= Core.Settings.MaxActiveTasks)
             {
@@ -144,7 +199,7 @@ namespace BTCantinaMissions.UI
             if (state.Board?.Slots.Count > 0)
             {
                 foreach (var task in state.Board.Slots)
-                    sb.AppendLine($"  {task.DisplayString()}");
+                    sb.AppendLine($"  {task.DisplayString()}{RewardSuffix(task)}");
             }
             else
             {
