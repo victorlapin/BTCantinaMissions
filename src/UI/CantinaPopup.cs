@@ -149,7 +149,7 @@ namespace BTCantinaMissions.UI
                 entries.Add(new OptionEntry($"{UIColors.Wrap("[Take]", UIColor.Blue)} {task.ResolvedName}", !atLimit, arg =>
                 {
                     var result = Core.State.TryTake(task.InstanceId);
-                    Core.Log($"[H8] Take: {result}");
+                    Core.Log($"[Board] Take: {result}");
                     if (result == TakeResult.Success) MakeOptions(sgEventPanel);
                 }));
             }
@@ -160,7 +160,7 @@ namespace BTCantinaMissions.UI
                     entries.Add(new OptionEntry($"{UIColors.Wrap("[Deliver]", UIColor.Green)} {task.DisplayString()}", true, arg =>
                     {
                         var ok = Core.State.Deliver(task.InstanceId);
-                        Core.Log($"[H8] Deliver: {(ok ? "success" : "failed")}");
+                        Core.Log($"[Board] Deliver: {(ok ? "success" : "failed")}");
                         if (ok) MakeOptions(sgEventPanel);
                     }));
                 }
@@ -169,7 +169,7 @@ namespace BTCantinaMissions.UI
                     entries.Add(new OptionEntry($"{UIColors.Wrap("[Abandon]", UIColor.Red)} {task.DisplayString()}", true, arg =>
                     {
                         var ok = Core.State.Abandon(task.InstanceId);
-                        Core.Log($"[H8] Abandon: {(ok ? "success" : "failed")}");
+                        Core.Log($"[Board] Abandon: {(ok ? "success" : "failed")}");
                         if (ok) MakeOptions(sgEventPanel);
                     }));
                 }

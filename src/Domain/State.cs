@@ -138,6 +138,7 @@ namespace BTCantinaMissions.Domain
             Board.RemoveSlot(instanceId);
             task.Take();
             ActiveTasks.Add(task);
+            Core.Log($"[Board] Task taken: {task.ResolvedName}");
             return TakeResult.Success;
         }
 
@@ -146,6 +147,7 @@ namespace BTCantinaMissions.Domain
         {
             var task = FindActive(instanceId);
             if (task == null || task.State != TaskState.ReadyToDeliver) return false;
+            Core.Log($"[Board] Task delivered: {task.ResolvedName}");
             ActiveTasks.Remove(task);
             return true;
         }
@@ -156,7 +158,7 @@ namespace BTCantinaMissions.Domain
             var task = FindActive(instanceId);
             if (task == null) return false;
             ActiveTasks.Remove(task);
-            Core.Log($"[CampaignState] Task abandoned: {task.ResolvedName}");
+            Core.Log($"[Board] Task abandoned: {task.ResolvedName}");
             return true;
         }
 
