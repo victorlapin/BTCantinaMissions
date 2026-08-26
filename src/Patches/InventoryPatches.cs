@@ -17,11 +17,38 @@ namespace BTCantinaMissions.Patches
                 if (task.DefId == null) continue;
                 var def = TaskCatalog.GetDef(task.DefId);
                 if (def?.ObjectiveType != ObjectiveType.CollectItems) continue;
-                if (def.ItemPool == null || !def.ItemPool.Contains(id)) continue;
+                // exact target match: a def's pool may hold several item kinds, but the
+                // task instance tracks only its own resolved target
+                if (task.ResolvedTarget != id) continue;
 
                 task.AddProgress(1);
                 Core.Log($"[H3] CollectItems progress: {task.ResolvedName} ({task.Progress}/{task.TargetCount})");
                 Notifications.OnProgress(task);
+            }
+        }
+    }
+
+    /// <summary>H3a: mirrors H3 for removals — Deliver-mode CollectItems tasks lose
+    /// progress when the collected items leave the inventory (sold, installed).
+    /// Acquire tasks are one-way by design: the goal was reached once already.</summary>
+    [HarmonyPatch(typeof(SimGameState), "RemoveItemStat", new Type[] { typeof(string), typeof(Type), typeof(bool) })]
+    public static class RemoveItemStatPatch
+    {
+        public static void Postfix(SimGameState __instance, string id, Type type, bool damaged)
+        {
+            foreach (var task in Core.State.ActiveTasks)
+            {
+                if (task.DefId == null) continue;
+                var def = TaskCatalog.GetDef(task.DefId);
+                if (def?.ObjectiveType != ObjectiveType.CollectItems) continue;
+                if (def.ItemMode != ItemModeType.Deliver) continue;
+                if (task.ResolvedTarget != id) continue;
+
+                var wasReady = task.State == TaskState.ReadyToDeliver;
+                task.RemoveProgress(1);
+                Core.Log($"[H3a] CollectItems reversal: {task.ResolvedName} ({task.Progress}/{task.TargetCount})");
+                if (wasReady && task.State == TaskState.Taken && Core.Settings.NotifyOnReady)
+                    Notifications.OnReverted(task);
             }
         }
     }

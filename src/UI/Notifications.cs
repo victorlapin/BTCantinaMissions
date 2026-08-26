@@ -32,6 +32,13 @@ namespace BTCantinaMissions.UI
             Show(message);
         }
 
+        /// <summary>Toast for a task that dropped back from READY because its items
+        /// left the inventory (sold / installed) — Deliver-mode tracking.</summary>
+        public static void OnReverted(TaskInstance task)
+        {
+            Show(UIColors.Wrap($"{task.ResolvedName}: items left the inventory — job no longer ready", UIColor.Red));
+        }
+
         private static void Show(string message)
         {
             var sim = UnityGameInstance.BattleTechGame?.Simulation;

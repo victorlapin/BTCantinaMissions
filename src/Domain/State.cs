@@ -59,6 +59,16 @@ namespace BTCantinaMissions.Domain
                 State = TaskState.ReadyToDeliver;
         }
 
+        /// <summary>Mirror of AddProgress for removals (items sold/lost): clamps at zero
+        /// and downgrades a ready task back to in progress.</summary>
+        public void RemoveProgress(int amount)
+        {
+            if (State != TaskState.Taken && State != TaskState.ReadyToDeliver) return;
+            Progress = Math.Max(Progress - amount, 0);
+            if (Progress < TargetCount && State == TaskState.ReadyToDeliver)
+                State = TaskState.Taken;
+        }
+
         /// <summary>Removes the task from the active list. Called by CampaignState.Deliver.</summary>
         public void Deliver()
         {
