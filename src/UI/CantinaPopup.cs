@@ -118,6 +118,7 @@ namespace BTCantinaMissions.UI
             var sbBody = new StringBuilder();
             sbBody.AppendLine(UIColors.Wrap($"<i>{Flavor(rewardFlavor)}</i>", UIColor.LightGray));
             sbBody.AppendLine();
+            sbBody.AppendLine();
             sbBody.Append(body);
 
             var desc = new BaseDescriptionDef("cantina_reward", title, sbBody.ToString(), "uixTxrSpot_HiringHall");
@@ -180,9 +181,10 @@ namespace BTCantinaMissions.UI
 
         private static string BuildBody(CampaignState state)
         {
-            var sb = new System.Text.StringBuilder();
+            var sb = new StringBuilder();
 
             sb.AppendLine(UIColors.Wrap($"<i>{currentFlavor}</i>", UIColor.LightGray));
+            sb.AppendLine();
             sb.AppendLine();
 
             if (state.ActiveTasks.Count >= Core.Settings.MaxActiveTasks)
@@ -286,12 +288,10 @@ namespace BTCantinaMissions.UI
 
             if (pageCount > 1)
             {
-                int next = (currentPage + 1) % pageCount;
-                // ">>" is ASCII — the game's TMP font subset lacks U+25BA
                 SetOption(optionsList[index++], new OptionEntry(
-                    $"{UIColors.Wrap("<b>[>>]</b>", UIColor.LightGray)} Next ({next + 1}/{pageCount})", true, arg =>
+                    $"Switch page ({currentPage + 1} of {pageCount})", true, arg =>
                 {
-                    currentPage = next;
+                    currentPage = (currentPage + 1) % pageCount;
                     MakeOptions(sgEventPanel);
                 }));
             }
@@ -329,7 +329,7 @@ namespace BTCantinaMissions.UI
             }
             else
             {
-                option.description.SetText(UIColors.Wrap(text, UIColor.DarkGray));
+                option.description.SetText(UIColors.Wrap(text, UIColor.MedGray));
             }
             option.button.enabled = enabled;
             option.OptionSelected.RemoveAllListeners();
