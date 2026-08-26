@@ -17,12 +17,18 @@ namespace BTCantinaMissions.UI
             if (task.State == TaskState.ReadyToDeliver)
             {
                 if (Core.Settings.NotifyOnReady)
-                    Show($"<color=green>{task.ResolvedName} — READY</color>");
+                    Show($"<color=green>{task.DisplayString()} — READY</color>");
             }
             else if (Core.Settings.NotifyOnProgress)
             {
-                Show($"{task.ResolvedName} ({task.Progress}/{task.TargetCount})");
+                Show(task.DisplayString());
             }
+        }
+
+        public static void OnNewQuarterBegin()
+        {
+            var message = "New cantina jobs available";
+            Show(message);
         }
 
         private static void Show(string message)

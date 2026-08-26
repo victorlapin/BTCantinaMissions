@@ -1,5 +1,6 @@
 using BattleTech;
 using BTCantinaMissions.Domain;
+using BTCantinaMissions.UI;
 using HarmonyLib;
 
 namespace BTCantinaMissions.Patches
@@ -13,8 +14,9 @@ namespace BTCantinaMissions.Patches
         public static void Postfix(SimGameState __instance)
         {
             var curSystem = __instance.CurSystem;
+            var isCantina = curSystem.Tags.Contains(Core.Settings.PlanetTag);
 
-            if (curSystem.Tags.Contains(Core.Settings.PlanetTag) && Core.State.Board == null)
+            if (isCantina && Core.State.Board == null)
             {
                 Core.Debug($"Add missing board for current system");
                 Core.State.Board = new SystemBoard();
@@ -22,6 +24,11 @@ namespace BTCantinaMissions.Patches
 
             Core.Log($"[H1] Month end, refreshing board");
             BoardGenerator.RefreshBoard(curSystem);
+
+            if (isCantina)
+            {
+                Notifications.OnNewQuarterBegin();
+            }
         }
     }
 }
