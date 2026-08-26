@@ -95,15 +95,24 @@ namespace BTCantinaMissions.Patches
             if (evt?.Options == null) return;
 
             var avail = __instance.availableOptionButtons;
-            if (avail == null || avail.Count == 0) return;
+            var inUse = __instance.optionsList;
+            if (avail == null || inUse == null) return;
+
+            // SetEvent returns the in-use buttons to the pool (ClearOptions) before taking
+            // them again — count both. At prefix time the pool can be empty while all
+            // buttons of the previous show are still in optionsList (Dismiss does not
+            // call ClearOptions), so cloning from avail alone is not enough.
+            var effective = avail.Count + inUse.Count;
+            if (effective == 0) return; // no button to clone a template from
 
             var created = 0;
-            while (avail.Count < evt.Options.Length)
+            while (effective < evt.Options.Length)
             {
-                var template = avail[0];
-                var clone = Object.Instantiate(template.gameObject, template.transform.parent);
-                clone.name = template.gameObject.name;
+                var template = (avail.Count > 0 ? avail[0] : inUse[0]).gameObject;
+                var clone = Object.Instantiate(template, template.transform.parent);
+                clone.name = template.name;
                 avail.Add(clone.GetComponent<SGEventOption>());
+                effective++;
                 created++;
             }
             if (created > 0)
