@@ -64,6 +64,17 @@ namespace BTCantinaMissions
             }
         }
 
+        /// <summary>Clears the campaign state in place. The State instance cannot be
+        /// replaced — JwTweaks holds it in JsonSaveBlock.Data — so save loads and new
+        /// campaign starts must reset fields instead.</summary>
+        public static void ResetState()
+        {
+            State.Board = null;
+            State.ActiveTasks.Clear();
+            State.SchemaVersion = 1;
+            Log("[Core] Campaign state reset");
+        }
+
         #region Logging helpers
 
         public static void Log(string message) => log.Log(message);

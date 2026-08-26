@@ -1,6 +1,8 @@
+using System;
 using System.IO;
 using BattleTech;
 using BattleTech.Save;
+using BattleTech.Save.SaveGameStructure;
 using HarmonyLib;
 using Newtonsoft.Json;
 
@@ -12,7 +14,24 @@ namespace BTCantinaMissions.Patches
         public static void Postfix(SimGameState __instance)
         {
             Core.Debug("SimGameState Init");
+            // New campaign: no save block will be loaded for it — start clean
+            Core.ResetState();
             Core.DM = __instance.DataManager;
+        }
+    }
+
+    /// <summary>Campaign save load entry point (both Load overloads funnel here).
+    /// JwTweaks' LoadCustomSaveBlocks runs later in this pipeline (inside
+    /// SaveBlock.GetSaveData) and only calls our LoadData when the block exists in
+    /// the save — a pre-mod save would otherwise keep state from the previous
+    /// playthrough, so reset before the save is read.</summary>
+    [HarmonyPatch(typeof(SaveGameStructure), "Load", new Type[] { typeof(string) })]
+    public static class SaveGameStructure_LoadPatch
+    {
+        public static void Prefix()
+        {
+            Core.Debug("SaveGameStructure Load");
+            Core.ResetState();
         }
     }
 
@@ -44,7 +63,7 @@ namespace BTCantinaMissions.Patches
                     JsonConvert.SerializeObject(Core.State, Formatting.Indented));
                 Core.Debug($"[DumpState] State dumped to {path}");
             }
-            catch (System.Exception e)
+            catch (Exception e)
             {
                 Core.LogWarning($"[DumpState] Failed to dump state: {e.Message}");
             }
