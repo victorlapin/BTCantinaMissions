@@ -8,7 +8,7 @@ using JwTweaks.Data;
 using JwTweaks.Features;
 using Newtonsoft.Json;
 
-[assembly: AssemblyVersion("0.1.0")]
+[assembly: AssemblyVersion("0.3.0")]
 
 namespace BTCantinaMissions
 {
