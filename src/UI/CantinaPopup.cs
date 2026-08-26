@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using BattleTech;
 using BattleTech.UI;
 using BTCantinaMissions.Domain;
@@ -10,6 +12,10 @@ namespace BTCantinaMissions.UI
     {
         private static readonly SimGameEventTracker eventTracker = new SimGameEventTracker();
         private static bool isTrackerReady = false;
+
+        /// <summary>Max option buttons rendered at once — more would overflow the popup.</summary>
+        private const int MAX_BUTTONS = 5;
+        private static int currentPage = 0;
 
         /// <summary>Event popup without the SIM_GAME_EVENT_RESOLVED autosave that
         /// QueueEventPopup attaches to every event (the board is not a real event).</summary>
@@ -36,8 +42,13 @@ namespace BTCantinaMissions.UI
                 BoardGenerator.RefreshBoard(sim.CurSystem);
             }
 
+            currentPage = 0;   // fresh open always starts at the first page
+
             // ── Option stubs ──────────────────────────────
-            var optionsCount = state.Board.Slots.Count + state.ActiveTasks.Count + 1;
+            // No more stubs than the popup can display: pagination renders at most MAX_BUTTONS
+            var optionsCount = Math.Min(
+                state.Board.Slots.Count + state.ActiveTasks.Count + 1,
+                MAX_BUTTONS);
             var options = new SimGameEventOption[optionsCount];
             for (int i = 0; i < optionsCount; i++)
             {
@@ -98,13 +109,13 @@ namespace BTCantinaMissions.UI
             }
             else
             {
-                sb.AppendLine("No jobs available.");
+                sb.AppendLine("  No jobs available.");
             }
 
             sb.AppendLine();
             sb.AppendLine();
 
-            sb.AppendLine($"<b>Your active jobs: ({state.ActiveTasks.Count}/{Core.Settings.MaxActiveTasks})</b>");
+            sb.AppendLine($"<b>Your active jobs (max. {Core.Settings.MaxActiveTasks})</b>:");
             sb.AppendLine();
 
             if (state.ActiveTasks.Count > 0)
@@ -112,14 +123,14 @@ namespace BTCantinaMissions.UI
                 foreach (var task in state.ActiveTasks)
                 {
                     if (task.State == TaskState.ReadyToDeliver)
-                        sb.AppendLine($"<color=green>  {task.DisplayString()} — READY</color>");
+                        sb.AppendLine(UIColors.Wrap($"  {task.DisplayString()} — READY", UIColor.Green));
                     else
                         sb.AppendLine($"  {task.DisplayString()} — in progress");
                 }
             }
             else
             {
-                sb.AppendLine("No active jobs.");
+                sb.AppendLine("  No active jobs.");
             }
 
             return sb.ToString();
@@ -131,64 +142,107 @@ namespace BTCantinaMissions.UI
             var atLimit = state.ActiveTasks.Count >= Core.Settings.MaxActiveTasks;
             sgEventPanel.eventDescription.SetText(BuildBody(state));
 
-            var optionsList = sgEventPanel.optionsList;
-            var optionsCount = optionsList.Count;
-            var index = 0;
-
+            // Content entries in display order: board offers first, then active jobs
+            var entries = new List<OptionEntry>();
             foreach (var task in state.Board.Slots)
             {
-                SetOption(optionsList[index], $"Take: {task.ResolvedName}", !atLimit, arg =>
+                entries.Add(new OptionEntry($"{UIColors.Wrap("[Take]", UIColor.Blue)} {task.ResolvedName}", !atLimit, arg =>
                 {
                     var result = Core.State.TryTake(task.InstanceId);
                     Core.Log($"[H8] Take: {result}");
                     if (result == TakeResult.Success) MakeOptions(sgEventPanel);
-                });
-                index++;
+                }));
             }
-
             foreach (var task in state.ActiveTasks)
             {
                 if (task.State == TaskState.ReadyToDeliver)
                 {
-                    SetOption(optionsList[index], $"Deliver: {task.DisplayString()}", true, arg =>
+                    entries.Add(new OptionEntry($"{UIColors.Wrap("[Deliver]", UIColor.Green)} {task.DisplayString()}", true, arg =>
                     {
                         var ok = Core.State.Deliver(task.InstanceId);
                         Core.Log($"[H8] Deliver: {(ok ? "success" : "failed")}");
                         if (ok) MakeOptions(sgEventPanel);
-                    });
-                    index++;
+                    }));
                 }
                 else
                 {
-                    SetOption(optionsList[index], $"Abandon: {task.DisplayString()}", true, arg =>
+                    entries.Add(new OptionEntry($"{UIColors.Wrap("[Abandon]", UIColor.Red)} {task.DisplayString()}", true, arg =>
                     {
                         var ok = Core.State.Abandon(task.InstanceId);
                         Core.Log($"[H8] Abandon: {(ok ? "success" : "failed")}");
                         if (ok) MakeOptions(sgEventPanel);
-                    });
-                    index++;
+                    }));
                 }
             }
 
-            for (int i = index; i < optionsCount; i++)
+            // Pagination: Leave is always the last button; on multi-page boards
+            // the "Next >>" navigation takes one slot, leaving MAX_BUTTONS - 2 content buttons
+            const int fullPage = MAX_BUTTONS - 2;
+            int pageCount = entries.Count <= MAX_BUTTONS - 1
+                ? 1
+                : (entries.Count + fullPage - 1) / fullPage;
+            if (currentPage >= pageCount) currentPage = 0;
+            int pageSize = pageCount == 1 ? MAX_BUTTONS - 1 : fullPage;
+            int start = currentPage * pageSize;
+
+            var optionsList = sgEventPanel.optionsList;
+            var index = 0;
+            for (int i = start; i < entries.Count && i < start + pageSize; i++)
+                SetOption(optionsList[index++], entries[i]);
+
+            if (pageCount > 1)
             {
-                if (i == optionsCount - 1)
+                int next = (currentPage + 1) % pageCount;
+                // ">>" is ASCII — the game's TMP font subset lacks U+25BA
+                SetOption(optionsList[index++], new OptionEntry(
+                    $"{UIColors.Wrap("<b>[>>]</b>", UIColor.LightGray)} Next ({next + 1}/{pageCount})", true, arg =>
                 {
-                    SetOption(optionsList[i], "Leave", true, arg => { sgEventPanel.Dismiss(); });
-                }
-                else
-                {
-                    SetOption(optionsList[i], "---", false, arg => { });
-                }
+                    currentPage = next;
+                    MakeOptions(sgEventPanel);
+                }));
             }
+
+            SetOption(optionsList[index++], new OptionEntry("Leave", true, arg => { sgEventPanel.Dismiss(); }));
+
+            // Hide the leftover stub buttons — their empty frames still stretch the popup
+            for (int i = index; i < optionsList.Count; i++)
+                optionsList[i].gameObject.SetActive(false);
+        }
+
+        private static void SetOption(SGEventOption option, OptionEntry entry)
+        {
+            // a button hidden as a page leftover must come back when a page shows it again
+            option.gameObject.SetActive(true);
+            SetOption(option, entry.Text, entry.Enabled, entry.Action);
         }
 
         private static void SetOption(SGEventOption option, string text, bool enabled, UnityAction<SimGameEventOption> action)
         {
-            option.description.SetText(text);
+            if (enabled)
+            {
+                option.description.SetText(text);
+            }
+            else
+            {
+                option.description.SetText(UIColors.Wrap(text, UIColor.DarkGray));
+            }
             option.button.enabled = enabled;
             option.OptionSelected.RemoveAllListeners();
             if (enabled) option.OptionSelected.AddListener(action);
+        }
+
+        private class OptionEntry
+        {
+            public readonly string Text;
+            public readonly bool Enabled;
+            public readonly UnityAction<SimGameEventOption> Action;
+
+            public OptionEntry(string text, bool enabled, UnityAction<SimGameEventOption> action)
+            {
+                Text = text;
+                Enabled = enabled;
+                Action = action;
+            }
         }
     }
 }

@@ -1,4 +1,5 @@
 using BattleTech;
+using BattleTech.UI;
 using BTCantinaMissions.Domain;
 
 namespace BTCantinaMissions.UI
@@ -17,7 +18,7 @@ namespace BTCantinaMissions.UI
             if (task.State == TaskState.ReadyToDeliver)
             {
                 if (Core.Settings.NotifyOnReady)
-                    Show($"<color=green>{task.DisplayString()} — READY</color>");
+                    Show(UIColors.Wrap($"{task.DisplayString()} — READY", UIColor.Green));
             }
             else if (Core.Settings.NotifyOnProgress)
             {
