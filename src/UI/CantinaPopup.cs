@@ -242,7 +242,7 @@ namespace BTCantinaMissions.UI
             var entries = new List<OptionEntry>();
             foreach (var job in state.Board.Slots)
             {
-                entries.Add(new OptionEntry($"{UIColors.Wrap("[Take]", UIColor.Blue)} {job.ResolvedName}", !atLimit, arg =>
+                entries.Add(new OptionEntry($"{(atLimit ? "[Take]" : UIColors.Wrap("[Take]", UIColor.Blue))} {job.ResolvedName}", !atLimit, arg =>
                 {
                     var result = Core.State.TryTake(job.InstanceId);
                     Core.Log($"[Board] Take: {result}");
