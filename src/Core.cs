@@ -31,7 +31,7 @@ namespace BTCantinaMissions
 
             Log($"[Init] {ModName} loaded, modDir: {modDir}, harmony patches applied");
             Log($"[Init] Settings: tag={Settings.PlanetTag}, jobsPerBoard={Settings.JobsPerBoard}, " +
-                    $"maxActive={Settings.MaxActiveJobs}, refresh={Settings.BoardRefresh}");
+                    $"maxActive={Settings.MaxActiveJobs}");
 
             JsonSaveBlock<CampaignState> saveBlock = new JsonSaveBlock<CampaignState>
             {
