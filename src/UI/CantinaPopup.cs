@@ -29,6 +29,13 @@ namespace BTCantinaMissions.UI
             var state = Core.State;
             var sim = UnityGameInstance.BattleTechGame.Simulation;
 
+            if (Core.State.Board == null)
+            {
+                // could happen after loading a save without initialized board
+                Core.State.Board = new SystemBoard();
+                BoardGenerator.RefreshBoard(sim.CurSystem);
+            }
+
             // ── Option stubs ──────────────────────────────
             var optionsCount = state.Board.Slots.Count + state.ActiveTasks.Count + 1;
             var options = new SimGameEventOption[optionsCount];
