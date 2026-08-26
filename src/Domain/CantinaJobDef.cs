@@ -43,7 +43,7 @@ namespace BTCantinaMissions.Domain
 
         public int MinTargetCount;
         public int MaxTargetCount;
-        public ItemModeType ItemMode = ItemModeType.Deliver;            // Acquire | Deliver (CollectItems only)
+        public ItemModeType ItemMode = ItemModeType.Acquire;            // Acquire | Deliver (CollectItems only; Acquire default — Deliver would warn on other types)
 
         public RewardDef Reward;
 
