@@ -82,6 +82,7 @@ namespace BTCantinaMissions.Domain
         {
             public int CBills;                     // fixed payout
             public string ItemCollection;          // optional: itemCollection CSV id
+            public int ItemCount;                  // weighted-random rolls from the collection (0/unset = 1)
         }
     }
 }

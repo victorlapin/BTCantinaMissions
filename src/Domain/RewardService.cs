@@ -74,11 +74,12 @@ namespace BTCantinaMissions.Domain
                 return;
             }
 
-            // The vanilla RewardsPopup roll, granted directly: QueueRewardsPopup is a
-            // unique-typed queue entry and would silently drop when several jobs with
-            // collections are delivered in one visit. The callback always fires —
-            // synchronously for flat collections, async for nested Reference ones.
-            sim.ItemCollectionResultGen.GenerateItemCollection(collection, 0, result =>
+            // ItemCount = number of weighted-random rolls (0/unset = 1). Granted directly:
+            // QueueRewardsPopup is a unique-typed queue entry and would silently drop
+            // when several jobs with collections are delivered in one visit. Note that
+            // count 0 (the vanilla RewardsPopup convention) means "grant the whole list".
+            var rolls = reward.ItemCount > 0 ? reward.ItemCount : 1;
+            sim.ItemCollectionResultGen.GenerateItemCollection(collection, rolls, result =>
             {
                 var items = new StringBuilder();
                 var count = 0;
