@@ -101,7 +101,7 @@ namespace BTCantinaMissions.Domain
             body.AppendLine($"  {job.ResolvedName}");
             body.AppendLine();
             body.AppendLine("You receive:");
-            body.AppendLine($"  {UIColors.Wrap($"{cbills:N0} C-Bills", UIColor.Gold)}");
+            body.AppendLine($"  {UIColors.Wrap(SimGameState.GetCBillString(cbills), UIColor.Gold)}");
             if (!string.IsNullOrEmpty(itemsBlock))
                 body.Append(itemsBlock);
 

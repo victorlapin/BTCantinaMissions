@@ -43,7 +43,7 @@ namespace BTCantinaMissions.UI
         public static void OnReward(JobInstance job, int cbills, int items)
         {
             var summary = new StringBuilder();
-            summary.Append($"Reward: {cbills:N0} C-Bills");
+            summary.Append($"Reward: {SimGameState.GetCBillString(cbills)}");
             if (items > 0) summary.Append($" + {items} item(s)");
 
             Core.Log($"[Reward] {job.ResolvedName}: {summary}");

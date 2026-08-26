@@ -168,7 +168,7 @@ namespace BTCantinaMissions.UI
             var parts = new StringBuilder();
             if (reward.CBills != 0)
             {
-                parts.Append(UIColors.Wrap($"{reward.CBills:N0} C-Bills", UIColor.Gold));
+                parts.Append(UIColors.Wrap(SimGameState.GetCBillString(reward.CBills), UIColor.Gold));
             }
             if (!string.IsNullOrEmpty(reward.ItemCollection))
             {
