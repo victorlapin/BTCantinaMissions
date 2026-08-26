@@ -56,21 +56,39 @@ namespace BTCantinaMissions.Domain
             return string.Equals(resolved, family, System.StringComparison.OrdinalIgnoreCase);
         }
 
-        /// <summary>AssemblyVariant lookup via CustomComponents (requires CC + CS loaded).</summary>
+        /// <summary>AssemblyVariant lookup via CustomComponents (requires CC + CS loaded).
+        /// Fail-soft: a foreign modpack may ship a different CustomComponents version
+        /// where the API drifted — fall back to the chassis name path.</summary>
         private static string GetAssemblyVariantFamily(ChassisDef chassisDef)
         {
-            if (chassisDef.Is<AssemblyVariant>(out var assemblyVariant))
+            try
             {
-                return assemblyVariant.PrefabID;
+                if (chassisDef.Is<AssemblyVariant>(out var assemblyVariant))
+                {
+                    return assemblyVariant.PrefabID;
+                }
+            }
+            catch (System.Exception e)
+            {
+                Core.LogWarning($"[ChassisFamilyResolver] CustomComponents API drift: {e.GetType().Name}: {e.Message}");
             }
 
             return null;
         }
 
-        /// <summary>AssemblyVariant lookup via BTSimpleMechAssembly.</summary>
+        /// <summary>AssemblyVariant lookup via BTSimpleMechAssembly (requires SMA loaded).
+        /// Fail-soft against SMA version drift in foreign modpacks.</summary>
         private static string GetSMAFamily(ChassisDef chassisDef)
         {
-            return CCIntegration.GetVariant(chassisDef, false);
+            try
+            {
+                return CCIntegration.GetVariant(chassisDef, false);
+            }
+            catch (System.Exception e)
+            {
+                Core.LogWarning($"[ChassisFamilyResolver] BTSimpleMechAssembly API drift: {e.GetType().Name}: {e.Message}");
+                return null;
+            }
         }
     }
 }
