@@ -11,6 +11,19 @@ namespace BTCantinaMissions.UI
         private static readonly SimGameEventTracker eventTracker = new SimGameEventTracker();
         private static bool isTrackerReady = false;
 
+        /// <summary>Event popup without the SIM_GAME_EVENT_RESOLVED autosave that
+        /// QueueEventPopup attaches to every event (the board is not a real event).</summary>
+        private class BoardPopupEntry : SimGameInterruptManager.EventPopupEntry
+        {
+            private static readonly SimGameInterruptManager.Entry[] NoSideEffects =
+                new SimGameInterruptManager.Entry[0];
+
+            public BoardPopupEntry(SimGameEventDef evt, EventScope scope, SimGameEventTracker tracker)
+                : base(evt, scope, tracker) { }
+
+            public override SimGameInterruptManager.Entry[] SideEffectEntries => NoSideEffects;
+        }
+
         public static void Show()
         {
             var state = Core.State;
@@ -53,7 +66,7 @@ namespace BTCantinaMissions.UI
                 isTrackerReady = true;
             }
 
-            sim.InterruptQueue.QueueEventPopup(evt, EventScope.Company, eventTracker);
+            sim.InterruptQueue.AddInterrupt(new BoardPopupEntry(evt, EventScope.Company, eventTracker), true);
         }
 
         private static string BuildBody(CampaignState state)
