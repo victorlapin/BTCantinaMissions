@@ -15,17 +15,20 @@ namespace BTCantinaMissions.Domain
     /// <summary>Runtime instance of a cantina task.</summary>
     public class TaskInstance
     {
-        public string InstanceId { get; internal set; }
-        public string DefId { get; internal set; }
-        public TaskState State { get; internal set; }
-        public int TargetCount { get; internal set; }
-        public int Progress { get; internal set; }
+        // [JsonProperty] is required on internal setters: JwTweaks LoadData uses
+        // JsonConvert.PopulateObject, which skips non-public setters without it
+        // (state silently resets to defaults on game load).
+        [JsonProperty] public string InstanceId { get; internal set; }
+        [JsonProperty] public string DefId { get; internal set; }
+        [JsonProperty] public TaskState State { get; internal set; }
+        [JsonProperty] public int TargetCount { get; internal set; }
+        [JsonProperty] public int Progress { get; internal set; }
         /// <summary>Target resolved from a pool (e.g. "locust", "MediumLaser", "unit_vtol").</summary>
-        public string ResolvedTarget { get; internal set; }
+        [JsonProperty] public string ResolvedTarget { get; internal set; }
         /// <summary>Def Name with {target} substituted from ResolvedTarget.</summary>
-        public string ResolvedName { get; internal set; }
+        [JsonProperty] public string ResolvedName { get; internal set; }
         /// <summary>System where this task was originally offered (flavor only).</summary>
-        public string OriginSystemId { get; internal set; }
+        [JsonProperty] public string OriginSystemId { get; internal set; }
 
         public TaskInstance() { }
 
@@ -74,7 +77,7 @@ namespace BTCantinaMissions.Domain
     public class SystemBoard
     {
         /// <summary>Currently offered (Offered state) tasks on this board.</summary>
-        public List<TaskInstance> Slots { get; internal set; } = new List<TaskInstance>();
+        [JsonProperty] public List<TaskInstance> Slots { get; internal set; } = new List<TaskInstance>();
 
         public SystemBoard() { }
 
@@ -94,13 +97,13 @@ namespace BTCantinaMissions.Domain
     /// <summary>Player's active task list + per-system boards.</summary>
     public class CampaignState
     {
-        public int SchemaVersion { get; internal set; } = 1;
+        [JsonProperty] public int SchemaVersion { get; internal set; } = 1;
 
         /// <summary>Current global board.</summary>
-        public SystemBoard Board { get; internal set; }
+        [JsonProperty] public SystemBoard Board { get; internal set; }
 
         /// <summary>Player's taken tasks (Taken / ReadyToDeliver). Removed on delivery.</summary>
-        public List<TaskInstance> ActiveTasks { get; internal set; } = new List<TaskInstance>();
+        [JsonProperty] public List<TaskInstance> ActiveTasks { get; internal set; } = new List<TaskInstance>();
 
         [JsonIgnore]
         public IEnumerable<TaskInstance> InProgress =>
