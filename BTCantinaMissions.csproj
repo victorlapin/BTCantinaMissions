@@ -18,6 +18,12 @@
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
   </ItemGroup>
 
+  <!-- Direct access to private members of the game assembly (no AccessTools reflection) -->
+  <ItemGroup>
+    <PackageReference Include="Krafs.Publicizer" Version="2.3.2" />
+    <Publicize Include="Assembly-CSharp" />
+  </ItemGroup>
+
   <ItemGroup>
     <Reference Include="Assembly-CSharp">
       <HintPath>$(ManagedDir)\Assembly-CSharp.dll</HintPath>
