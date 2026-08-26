@@ -6,6 +6,8 @@ namespace BTCantinaMissions
 {
     public static class Integrations
     {
+        public static bool IsCS { get; internal set; } = false;
+
         public static void FinishedLoading(List<string> loadOrder)
         {
             foreach (string name in loadOrder)
@@ -27,7 +29,7 @@ namespace BTCantinaMissions
                 if (assembly.FullName.StartsWith("CustomSalvage"))
                 {
                     Core.Log("CustomSalvage found");
-                    Core.IsCS = true;
+                    IsCS = true;
                     return;
                 }
             }

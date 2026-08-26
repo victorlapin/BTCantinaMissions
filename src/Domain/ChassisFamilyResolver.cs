@@ -33,7 +33,7 @@ namespace BTCantinaMissions.Domain
             }
 
             // Main path: AssemblyVariant via CustomComponents + CustomSalvage
-            if (family == null && Core.IsCS)
+            if (family == null && Integrations.IsCS)
                 family = GetAssemblyVariantFamily(mechDef.Chassis);
 
             // Fallback: use chassis name
