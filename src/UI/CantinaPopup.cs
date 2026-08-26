@@ -80,10 +80,35 @@ namespace BTCantinaMissions.UI
         {
             var sb = new System.Text.StringBuilder();
 
+            if (state.ActiveTasks.Count >= Core.Settings.MaxActiveTasks)
+            {
+                sb.AppendLine("<b>Available jobs (limit reached — deliver or abandon a job first):</b>");
+            }
+            else
+            {
+                sb.AppendLine("<b>Available jobs:</b>");
+            }
+
+            sb.AppendLine();
+
+            if (state.Board?.Slots.Count > 0)
+            {
+                foreach (var task in state.Board.Slots)
+                    sb.AppendLine($"  {task.DisplayString()}");
+            }
+            else
+            {
+                sb.AppendLine("No jobs available.");
+            }
+
+            sb.AppendLine();
+            sb.AppendLine();
+
+            sb.AppendLine($"<b>Your active jobs: ({state.ActiveTasks.Count}/{Core.Settings.MaxActiveTasks})</b>");
+            sb.AppendLine();
+
             if (state.ActiveTasks.Count > 0)
             {
-                sb.AppendLine("Your active jobs:");
-                sb.AppendLine();
                 foreach (var task in state.ActiveTasks)
                 {
                     if (task.State == TaskState.ReadyToDeliver)
@@ -91,30 +116,10 @@ namespace BTCantinaMissions.UI
                     else
                         sb.AppendLine($"  {task.DisplayString()} — in progress");
                 }
-                sb.AppendLine();
-                sb.AppendLine($"({state.ActiveTasks.Count}/{Core.Settings.MaxActiveTasks} slots used)");
-            }
-
-            if (state.Board?.Slots.Count > 0 && sb.Length > 0)
-                sb.AppendLine();
-
-            if (state.Board?.Slots.Count > 0)
-            {
-                if (state.ActiveTasks.Count >= Core.Settings.MaxActiveTasks)
-                {
-                    sb.AppendLine("Available jobs (limit reached — deliver a job first):");
-                }
-                else
-                {
-                    sb.AppendLine("Available jobs:");
-                    sb.AppendLine();
-                }
-                foreach (var task in state.Board.Slots)
-                    sb.AppendLine($"  {task.DisplayString()}");
             }
             else
             {
-                sb.AppendLine("No jobs available. The board refreshes monthly.");
+                sb.AppendLine("No active jobs.");
             }
 
             return sb.ToString();
@@ -132,7 +137,7 @@ namespace BTCantinaMissions.UI
 
             foreach (var task in state.Board.Slots)
             {
-                SetOption(optionsList[index], $"Take: {task.DisplayString()}", !atLimit, arg =>
+                SetOption(optionsList[index], $"Take: {task.ResolvedName}", !atLimit, arg =>
                 {
                     var result = Core.State.TryTake(task.InstanceId);
                     Core.Log($"[H8] Take: {result}");
