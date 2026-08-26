@@ -7,6 +7,7 @@ namespace BTCantinaMissions
     public static class Integrations
     {
         public static bool IsCS { get; internal set; } = false;
+        public static bool IsSMA { get; internal set; } = false;
 
         public static void FinishedLoading(List<string> loadOrder)
         {
@@ -15,6 +16,11 @@ namespace BTCantinaMissions
                 if (name.Equals("CustomSalvage", StringComparison.InvariantCultureIgnoreCase))
                 {
                     InitCS();
+                }
+
+                if (name.Equals("BTSimpleMechAssembly", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    InitSMA();
                 }
             }
         }
@@ -35,6 +41,24 @@ namespace BTCantinaMissions
             }
 
             Core.Log("CustomSalvage NOT found");
+        }
+
+        private static void InitSMA()
+        {
+            Core.Log(" -- Checking for BTSimpleMechAssembly Integration -- ");
+
+            Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
+            foreach (Assembly assembly in assemblies)
+            {
+                if (assembly.FullName.StartsWith("BTSimpleMechAssembly"))
+                {
+                    Core.Log("BTSimpleMechAssembly found");
+                    IsSMA = true;
+                    return;
+                }
+            }
+
+            Core.Log("BTSimpleMechAssembly NOT found");
         }
     }
 }

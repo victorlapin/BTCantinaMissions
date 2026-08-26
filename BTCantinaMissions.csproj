@@ -22,6 +22,7 @@
   <ItemGroup>
     <PackageReference Include="Krafs.Publicizer" Version="2.3.2" />
     <Publicize Include="Assembly-CSharp" />
+    <Publicize Include="BTSimpleMechAssembly" />
   </ItemGroup>
 
   <ItemGroup>
@@ -64,6 +65,10 @@
     </Reference>
     <Reference Include="CustomSalvage">
       <HintPath>$(ModsDir)\CustomSalvage\CustomSalvage.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="BTSimpleMechAssembly">
+      <HintPath>BTSimpleMechAssembly\BTSimpleMechAssembly.dll</HintPath>
       <Private>false</Private>
     </Reference>
   </ItemGroup>

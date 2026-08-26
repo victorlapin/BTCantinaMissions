@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using BattleTech;
+using BTSimpleMechAssembly;
 using CustomComponents;
 using CustomSalvage;
 
@@ -36,6 +37,9 @@ namespace BTCantinaMissions.Domain
             if (family == null && Integrations.IsCS)
                 family = GetAssemblyVariantFamily(mechDef.Chassis);
 
+            if (family == null && Integrations.IsSMA)
+                family = GetSMAFamily(mechDef.Chassis);
+
             // Fallback: use chassis name
             if (family == null)
                 family = mechDef.Chassis.Description.Name;
@@ -61,6 +65,12 @@ namespace BTCantinaMissions.Domain
             }
 
             return null;
+        }
+
+        /// <summary>AssemblyVariant lookup via BTSimpleMechAssembly.</summary>
+        private static string GetSMAFamily(ChassisDef chassisDef)
+        {
+            return CCIntegration.GetVariant(chassisDef, false);
         }
     }
 }
