@@ -11,6 +11,12 @@ namespace BTCantinaMissions.Domain
         CollectMechParts
     }
 
+    public enum ItemModeType
+    {
+        Acquire,
+        Deliver
+    }
+
     /// <summary>Static definition of a cantina task, loaded from a CantinaTaskDef JSON.</summary>
     public class CantinaTaskDef
     {
@@ -26,7 +32,7 @@ namespace BTCantinaMissions.Domain
 
         public int MinTargetCount;
         public int MaxTargetCount;
-        public string ItemMode;            // Acquire | Deliver (CollectItems only)
+        public ItemModeType ItemMode = ItemModeType.Deliver;            // Acquire | Deliver (CollectItems only)
 
         public RewardDef Reward;
 
