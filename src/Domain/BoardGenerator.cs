@@ -230,6 +230,7 @@ namespace BTCantinaMissions.Domain
         private static readonly Dictionary<string, string> tagOverrides = new Dictionary<string, string>
         {
             {"unit_vtol", "VTOL"},
+            {"unit_legendary", "Legendary unit"},
         };
 
         /// <summary>Splits a composite target ("unit_mech&unit_light") into individual tags.</summary>
