@@ -67,6 +67,10 @@ namespace BTCantinaMissions.Patches
         {
             if (mech?.Chassis == null) return;
 
+            // entry diagnostics: shows fake LT vehicles (fake_vehicle in MechTags) in the log
+            Core.Debug($"[H4] AddMech: {mech.Description.Id} chassis={mech.Chassis.Description.Id} " +
+                       $"fakeVehicle={mech.MechTags.Contains("fake_vehicle") || mech.Chassis.ChassisTags.Contains("fake_vehicle_chassis")}");
+
             var jobs = Core.State.ActiveJobs;
             if (jobs.Count == 0) return;
 
@@ -90,10 +94,11 @@ namespace BTCantinaMissions.Patches
     {
         public static void Postfix(SimGameState __instance, string id)
         {
+            Core.Debug($"[H4a] AddMechPart: {id}");
+
             var jobs = Core.State.ActiveJobs;
             if (jobs.Count == 0) return;
 
-            // id is the chassisdef id, e.g. "chassisdef_locust_LCT-1V"
             var mechId = id.Replace("chassisdef_", "mechdef_");
             var dm = UnityGameInstance.BattleTechGame.Simulation.DataManager;
 
