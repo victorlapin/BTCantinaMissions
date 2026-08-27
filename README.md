@@ -33,12 +33,15 @@ drift in modpacks degrades gracefully with a log warning instead of crashing.
 - Up to `MaxActiveJobs` jobs at once; duplicates of the same job/target are blocked at take time.
 - Take / Deliver / Abandon straight from the board popup — it updates in place.
 - Job types:
-  - **DestroyUnits** — kill N units matching a tag set (`unit_vtol`, `unit_mech&unit_light`...).
-    Counts any hostile destroyed in any contract, regardless of mission outcome.
+  - **DestroyUnits** — kill N units matching a tag set (`unit_vtol`, `unit_mech&unit_light`,
+    `unit_light&unit_turret`...) — mechs, vehicles and turrets alike. Counts any hostile
+    destroyed in any **campaign** contract, regardless of mission outcome; skirmish never counts.
   - **CollectItems** — obtain N of a specific component.
     `Acquire` mode: keep them, the reward pays for reaching the goal.
     `Deliver` mode: the items are removed from your inventory on delivery —
-    and sold/installed items set your progress back.
+    and sold/installed items set your progress back. Deliver progress starts from
+    what you already have in stock when you take the job (shown right on the board)
+    and is re-synced with the actual inventory on every save load.
   - **CollectMech** — bring in a mech of the given chassis family (e.g. any Locust).
   - **CollectMechParts** — collect N salvage parts of the family.
 - Rewards: fixed C-Bills plus an optional item collection roll, shown in a reward
