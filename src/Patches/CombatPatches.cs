@@ -14,6 +14,10 @@ namespace BTCantinaMissions.Patches
     {
         public static void Postfix(Contract __instance, MissionResult result, bool isGoodFaithEffort)
         {
+            // Skirmish has no SimGameState — campaign jobs must not count its kills
+            // (static Core.State survives exit to the main menu)
+            if (UnityGameInstance.BattleTechGame?.Simulation == null) return;
+
             var combat = UnityGameInstance.BattleTechGame?.Combat;
             if (combat == null) return;
 
