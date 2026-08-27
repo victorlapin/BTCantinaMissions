@@ -17,7 +17,7 @@ deliver it for C-Bills (and bonus items). The board refreshes monthly.
 |---|---|
 | [ModTek](https://github.com/BattletechModders/ModTek) | required |
 | [JwTweaks](https://github.com/wmtorode/JwTweaks) (CustomSaveBlocks enabled) | **hard dependency** — mod state persists through its custom save blocks |
-| [IRTweaks](https://github.com/BattletechModders/IRTweaks) | (StreamlinedMainMenu enabled) | **hard dependency** — provides the left navigation menu, the only remaining way into the store once the vanilla store button is repurposed |
+| [IRTweaks](https://github.com/BattletechModders/IRTweaks) (StreamlinedMainMenu enabled) | **hard dependency** — provides the left navigation menu, the only remaining way into the store once the vanilla store button is repurposed |
 | [CustomSalvage](https://github.com/BattletechModders/CustomSalvage) | optional — improves chassis-family resolution for mech/part jobs |
 | [BTSimpleMechAssembly](https://github.com/mcb5637/BTSimpleMechAssembly) | optional — alternative chassis-family source for mech/part jobs |
 
@@ -134,6 +134,26 @@ To give a planet a cantina, add the tag from `PlanetTag` (default `planet_other_
   [Krafs.Publicizer](https://github.com/pardeike/Publicizer) — `Assembly-CSharp`
   and `BTSimpleMechAssembly` are publicized (compile-time copies only; at runtime
   the original assemblies are used as-is).
+
+## Known limitations
+
+- **Deliver mode** is only supported for `CollectItems`. `CollectMech` /
+  `CollectMechParts` always behave as `Acquire` (nothing is removed): picking the
+  exact mech out of a family, or splitting parts across variants, needs a
+  selection UI that does not exist yet.
+- **Destroy targets** are limited to traits the player can identify in combat
+  (unit type, weight class, recognizable archetypes such as carriers) — by
+  design; see the note for modders above.
+- **No chassis-specific destroy jobs** ("Destroy Wasp") yet — requires the
+  LewdableTanks `VAssemblyVariant` integration.
+- **Vehicles are not first-class targets** of collect jobs yet; the family
+  resolver is mech-only for now.
+- **IRTweaks** is a hard dependency because the cantina button replaces the
+  vanilla store button — its `StreamlinedMainMenu` feature must stay enabled,
+  otherwise the store becomes unreachable (no runtime check for that flag).
+- The monthly board refresh is anchored to the financial report and is skipped
+  while in transit (the board regenerates on the next cantina arrival).
+- English only, no localization.
 
 ## License
 
