@@ -54,6 +54,10 @@
       <HintPath>$(ManagedDir)\Newtonsoft.Json.dll</HintPath>
       <Private>false</Private>
     </Reference>
+    <Reference Include="InControl">
+      <HintPath>$(ManagedDir)\InControl.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
 
     <Reference Include="JwTweaks">
       <HintPath>$(ModsDir)\JwTweaks\JwTweaks.dll</HintPath>

@@ -189,24 +189,29 @@ namespace BTCantinaMissions.UI
                 : "";
         }
 
-        /// <summary>Reward suffix for a board listing line: "— 150,000 C-Bills + items".</summary>
-        private static string RewardSuffix(JobInstance job)
+        /// <summary>Payment string for job lines: "¢320,000 + items" (gold c-bills,
+        /// light-gray item note). Single source of reward formatting.</summary>
+        private static string PaymentString(JobInstance job)
         {
             var reward = JobCatalog.GetDef(job.DefId)?.Reward;
             if (reward == null) return "";
 
-            var parts = new StringBuilder();
+            var sb = new StringBuilder();
             if (reward.CBills != 0)
-            {
-                parts.Append(UIColors.Wrap(SimGameState.GetCBillString(reward.CBills), UIColor.Gold));
-            }
+                sb.Append(UIColors.Wrap(SimGameState.GetCBillString(reward.CBills), UIColor.Gold));
             if (!string.IsNullOrEmpty(reward.ItemCollection))
             {
-                if (parts.Length > 0) parts.Append(UIColors.Wrap(" + ", UIColor.LightGray));
-                parts.Append(UIColors.Wrap("items", UIColor.LightGray));
+                if (sb.Length > 0) sb.Append(UIColors.Wrap(" + ", UIColor.LightGray));
+                sb.Append(UIColors.Wrap("items", UIColor.LightGray));
             }
+            return sb.ToString();
+        }
 
-            return parts.Length > 0 ? $" — {parts}" : "";
+        /// <summary>Reward suffix for a board listing line: "— ¢320,000 + items".</summary>
+        private static string RewardSuffix(JobInstance job)
+        {
+            var payment = PaymentString(job);
+            return payment.Length > 0 ? $" — {payment}" : "";
         }
 
         private static string BuildBody(CampaignState state)
@@ -293,20 +298,12 @@ namespace BTCantinaMissions.UI
                 if (job.State == JobState.ReadyToDeliver)
                 {
                     entries.Add(new OptionEntry($"{UIColors.Wrap("[Deliver]", UIColor.Green)} {job.DisplayString()}", true, arg =>
-                    {
-                        var ok = RewardService.Deliver(job.InstanceId);
-                        Core.Log($"[Board] Deliver: {(ok ? "success" : "failed")}");
-                        if (ok) MakeOptions(sgEventPanel);
-                    }));
+                        ConfirmDeliver(sgEventPanel, job)));
                 }
                 else
                 {
                     entries.Add(new OptionEntry($"{UIColors.Wrap("[Abandon]", UIColor.Red)} {job.DisplayString()}", true, arg =>
-                    {
-                        var ok = Core.State.Abandon(job.InstanceId);
-                        Core.Log($"[Board] Abandon: {(ok ? "success" : "failed")}");
-                        if (ok) MakeOptions(sgEventPanel);
-                    }));
+                        ConfirmAbandon(sgEventPanel, job)));
                 }
             }
 
@@ -340,6 +337,76 @@ namespace BTCantinaMissions.UI
             // Hide the leftover stub buttons — their empty frames still stretch the popup
             for (int i = index; i < optionsList.Count; i++)
                 optionsList[i].gameObject.SetActive(false);
+        }
+
+        /// <summary>Delivery confirmation: Deliver-mode item jobs consume the collected
+        /// items, so the player gets a blocking yes/no (with the deduction spelled out)
+        /// before the transfer is final. Non-consuming jobs deliver directly — there is
+        /// nothing to change one's mind about.</summary>
+        private static void ConfirmDeliver(SGEventPanel sgEventPanel, JobInstance job)
+        {
+            var def = JobCatalog.GetDef(job.DefId);
+            var consumes = def?.ObjectiveType == ObjectiveType.CollectItems && def.ItemMode == ItemModeType.Deliver;
+            if (!consumes)
+            {
+                DeliverJob(sgEventPanel, job);
+                return;
+            }
+
+            var itemName = job.ResolvedTarget;
+            var entry = def.FindItemTarget(job.ResolvedTarget);
+            if (entry != null)
+            {
+                var dm = UnityGameInstance.BattleTechGame.Simulation.DataManager;
+                itemName = ItemCatalog.LookupName(dm, job.ResolvedTarget, entry.ItemType) ?? itemName;
+            }
+
+            var sb = new StringBuilder();
+            sb.AppendLine($"Deliver \"{job.ResolvedName}\"?");
+            sb.AppendLine();
+            sb.AppendLine($"{job.TargetCount} × {itemName} will be removed from your inventory.");
+            sb.AppendLine();
+            sb.Append("Payment: ");
+            sb.Append(PaymentString(job));
+
+            // button order matters: Enter clicks the LAST button (HandleEnterKeypress),
+            // so the destructive action goes last — Esc cancels, Enter confirms
+            GenericPopupBuilder.Create("Deliver job", sb.ToString())
+                .AddButton("Cancel", null)
+                .AddButton("Deliver", () => DeliverJob(sgEventPanel, job))
+                .CancelOnEscape()
+                .AddFader()
+                .Render();
+        }
+
+        /// <summary>Abandon confirmation: all progress is lost.</summary>
+        private static void ConfirmAbandon(SGEventPanel sgEventPanel, JobInstance job)
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine($"Abandon \"{job.ResolvedName}\"?");
+            sb.AppendLine();
+            sb.AppendLine("All progress will be lost.");
+
+            GenericPopupBuilder.Create("Abandon job", sb.ToString())
+                .AddButton("Cancel", null)
+                .AddButton("Abandon", () => AbandonJob(sgEventPanel, job))
+                .CancelOnEscape()
+                .AddFader()
+                .Render();
+        }
+
+        private static void DeliverJob(SGEventPanel sgEventPanel, JobInstance job)
+        {
+            var ok = RewardService.Deliver(job.InstanceId);
+            Core.Log($"[Board] Deliver: {(ok ? "success" : "failed")}");
+            if (ok) MakeOptions(sgEventPanel);
+        }
+
+        private static void AbandonJob(SGEventPanel sgEventPanel, JobInstance job)
+        {
+            var ok = Core.State.Abandon(job.InstanceId);
+            Core.Log($"[Board] Abandon: {(ok ? "success" : "failed")}");
+            if (ok) MakeOptions(sgEventPanel);
         }
 
         /// <summary>Wires the single Continue button of the reward popup.
