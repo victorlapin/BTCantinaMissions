@@ -36,15 +36,15 @@ namespace BTCantinaMissions.Domain
                 return null;
 
             if (type == typeof(WeaponDef))
-                return dm.WeaponDefs.TryGet(id, out WeaponDef def) ? def?.Description?.Name : null;
+                return dm.WeaponDefs.TryGet(id, out WeaponDef def) ? def?.Description?.UIName : null;
             if (type == typeof(AmmunitionBoxDef))
-                return dm.AmmoBoxDefs.TryGet(id, out AmmunitionBoxDef def) ? def?.Description?.Name : null;
+                return dm.AmmoBoxDefs.TryGet(id, out AmmunitionBoxDef def) ? def?.Description?.UIName : null;
             if (type == typeof(HeatSinkDef))
-                return dm.HeatSinkDefs.TryGet(id, out HeatSinkDef def) ? def?.Description?.Name : null;
+                return dm.HeatSinkDefs.TryGet(id, out HeatSinkDef def) ? def?.Description?.UIName : null;
             if (type == typeof(JumpJetDef))
-                return dm.JumpJetDefs.TryGet(id, out JumpJetDef def) ? def?.Description?.Name : null;
+                return dm.JumpJetDefs.TryGet(id, out JumpJetDef def) ? def?.Description?.UIName : null;
             if (type == typeof(UpgradeDef))
-                return dm.UpgradeDefs.TryGet(id, out UpgradeDef def) ? def?.Description?.Name : null;
+                return dm.UpgradeDefs.TryGet(id, out UpgradeDef def) ? def?.Description?.UIName : null;
 
             return null;
         }
