@@ -1,0 +1,45 @@
+{
+  "Description": {
+    "Id": "cantinaJob_collectJunk",
+    "Name": "Collect {target}",
+    "Icon": ""
+  },
+  "ObjectiveType": "CollectItems",
+  "MinTargetCount": 8,
+  "MaxTargetCount": 12,
+  "ItemMode": "Deliver",
+  "Reward": {
+    "CBills": 150000,
+    "ItemCollection": "CantinaReward_Tier1",
+    "ItemCount": 1
+  },
+  "MinSystemDifficulty": 1,
+  "MaxSystemDifficulty": 10,
+  "Weight": 3,
+  "ItemPool": [
+    {
+      "Id": "Lootable_Sensors_Standard",
+      "ItemType": "Upgrade"
+    },
+    {
+      "Id": "Lootable_Cockpit_Standard",
+      "ItemType": "Upgrade"
+    },
+    {
+      "Id": "Lootable_FCS_Standard",
+      "ItemType": "Upgrade"
+    },
+    {
+      "Id": "Lootable_HeatSinkKit_Single",
+      "ItemType": "HeatSink"
+    },
+    {
+      "Id": "Lootable_Armor_Standard",
+      "ItemType": "Upgrade"
+    },
+    {
+      "Id": "Lootable_Structure_Standard",
+      "ItemType": "Upgrade"
+    }
+  ]
+}
