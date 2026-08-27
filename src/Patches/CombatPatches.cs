@@ -28,6 +28,7 @@ namespace BTCantinaMissions.Patches
 
                 var mech = actor as Mech;
                 var vehicle = actor as Vehicle;
+                var turret = actor as Turret;
 
                 if (mech?.MechDef?.Chassis != null)
                 {
@@ -42,6 +43,13 @@ namespace BTCantinaMissions.Patches
                     Core.Debug($"[H5-H6] Found destroyed vehicle: {vehicle.VehicleDef.Chassis.Description.Name} ({vehicle.VehicleDef.Description.Id})");
                     var tags = new TagSet();
                     foreach (var t in vehicle.VehicleDef.VehicleTags) tags.Add(t);
+                    deadTags.Add(tags);
+                }
+                else if (turret?.TurretDef != null)
+                {
+                    Core.Debug($"[H5-H6] Found destroyed turret: {turret.TurretDef.Description.Name} ({turret.TurretDef.Description.Id})");
+                    var tags = new TagSet();
+                    foreach (var t in turret.TurretDef.TurretTags) tags.Add(t);
                     deadTags.Add(tags);
                 }
             }

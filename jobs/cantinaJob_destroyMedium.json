@@ -18,6 +18,7 @@
   "UnitTagPool": [
     "unit_medium&unit_mech",
     "unit_medium&unit_vehicle",
-    "unit_carrier&unit_vehicle"
+    "unit_carrier&unit_vehicle",
+    "unit_medium&unit_turret"
   ]
 }

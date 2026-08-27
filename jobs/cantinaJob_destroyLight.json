@@ -18,6 +18,7 @@
   "UnitTagPool": [
     "unit_vtol",
     "unit_light&unit_vehicle",
-    "unit_light&unit_mech"
+    "unit_light&unit_mech",
+    "unit_light&unit_turret"
   ]
 }
