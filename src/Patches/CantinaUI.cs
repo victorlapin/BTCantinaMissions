@@ -82,6 +82,28 @@ namespace BTCantinaMissions.Patches
         }
     }
 
+    /// <summary>Esc on our popups: vanilla HandleEscapeKeypress dismisses only the RESULT
+    /// screen — in the options state it swallows the key. Prefix dismisses cantina events
+    /// directly (same path as the Leave/Continue buttons) and reports the key handled.</summary>
+    [HarmonyPatch(typeof(SGEventPanel), nameof(SGEventPanel.HandleEscapeKeypress))]
+    public static class SGEventPanel_HandleEscapeKeypress
+    {
+        public static bool Prefix(SGEventPanel __instance, ref bool __result)
+        {
+            // the current event def sits in the interrupt entry's parameters (see
+            // EventPopupEntry ctor); SetEvent itself does not store the def anywhere
+            var entry = __instance.thisEntry;
+            var def = (entry?.parameters?.Count > 0) ? entry.parameters[0] as SimGameEventDef : null;
+            var id = def?.Description?.Id;
+            if (id != "cantina_board" && id != "cantina_reward") return true; // vanilla behavior
+
+            Core.Debug($"[UI] Esc dismissed {id}");
+            __instance.Dismiss();
+            __result = true;
+            return false;
+        }
+    }
+
     /// <summary>Extends SGEventPanel's prebuilt option-button pool (cloning the first
     /// button) when an event has more options than the pool holds. Keeps the panel in
     /// its vanilla reuse mode — buttons are Init'ed and deactivated by ClearOptions,
