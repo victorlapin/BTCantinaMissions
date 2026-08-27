@@ -97,16 +97,7 @@ namespace BTCantinaMissions.Domain
         /// the full breakdown — queued behind the board popup, shown after Leave.</summary>
         private static void Announce(JobInstance job, int cbills, string itemsBlock, int itemCount)
         {
-            var body = new StringBuilder();
-            body.AppendLine("Job completed:");
-            body.AppendLine($"  {job.ResolvedName}");
-            body.AppendLine();
-            body.AppendLine("You receive:");
-            body.AppendLine($"  {UIColors.Wrap(SimGameState.GetCBillString(cbills), UIColor.Gold)}");
-            if (!string.IsNullOrEmpty(itemsBlock))
-                body.Append(itemsBlock);
-
-            CantinaPopup.ShowReward("Cantina Reward", body.ToString());
+            CantinaPopup.ShowReward(job, cbills, itemsBlock);
             Notifications.OnReward(job, cbills, itemCount);
         }
 

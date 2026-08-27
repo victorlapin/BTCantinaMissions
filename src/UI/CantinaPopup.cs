@@ -111,17 +111,26 @@ namespace BTCantinaMissions.UI
 
         /// <summary>Post-delivery reward popup: shows the full breakdown (CBills +
         /// rolled items). Queued behind the board popup — displayed after Leave.</summary>
-        public static void ShowReward(string title, string body)
+        public static void ShowReward(JobInstance job, int cbills, string itemsBlock)
         {
             var sim = UnityGameInstance.BattleTechGame.Simulation;
 
-            var sbBody = new StringBuilder();
-            sbBody.AppendLine(UIColors.Wrap($"<i>{Flavor(rewardFlavor)}</i>", UIColor.LightGray));
-            sbBody.AppendLine();
-            sbBody.AppendLine();
-            sbBody.Append(body);
+            var body = new StringBuilder();
+            body.AppendLine(UIColors.Wrap($"<i>{Flavor(rewardFlavor)}</i>", UIColor.LightGray));
+            body.AppendLine();
+            body.AppendLine();
+            body.AppendLine("<b>Job completed:</b>");
+            body.AppendLine();
+            body.AppendLine($"  {job.ResolvedName}");
+            body.AppendLine();
+            body.AppendLine();
+            body.AppendLine("<b>You receive:</b>");
+            body.AppendLine();
+            body.AppendLine($"  {UIColors.Wrap(SimGameState.GetCBillString(cbills), UIColor.Gold)}");
+            if (!string.IsNullOrEmpty(itemsBlock))
+                body.Append(itemsBlock);
 
-            var desc = new BaseDescriptionDef("cantina_reward", title, sbBody.ToString(), "uixTxrSpot_HiringHall");
+            var desc = new BaseDescriptionDef("cantina_reward", "Cantina Reward", body.ToString(), "uixTxrSpot_HiringHall");
             var options = new SimGameEventOption[1];
             options[0] = new SimGameEventOption
             {
