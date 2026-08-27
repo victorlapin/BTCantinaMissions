@@ -3,6 +3,7 @@ using BattleTech;
 using BTCantinaMissions.Domain;
 using BTCantinaMissions.UI;
 using HarmonyLib;
+using HBS.Collections;
 
 namespace BTCantinaMissions.Patches
 {
@@ -19,27 +20,30 @@ namespace BTCantinaMissions.Patches
             var playerTeam = combat.LocalPlayerTeam;
             if (playerTeam == null) return;
 
-            var deadTags = new List<List<string>>();
+            var deadTags = new List<TagSet>();
             foreach (var actor in combat.AllActors)
             {
                 if (actor == null || !(actor.IsDead || actor.IsFlaggedForDeath)) continue;
                 if (!playerTeam.IsEnemy(actor.team)) continue;
 
-                var tags = new List<string>();
                 var mech = actor as Mech;
                 var vehicle = actor as Vehicle;
 
                 if (mech?.MechDef?.Chassis != null)
                 {
+                    Core.Debug($"[H5-H6] Found destroyed mech: {mech.MechDef.Chassis.Description.Name} ({mech.MechDef.Description.Id})");
+                    var tags = new TagSet();
                     foreach (var t in mech.MechDef.Chassis.ChassisTags) tags.Add(t);
                     foreach (var t in mech.MechDef.MechTags) tags.Add(t);
+                    deadTags.Add(tags);
                 }
                 else if (vehicle?.VehicleDef != null)
                 {
+                    Core.Debug($"[H5-H6] Found destroyed vehicle: {vehicle.VehicleDef.Chassis.Description.Name} ({vehicle.VehicleDef.Description.Id})");
+                    var tags = new TagSet();
                     foreach (var t in vehicle.VehicleDef.VehicleTags) tags.Add(t);
+                    deadTags.Add(tags);
                 }
-
-                deadTags.Add(tags);
             }
 
             if (deadTags.Count == 0) return;
@@ -51,10 +55,8 @@ namespace BTCantinaMissions.Patches
                 if (def?.ObjectiveType != ObjectiveType.DestroyUnits) continue;
 
                 var count = 0;
-                foreach (var tags in deadTags)
+                foreach (var tagSet in deadTags)
                 {
-                    var tagSet = new HBS.Collections.TagSet();
-                    foreach (var t in tags) tagSet.Add(t);
                     if (BoardGenerator.MatchesTarget(tagSet, job.ResolvedTarget))
                         count++;
                 }
