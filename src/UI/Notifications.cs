@@ -41,7 +41,7 @@ namespace BTCantinaMissions.UI
         /// left the inventory (sold / installed) — Deliver-mode tracking.</summary>
         public static void OnReverted(JobInstance job)
         {
-            Show(UIColors.Wrap($"{job.ResolvedName}: items left the inventory — job no longer ready", UIColor.Red));
+            Show(UIColors.Wrap($"{job.DisplayString()} — NOT READY", UIColor.Red));
         }
 
         public static void OnReward(JobInstance job, int cbills, int items)
