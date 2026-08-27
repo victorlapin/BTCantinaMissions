@@ -146,7 +146,7 @@ namespace BTCantinaMissions.Patches
             var id = evt?.Description?.Id;
             if (id == "cantina_board")
             {
-                Core.Debug("[UI] Event started");
+                Core.Debug("[UI] Board event started");
                 CantinaPopup.MakeOptions(__instance);
             }
             else if (id == "cantina_reward")
