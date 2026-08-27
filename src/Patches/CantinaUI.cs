@@ -134,4 +134,15 @@ namespace BTCantinaMissions.Patches
             }
         }
     }
+
+    /// <summary>Flushes toasts held while the sim room UI was torn down
+    /// (combat / loading) once the room is ready again.</summary>
+    [HarmonyPatch(typeof(SGRoomManager), nameof(SGRoomManager.OnSimGameReady))]
+    public static class SGRoomManager_OnSimGameReady
+    {
+        public static void Postfix()
+        {
+            Notifications.Flush();
+        }
+    }
 }

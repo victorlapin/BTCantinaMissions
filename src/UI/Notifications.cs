@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Text;
 using BattleTech;
 using BattleTech.UI;
@@ -6,11 +7,14 @@ using BTCantinaMissions.Domain;
 namespace BTCantinaMissions.UI
 {
     /// <summary>Job progress/readiness toasts via the ship room's native floaty toast
-    /// queue (SGTimePlayPause → SGTimeFloatyStack). The queue is drained in Update —
-    /// toasts fired during combat or while the room is hidden show up when the player
-    /// is back at the ship, so no own buffering is needed.</summary>
+    /// queue (SGTimePlayPause → SGTimeFloatyStack). During combat the sim room UI is
+    /// torn down, so toasts fired at contract completion are held in a pending queue
+    /// and flushed when the room becomes ready again (SGRoomManager.OnSimGameReady).</summary>
     public static class Notifications
     {
+        private const int MaxPending = 20;
+        private static readonly Queue<string> pending = new Queue<string>();
+
         /// <summary>Called after every AddProgress: shows a READY toast when the job
         /// just completed, otherwise a progress toast. Gated by NotifyOnReady /
         /// NotifyOnProgress settings.</summary>
@@ -52,14 +56,32 @@ namespace BTCantinaMissions.UI
 
         private static void Show(string message)
         {
-            var sim = UnityGameInstance.BattleTechGame?.Simulation;
-            var shipRoom = sim?.RoomManager?.ShipRoom;
-            if (shipRoom?.TimePlayPause == null)
+            var shipRoom = TryGetShipRoom();
+            if (shipRoom == null)
             {
-                Core.Debug($"[Notifications] ship room not ready, toast dropped: {message}");
+                // hold instead of drop — flushed when the sim room is back (post-combat)
+                pending.Enqueue(message);
+                while (pending.Count > MaxPending) pending.Dequeue();
+                Core.Debug($"[Notifications] ship room not ready, toast held: {message}");
                 return;
             }
             shipRoom.AddEventToast(new Localize.Text(message));
+        }
+
+        /// <summary>Drains toasts held while the sim room was unavailable.</summary>
+        public static void Flush()
+        {
+            if (pending.Count == 0) return;
+            var shipRoom = TryGetShipRoom();
+            while (pending.Count > 0 && shipRoom != null)
+                shipRoom.AddEventToast(new Localize.Text(pending.Dequeue()));
+        }
+
+        private static SGRoomController_Ship TryGetShipRoom()
+        {
+            var sim = UnityGameInstance.BattleTechGame?.Simulation;
+            var shipRoom = sim?.RoomManager?.ShipRoom;
+            return shipRoom?.TimePlayPause != null ? shipRoom : null;
         }
     }
 }
