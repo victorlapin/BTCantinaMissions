@@ -159,6 +159,21 @@ namespace BTCantinaMissions.UI
             return pool[random.Next(pool.Length)];
         }
 
+        /// <summary>Offered-job line: CollectItems shows the player's current inventory
+        /// count instead of a dead 0/9 — what you see is what gets seeded on Take.</summary>
+        private static string OfferedDisplayString(JobInstance job)
+        {
+            var def = JobCatalog.GetDef(job.DefId);
+            if (def?.ObjectiveType == ObjectiveType.CollectItems)
+            {
+                var have = ItemCatalog.GetInventoryCount(
+                    UnityGameInstance.BattleTechGame.Simulation, def, job);
+                if (have > 0)
+                    return $"{job.ResolvedName} ({Math.Min(have, job.TargetCount)}/{job.TargetCount})";
+            }
+            return job.DisplayString();
+        }
+
         /// <summary>Reward suffix for a board listing line: "— 150,000 C-Bills + items".</summary>
         private static string RewardSuffix(JobInstance job)
         {
@@ -201,7 +216,7 @@ namespace BTCantinaMissions.UI
             if (state.Board?.Slots.Count > 0)
             {
                 foreach (var job in state.Board.Slots)
-                    sb.AppendLine($"  {job.DisplayString()}{RewardSuffix(job)}");
+                    sb.AppendLine($"  {OfferedDisplayString(job)}{RewardSuffix(job)}");
             }
             else
             {
@@ -246,7 +261,16 @@ namespace BTCantinaMissions.UI
                 {
                     var result = Core.State.TryTake(job.InstanceId);
                     Core.Log($"[Board] Take: {result}");
-                    if (result == TakeResult.Success) MakeOptions(sgEventPanel);
+                    if (result == TakeResult.Success)
+                    {
+                        // seed progress with what the player already holds — AddProgress
+                        // clamps at the target and flips the job to READY when it is enough
+                        var have = ItemCatalog.GetInventoryCount(
+                            UnityGameInstance.BattleTechGame.Simulation,
+                            JobCatalog.GetDef(job.DefId), job);
+                        if (have > 0) job.AddProgress(have);
+                        MakeOptions(sgEventPanel);
+                    }
                 }));
             }
             foreach (var job in state.ActiveJobs)

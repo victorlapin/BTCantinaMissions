@@ -29,6 +29,18 @@ namespace BTCantinaMissions.Domain
             return false;
         }
 
+        /// <summary>How many of the job's item target the player currently holds.
+        /// Deliver mode only: Acquire jobs pay without consuming the items, so seeding
+        /// them from stock would be an infinitely farmable reward.</summary>
+        public static int GetInventoryCount(SimGameState sim, CantinaJobDef def, JobInstance job)
+        {
+            if (def?.ObjectiveType != ObjectiveType.CollectItems) return 0;
+            if (def.ItemMode != ItemModeType.Deliver) return 0;
+            var entry = def.FindItemTarget(job.ResolvedTarget);
+            if (entry == null || !TryResolveType(entry.ItemType, out var type)) return 0;
+            return sim.GetItemCount(job.ResolvedTarget, type, SimGameState.ItemCountType.ALL);
+        }
+
         /// <summary>Display name for an item from the DataManager store named by its type.</summary>
         public static string LookupName(BattleTech.Data.DataManager dm, string id, ComponentType itemType)
         {
