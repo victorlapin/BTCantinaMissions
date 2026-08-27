@@ -379,12 +379,14 @@ namespace BTCantinaMissions.UI
             sb.Append(PaymentString(job));
 
             // button order matters: Enter clicks the LAST button (HandleEnterKeypress),
-            // so the destructive action goes last — Esc cancels, Enter confirms
+            // so the destructive action goes last — Esc cancels, Enter confirms.
+            // Built-in nested fader, NOT AddFader(): the shared PopupRoot fader slot
+            // already holds the event's dim — AddFader/EndFader would clear it on close.
             GenericPopupBuilder.Create("Deliver job", sb.ToString())
                 .AddButton("Cancel", null)
                 .AddButton("Deliver", () => DeliverJob(sgEventPanel, job))
                 .CancelOnEscape()
-                .AddFader()
+                .IsNestedPopupWithBuiltInFader()
                 .Render();
         }
 
@@ -400,7 +402,7 @@ namespace BTCantinaMissions.UI
                 .AddButton("Cancel", null)
                 .AddButton("Abandon", () => AbandonJob(sgEventPanel, job))
                 .CancelOnEscape()
-                .AddFader()
+                .IsNestedPopupWithBuiltInFader()
                 .Render();
         }
 
