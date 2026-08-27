@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using BattleTech;
 using BattleTech.Save.SaveGameStructure;
+using BTCantinaMissions.Domain;
 using HarmonyLib;
 using Newtonsoft.Json;
 
@@ -30,6 +31,27 @@ namespace BTCantinaMissions.Patches
         {
             Core.Debug("SaveGameStructure Load");
             Core.ResetState();
+        }
+    }
+
+    /// <summary>After a save is rehydrated, re-syncs Deliver CollectItems progress
+    /// with the actual inventory — self-healing against any drift between saves.</summary>
+    [HarmonyPatch(typeof(SimGameState), "Rehydrate")]
+    public static class SimGameState_RehydratePatch
+    {
+        public static void Postfix(SimGameState __instance)
+        {
+            foreach (var job in Core.State.ActiveJobs)
+            {
+                var def = JobCatalog.GetDef(job.DefId);
+                if (def?.ObjectiveType != ObjectiveType.CollectItems) continue;
+                if (def.ItemMode != ItemModeType.Deliver) continue;
+
+                var before = job.Progress;
+                job.SyncProgress(ItemCatalog.GetInventoryCount(__instance, def, job));
+                if (job.Progress != before)
+                    Core.Log($"[Load] Progress sync: {job.ResolvedName} {before} → {job.Progress}/{job.TargetCount}");
+            }
         }
     }
 
