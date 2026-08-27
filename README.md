@@ -32,16 +32,23 @@ drift in modpacks degrades gracefully with a log warning instead of crashing.
   planet or at the start of each month. Taken jobs are never wiped by the refresh.
 - Up to `MaxActiveJobs` jobs at once; duplicates of the same job/target are blocked at take time.
 - Take / Deliver / Abandon straight from the board popup — it updates in place.
+  Delivering a consuming job and abandoning ask for confirmation: a dialog over
+  the board lists exactly what will be removed (and the payment) — **Enter**
+  confirms, **Esc** cancels.
+- **Esc** closes the board and reward popups.
 - Job types:
   - **DestroyUnits** — kill N units matching a tag set (`unit_vtol`, `unit_mech&unit_light`,
     `unit_light&unit_turret`...) — mechs, vehicles and turrets alike. Counts any hostile
     destroyed in any **campaign** contract, regardless of mission outcome; skirmish never counts.
   - **CollectItems** — obtain N of a specific component.
     `Acquire` mode: keep them, the reward pays for reaching the goal.
-    `Deliver` mode: the items are removed from your inventory on delivery —
-    and sold/installed items set your progress back. Deliver progress starts from
-    what you already have in stock when you take the job (shown right on the board)
-    and is re-synced with the actual inventory on every save load.
+    `Deliver` mode: the items are removed from your inventory on delivery.
+    Deliver progress **mirrors the live inventory**: it starts from what you
+    already have in stock when you take the job (shown right on the board),
+    follows every purchase, sale and installation, and is re-synced on every
+    save load. Stock above the target shows as "· N in stock" — selling from a
+    surplus keeps the job ready; dropping below the target sets it back with a
+    red toast.
   - **CollectMech** — bring in a mech of the given chassis family (e.g. any Locust).
   - **CollectMechParts** — collect N salvage parts of the family.
 - Rewards: fixed C-Bills plus an optional item collection roll, shown in a reward
@@ -131,12 +138,15 @@ To give a planet a cantina, add the tag from `PlanetTag` (default `planet_other_
 
 - .NET SDK, `dotnet build` (net472; targeting packs come from
   `Microsoft.NETFramework.ReferenceAssemblies`, so Visual Studio is not required).
+  Use `-c Release` for shipping binaries; `-p:DeployDir=...` copies the DLL into
+  the mod folder automatically after the build.
 - Copy `CHANGEME.Directory.Build.Props` to `Directory.Build.Props` and point it at
-  your game/mod folders. The build deploys the DLL into the mod folder automatically.
+  your game/mod folders.
 - HarmonyX is referenced from `ModTek/lib`; private fields are accessed via
   [Krafs.Publicizer](https://github.com/pardeike/Publicizer) — `Assembly-CSharp`
   and `BTSimpleMechAssembly` are publicized (compile-time copies only; at runtime
-  the original assemblies are used as-is).
+  the original assemblies are used as-is). `InControl.dll` is a build-time-only
+  reference (the `PlayerAction` type appears in `GenericPopupBuilder` signatures).
 
 ## Known limitations
 
@@ -164,5 +174,10 @@ MIT — see [LICENSE](LICENSE).
 
 ## Status
 
-v0.3 — functional core: board generation, all four job types, persistence,
-rewards, notifications, paginated UI.
+v0.4 (in testing) — on top of the v0.3 functional core (board generation, all
+four job types, persistence, rewards, notifications, paginated UI):
+inventory-tracking hardening (all `AddItemStat`/`RemoveItemStat` overloads,
+stat-key id normalization), Deliver progress mirrors the live inventory with
+an on-board stock display, turret destroy targets, confirm dialogs for
+Deliver/Abandon (Enter confirms, Esc cancels), Esc closes the board and
+reward popups.
