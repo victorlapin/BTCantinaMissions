@@ -16,6 +16,11 @@ namespace BTCantinaMissions.Patches
     {
         public static void Postfix(SimGameState __instance, string id, string type, bool damaged)
         {
+            // parts are H4a's exclusive territory: AddMechPart calls AddItemStat(id, "MECHPART",
+            // ...) internally, so every salvaged part would light up both hooks; CollectItems
+            // targets are ComponentType-scoped and can never match a part id anyway
+            if (type == "MECHPART") return;
+
             Core.Debug($"[H3] AddItemStat: {id} ({type}, damaged={damaged})");
             InventoryTracking.TrackItemAdded(id);
         }
@@ -51,6 +56,10 @@ namespace BTCantinaMissions.Patches
     {
         public static void Postfix(SimGameState __instance, string id, string type, bool damaged)
         {
+            // see AddItemStatStringPatch: part stats churn (assembly consumes N parts at
+            // once) must not spam the log — CollectItems jobs can't hold part targets
+            if (type == "MECHPART") return;
+
             Core.Debug($"[H3a] RemoveItemStat: {id} ({type}, damaged={damaged}), activeJobs={Core.State.ActiveJobs.Count}");
             InventoryTracking.TrackItemRemoved(id);
         }
