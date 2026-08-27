@@ -174,6 +174,21 @@ namespace BTCantinaMissions.UI
             return job.DisplayString();
         }
 
+        /// <summary>Deliver item jobs clamp progress at the target, hiding stock above it;
+        /// surfaces the real count in the board body: "· 15 in stock".</summary>
+        private static string StockSuffix(JobInstance job)
+        {
+            var def = JobCatalog.GetDef(job.DefId);
+            if (def?.ObjectiveType != ObjectiveType.CollectItems || def.ItemMode != ItemModeType.Deliver)
+                return "";
+
+            var stock = ItemCatalog.GetInventoryCount(
+                UnityGameInstance.BattleTechGame.Simulation, def, job);
+            return stock > job.TargetCount
+                ? UIColors.Wrap($" · {stock} in stock", UIColor.LightGray)
+                : "";
+        }
+
         /// <summary>Reward suffix for a board listing line: "— 150,000 C-Bills + items".</summary>
         private static string RewardSuffix(JobInstance job)
         {
@@ -234,9 +249,9 @@ namespace BTCantinaMissions.UI
                 foreach (var job in state.ActiveJobs)
                 {
                     if (job.State == JobState.ReadyToDeliver)
-                        sb.AppendLine(UIColors.Wrap($"  {job.DisplayString()} — READY", UIColor.Green));
+                        sb.AppendLine(UIColors.Wrap($"  {job.DisplayString()} — READY", UIColor.Green) + StockSuffix(job));
                     else
-                        sb.AppendLine($"  {job.DisplayString()} — in progress");
+                        sb.AppendLine($"  {job.DisplayString()} — in progress{StockSuffix(job)}");
                 }
             }
             else
