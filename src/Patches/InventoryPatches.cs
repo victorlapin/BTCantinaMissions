@@ -7,54 +7,52 @@ using HarmonyLib;
 namespace BTCantinaMissions.Patches
 {
     /// <summary>H3: tracks items entering the player's inventory (CollectItems progress).
-    /// Fires in bulk on salvage/shop — cheapest checks first, dictionary lookups only on match.</summary>
+    /// Fires in bulk on salvage/shop — cheapest checks first, dictionary lookups only on match.
+    /// Both AddItemStat overloads must be patched: they are self-contained (neither calls
+    /// the other), and callers are split between them — salvage/parts use the string-type
+    /// one, shop purchases (AddFromShopDefItem) the Type one.</summary>
     [HarmonyPatch(typeof(SimGameState), "AddItemStat", new Type[] { typeof(string), typeof(string), typeof(bool) })]
-    public static class AddItemStatPatch
+    public static class AddItemStatStringPatch
     {
         public static void Postfix(SimGameState __instance, string id, string type, bool damaged)
         {
-            var jobs = Core.State.ActiveJobs;
-            if (jobs.Count == 0) return;
+            Core.Debug($"[H3] AddItemStat: {id} ({type}, damaged={damaged})");
+            InventoryTracking.TrackItemAdded(id);
+        }
+    }
 
-            foreach (var job in jobs)
-            {
-                // exact target match first: a def's pool may hold several item kinds, but the
-                // job instance tracks only its own resolved target
-                if (job.ResolvedTarget != id) continue;
-                var def = JobCatalog.GetDef(job.DefId);
-                if (def?.ObjectiveType != ObjectiveType.CollectItems) continue;
-
-                job.AddProgress(1);
-                Core.Log($"[H3] CollectItems progress: {job.ResolvedName} ({job.Progress}/{job.TargetCount})");
-                Notifications.OnProgress(job);
-            }
+    [HarmonyPatch(typeof(SimGameState), "AddItemStat", new Type[] { typeof(string), typeof(Type), typeof(bool) })]
+    public static class AddItemStatTypePatch
+    {
+        public static void Postfix(SimGameState __instance, string id, Type type, bool damaged)
+        {
+            Core.Debug($"[H3] AddItemStat: {id} ({type.Name}, damaged={damaged})");
+            InventoryTracking.TrackItemAdded(id);
         }
     }
 
     /// <summary>H3a: mirrors H3 for removals — Deliver-mode CollectItems jobs lose
     /// progress when the collected items leave the inventory (sold, installed).
-    /// Acquire jobs are one-way by design: the goal was reached once already.</summary>
+    /// Acquire jobs are one-way by design: the goal was reached once already.
+    /// Both RemoveItemStat overloads are patched for the same reason as H3: parts
+    /// consumed by AddMechPart go through the private string-type overload.</summary>
     [HarmonyPatch(typeof(SimGameState), "RemoveItemStat", new Type[] { typeof(string), typeof(Type), typeof(bool) })]
-    public static class RemoveItemStatPatch
+    public static class RemoveItemStatTypePatch
     {
         public static void Postfix(SimGameState __instance, string id, Type type, bool damaged)
         {
-            var jobs = Core.State.ActiveJobs;
-            if (jobs.Count == 0) return;
+            Core.Debug($"[H3a] RemoveItemStat: {id} ({type.Name}, damaged={damaged}), activeJobs={Core.State.ActiveJobs.Count}");
+            InventoryTracking.TrackItemRemoved(id);
+        }
+    }
 
-            foreach (var job in jobs)
-            {
-                if (job.ResolvedTarget != id) continue;
-                var def = JobCatalog.GetDef(job.DefId);
-                if (def?.ObjectiveType != ObjectiveType.CollectItems) continue;
-                if (def.ItemMode != ItemModeType.Deliver) continue;
-
-                var wasReady = job.State == JobState.ReadyToDeliver;
-                job.RemoveProgress(1);
-                Core.Log($"[H3a] CollectItems reversal: {job.ResolvedName} ({job.Progress}/{job.TargetCount})");
-                if (wasReady && job.State == JobState.Taken && Core.Settings.NotifyOnReady)
-                    Notifications.OnReverted(job);
-            }
+    [HarmonyPatch(typeof(SimGameState), "RemoveItemStat", new Type[] { typeof(string), typeof(string), typeof(bool) })]
+    public static class RemoveItemStatStringPatch
+    {
+        public static void Postfix(SimGameState __instance, string id, string type, bool damaged)
+        {
+            Core.Debug($"[H3a] RemoveItemStat: {id} ({type}, damaged={damaged}), activeJobs={Core.State.ActiveJobs.Count}");
+            InventoryTracking.TrackItemRemoved(id);
         }
     }
 
