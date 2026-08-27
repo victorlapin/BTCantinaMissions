@@ -59,23 +59,13 @@ namespace BTCantinaMissions.Domain
                 State = JobState.ReadyToDeliver;
         }
 
-        /// <summary>Syncs progress to an externally computed count (inventory on load):
+        /// <summary>Syncs progress to an externally computed count (live inventory):
         /// sets the value and the state accordingly, both up and down.</summary>
         public void SyncProgress(int count)
         {
             if (State != JobState.Taken && State != JobState.ReadyToDeliver) return;
             Progress = Math.Min(Math.Max(count, 0), TargetCount);
             State = Progress >= TargetCount ? JobState.ReadyToDeliver : JobState.Taken;
-        }
-
-        /// <summary>Mirror of AddProgress for removals (items sold/lost): clamps at zero
-        /// and downgrades a ready job back to in progress.</summary>
-        public void RemoveProgress(int amount)
-        {
-            if (State != JobState.Taken && State != JobState.ReadyToDeliver) return;
-            Progress = Math.Max(Progress - amount, 0);
-            if (Progress < TargetCount && State == JobState.ReadyToDeliver)
-                State = JobState.Taken;
         }
 
         /// <summary>Removes the job from the active list. Called by CampaignState.Deliver.</summary>

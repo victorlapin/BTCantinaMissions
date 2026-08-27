@@ -1,4 +1,5 @@
 using System;
+using BattleTech;
 using BTCantinaMissions.UI;
 
 namespace BTCantinaMissions.Domain
@@ -38,7 +39,17 @@ namespace BTCantinaMissions.Domain
                 var def = JobCatalog.GetDef(job.DefId);
                 if (def?.ObjectiveType != ObjectiveType.CollectItems) continue;
 
-                job.AddProgress(1);
+                if (def.ItemMode == ItemModeType.Deliver)
+                {
+                    // Deliver progress mirrors the live inventory — see TrackItemRemoved
+                    if (!SyncFromInventory(job, def)) continue;
+                }
+                else
+                {
+                    // Acquire is one-way: a monotonic counter, never decremented
+                    job.AddProgress(1);
+                }
+
                 Core.Log($"[H3] CollectItems progress: {job.ResolvedName} ({job.Progress}/{job.TargetCount})");
                 Notifications.OnProgress(job);
             }
@@ -57,12 +68,28 @@ namespace BTCantinaMissions.Domain
                 if (def?.ObjectiveType != ObjectiveType.CollectItems) continue;
                 if (def.ItemMode != ItemModeType.Deliver) continue;
 
+                // Deliver progress mirrors the live inventory, not a ±1 delta: stock above
+                // the target keeps the job ready when single items are sold or installed
                 var wasReady = job.State == JobState.ReadyToDeliver;
-                job.RemoveProgress(1);
+                if (!SyncFromInventory(job, def)) continue;
+
                 Core.Log($"[H3a] CollectItems reversal: {job.ResolvedName} ({job.Progress}/{job.TargetCount})");
                 if (wasReady && job.State == JobState.Taken && Core.Settings.NotifyOnReady)
                     Notifications.OnReverted(job);
             }
+        }
+
+        /// <summary>Recomputes a Deliver job's progress from the live inventory (postfixes
+        /// run after the stat change, so the count is already up to date). Returns true only
+        /// when progress or state actually moved — callers log/notify only then, so stock
+        /// churn above the target stays silent.</summary>
+        private static bool SyncFromInventory(JobInstance job, CantinaJobDef def)
+        {
+            var before = job.Progress;
+            var stateBefore = job.State;
+            var sim = UnityGameInstance.BattleTechGame.Simulation;
+            job.SyncProgress(ItemCatalog.GetInventoryCount(sim, def, job));
+            return job.Progress != before || job.State != stateBefore;
         }
     }
 }
