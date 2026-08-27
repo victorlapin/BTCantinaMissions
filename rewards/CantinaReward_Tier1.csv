@@ -10,3 +10,7 @@ Gear_JumpJet_Standard,JumpJet,2,6
 Ammo_AmmunitionBox_SRM,AmmunitionBox,1,5
 Weapon_LRM_5,Weapon,1,4
 Gear_HeatSink_Compact,HeatSink,3,6
+Ammo_AmmunitionBox_MRM,AmmunitionBox,3,6
+Ammo_AmmunitionBox_MRM_Apollo,AmmunitionBox,2,5
+Ammo_AmmunitionBox_LBX_5_Slug,AmmunitionBox,2,5
+Ammo_AmmunitionBox_LBX_2_Cluster,AmmunitionBox,2,4

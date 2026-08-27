@@ -8,3 +8,6 @@ Weapon_Laser_XPulse_Small,Weapon,3,4
 Gear_JumpJet_Standard_Improved,JumpJet,3,4
 Weapon_LRM_10,Weapon,1,5
 Weapon_Autocannon_AC_5,Weapon,1,3
+Ammo_AmmunitionBox_MRM_Tandem,AmmunitionBox,4,4
+Ammo_AmmunitionBox_LBX_10_Cluster,AmmunitionBox,4,5
+Ammo_AmmunitionBox_LBX_20_Cluster,AmmunitionBox,3,4

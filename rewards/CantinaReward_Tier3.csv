@@ -12,3 +12,5 @@ Weapon_LRM_15,Weapon,1,4
 Weapon_Autocannon_AC_10,Weapon,1,5
 Weapon_Autocannon_AC_20,Weapon,1,5
 Gear_HeatSink_Prototype,HeatSink,1,4
+Ammo_AmmunitionBox_MRM_Streak,AmmunitionBox,3,4
+Ammo_AmmunitionBox_LBX_20_Dragons_Breath,AmmunitionBox,4,4
