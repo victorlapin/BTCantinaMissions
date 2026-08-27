@@ -22,17 +22,10 @@ namespace BTCantinaMissions.Patches
             var curSystem = __instance.CurSystem;
             var isCantina = curSystem.Tags.Contains(Core.Settings.PlanetTag);
 
-            if (isCantina && Core.State.Board == null)
+            if (isCantina && Core.State.Board != null)
             {
-                Core.Debug($"Add missing board for current system");
-                Core.State.Board = new SystemBoard();
-            }
-
-            Core.Log($"[H1] Month end, refreshing board");
-            BoardGenerator.RefreshBoard(curSystem);
-
-            if (isCantina)
-            {
+                Core.Log($"[H1] Month end, refreshing board");
+                BoardGenerator.RefreshBoard(curSystem);
                 Notifications.OnNewQuarterBegin();
             }
         }
