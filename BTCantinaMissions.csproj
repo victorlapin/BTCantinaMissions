@@ -71,6 +71,10 @@
       <HintPath>$(ModsDir)\CustomSalvage\CustomSalvage.dll</HintPath>
       <Private>false</Private>
     </Reference>
+    <Reference Include="LewdableTanks">
+      <HintPath>$(ModsDir)\LewdableTanks\LewdableTanks.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
     <Reference Include="BTSimpleMechAssembly">
       <HintPath>BTSimpleMechAssembly\BTSimpleMechAssembly.dll</HintPath>
       <Private>false</Private>
