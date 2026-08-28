@@ -50,7 +50,7 @@ namespace BTCantinaMissions.Patches
     [HarmonyPatch(typeof(AbstractActor), nameof(AbstractActor.HandleDeath))]
     public static class HandleDeathPatch
     {
-        public static void Postfix(AbstractActor __instance, string attackerGUID)
+        public static void Prefix(AbstractActor __instance, string attackerGUID)
         {
             // same gate as the game's own publish path: fires exactly once per actor
             if (!__instance.IsFlaggedForDeath || __instance.HasHandledDeath) return;
