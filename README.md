@@ -19,12 +19,15 @@ deliver it for C-Bills (and bonus items). The board refreshes monthly.
 | [JwTweaks](https://github.com/wmtorode/JwTweaks) (CustomSaveBlocks enabled) | **hard dependency** — mod state persists through its custom save blocks |
 | [IRTweaks](https://github.com/BattletechModders/IRTweaks) (StreamlinedMainMenu enabled) | **hard dependency** — provides the left navigation menu, the only remaining way into the store once the vanilla store button is repurposed |
 | [CustomSalvage](https://github.com/BattletechModders/CustomSalvage) | optional — improves chassis-family resolution for mech/part jobs |
+| [LewdableTanks](https://github.com/BattletechModders/LewdableTanks) | optional — vehicles enter the hooks as fake mechs; enables chassis-family resolution for them (`VAssemblyVariant`) |
 | [BTSimpleMechAssembly](https://github.com/mcb5637/BTSimpleMechAssembly) | optional — alternative chassis-family source for mech/part jobs |
 
-Chassis-family resolution is a cascade: the `unit_chassis_*` unit tag first, then
-CustomSalvage's AssemblyVariant, then BTSimpleMechAssembly's variant lookup,
-finally the chassis display name. A missing mod simply skips its step; version
-drift in modpacks degrades gracefully with a log warning instead of crashing.
+Chassis-family resolution is a cascade: the `unit_chassis_*` unit tag first,
+then CustomSalvage's AssemblyVariant, then (for LewdableTanks fake-vehicles)
+`VAssemblyVariant` on the real vehicle chassis, then BTSimpleMechAssembly's
+variant lookup, finally the chassis display name. A missing mod simply skips
+its step; version drift in modpacks degrades gracefully with a log warning
+instead of crashing.
 
 ## Gameplay
 
@@ -162,8 +165,9 @@ To give a planet a cantina, add the tag from `PlanetTag` (default `planet_other_
   design; see the note for modders above.
 - **No chassis-specific destroy jobs** ("Destroy Wasp") yet — requires the
   LewdableTanks `VAssemblyVariant` integration.
-- **Vehicles are not first-class targets** of collect jobs yet; the family
-  resolver is mech-only for now.
+- **Vehicle collect jobs** are not authored yet (the family resolver already
+  handles LewdableTanks fake-vehicles — wiring them into CollectMech /
+  CollectMechParts jobs is pending).
 - **IRTweaks** is a hard dependency because the cantina button replaces the
   vanilla store button — its `StreamlinedMainMenu` feature must stay enabled,
   otherwise the store becomes unreachable (no runtime check for that flag).
