@@ -106,10 +106,17 @@ namespace BTCantinaMissions.Patches
             var jobs = Core.State.ActiveJobs;
             if (jobs.Count == 0) return;
 
-            var mechId = id.Replace("chassisdef_", "mechdef_");
+            string defId;
+            if (id.StartsWith("vehiclechassisdef_", StringComparison.Ordinal))
+                defId = "vehicledef_" + id.Substring("vehiclechassisdef_".Length);
+            else if (id.StartsWith("chassisdef_", StringComparison.Ordinal))
+                defId = "mechdef_" + id.Substring("chassisdef_".Length);
+            else
+                defId = id;
+
             var dm = UnityGameInstance.BattleTechGame.Simulation.DataManager;
 
-            if (!dm.MechDefs.TryGet(mechId, out MechDef mechDef)) return;
+            if (!dm.MechDefs.TryGet(defId, out MechDef mechDef)) return;
             var family = ChassisFamilyResolver.GetFamily(mechDef);
             if (family == null) return;
 
