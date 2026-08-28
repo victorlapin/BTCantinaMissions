@@ -49,6 +49,19 @@ namespace BTCantinaMissions.Domain
             return true;
         }
 
+        /// <summary>Career economy scaling: the "Contract Payment" slider at career
+        /// start writes Finances.ContractPricePerDifficulty (RT: 100k/134k/200k/300k
+        /// for Cheapskate..Generous) and the game scales all contract payouts by it.
+        /// Cantina payouts follow the same slider, normalized to the Normal (200k)
+        /// baseline the reward numbers were balanced against. Guarded: no constants,
+        /// no scaling (skirmish / edge cases).</summary>
+        public static float EconomyScale(SimGameState sim)
+        {
+            var perDifficulty = sim?.Constants?.Finances?.ContractPricePerDifficulty ?? 0;
+            if (perDifficulty <= 0) return 1f;
+            return perDifficulty / 200000f;
+        }
+
         private static void Grant(SimGameState sim, JobInstance job, CantinaJobDef def)
         {
             var reward = def?.Reward;
@@ -58,19 +71,20 @@ namespace BTCantinaMissions.Domain
                 return;
             }
 
-            if (reward.CBills != 0)
-                sim.AddFunds(reward.CBills, job.ResolvedName);
+            var cbills = UnityEngine.Mathf.RoundToInt(reward.CBills * EconomyScale(sim));
+            if (cbills != 0)
+                sim.AddFunds(cbills, job.ResolvedName);
 
             if (string.IsNullOrEmpty(reward.ItemCollection))
             {
-                Announce(job, reward.CBills, null, 0);
+                Announce(job, cbills, null, 0);
                 return;
             }
 
             if (!sim.DataManager.ItemCollectionDefs.TryGet(reward.ItemCollection, out var collection))
             {
                 Core.LogWarning($"[Reward] ItemCollection '{reward.ItemCollection}' not found, items skipped ({def.Id})");
-                Announce(job, reward.CBills, null, 0);
+                Announce(job, cbills, null, 0);
                 return;
             }
 
@@ -89,7 +103,7 @@ namespace BTCantinaMissions.Domain
                     items.AppendLine($"  {RewardItemName(item)} ×{item.Count}");
                     count += item.Count;
                 }
-                Announce(job, reward.CBills, count > 0 ? items.ToString() : null, count);
+                Announce(job, cbills, count > 0 ? items.ToString() : null, count);
             });
         }
 

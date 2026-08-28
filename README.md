@@ -61,8 +61,14 @@ instead of crashing.
   - **CollectMech** — bring in a unit of the given chassis family (e.g. any Locust;
     with LewdableTanks this includes vehicles — any Scimitar, Saracen, VTOL...).
   - **CollectMechParts** — collect N salvage parts of the family (mech or vehicle).
-- Rewards: fixed C-Bills plus an optional item collection roll, shown in a reward
-  popup with a full breakdown. Delivering items you no longer have is blocked.
+- Rewards: a base C-Bill amount (from the job def) plus an optional item
+  collection roll, shown in a reward popup with a full breakdown. At payout
+  time the C-Bill base is multiplied by the career's **Contract Payment**
+  economy slider — the same `Finances.ContractPricePerDifficulty` coefficient
+  the game uses for contract payouts (e.g. Cheapskate 50% pays half, Generous
+  150% pays one and a half times; the base numbers are balanced against the
+  Normal 100% baseline). Target counts and item rolls are **not** scaled —
+  only C-Bills. Delivering items you no longer have is blocked.
 - **Location-specific jobs**: some jobs only appear on cantinas located on planets
   with a certain tag — exotic hardware on `planet_other_blackmarket` worlds,
   electronics contracts on `planet_other_comstar` worlds.

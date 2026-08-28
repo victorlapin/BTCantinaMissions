@@ -205,9 +205,14 @@ namespace BTCantinaMissions.UI
             var reward = JobCatalog.GetDef(job.DefId)?.Reward;
             if (reward == null) return "";
 
+            var scale = RewardService.EconomyScale(UnityGameInstance.BattleTechGame.Simulation);
+
             var sb = new StringBuilder();
             if (reward.CBills != 0)
-                sb.Append(UIColors.Wrap(SimGameState.GetCBillString(reward.CBills), UIColor.Gold));
+            {
+                var scaledCBills = UnityEngine.Mathf.RoundToInt(reward.CBills * scale);
+                sb.Append(UIColors.Wrap(SimGameState.GetCBillString(scaledCBills), UIColor.Gold));
+            }
             if (!string.IsNullOrEmpty(reward.ItemCollection))
             {
                 if (sb.Length > 0) sb.Append(UIColors.Wrap(" + ", UIColor.LightGray));
