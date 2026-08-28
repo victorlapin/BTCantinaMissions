@@ -38,8 +38,10 @@ drift in modpacks degrades gracefully with a log warning instead of crashing.
 - **Esc** closes the board and reward popups.
 - Job types:
   - **DestroyUnits** — kill N units matching a tag set (`unit_vtol`, `unit_mech&unit_light`,
-    `unit_light&unit_turret`...) — mechs, vehicles and turrets alike. Counts any hostile
-    destroyed in any **campaign** contract, regardless of mission outcome; skirmish never counts.
+    `unit_light&unit_turret`...) — mechs, vehicles and turrets alike. Only units
+    **destroyed by your own lance** count: allied and employer forces (MissionControl
+    allies, base turrets) finishing your targets do not advance the job. Works in any
+    **campaign** contract, regardless of mission outcome; skirmish never counts.
   - **CollectItems** — obtain N of a specific component.
     `Acquire` mode: keep them, the reward pays for reaching the goal.
     `Deliver` mode: the items are removed from your inventory on delivery.
@@ -182,7 +184,5 @@ stock display, turret destroy targets, MRM/LBX ammo in reward rolls, confirm
 dialogs for Deliver/Abandon (Enter confirms, Esc cancels), Esc closes the
 board and reward popups.
 
-Planned for v0.5: kill attribution (only units destroyed by the player's own
-lance count — MissionControl allies/employer forces doing the work for you
-currently also advance DestroyUnits jobs) and LewdableTanks integration
-(vehicle collect jobs, chassis-specific destroy jobs).
+Planned for v0.5: LewdableTanks integration (vehicle collect jobs,
+chassis-specific destroy jobs).
