@@ -16,6 +16,31 @@ namespace BTCantinaMissions.Patches
     internal static class PlayerKillTracker
     {
         internal static readonly List<AbstractActor> Kills = new List<AbstractActor>();
+
+        /// <summary>Actor whose activation is currently resolving. PanicSystem batches
+        /// panic/ejection rolls to the END of the attacker's activation and then ejects
+        /// the victim with the victim's own GUID as the source — the real attacker is
+        /// only recoverable as "whoever's activation is ending".</summary>
+        internal static AbstractActor CurrentActivator;
+
+        /// <summary>Drops all references (kills + the activator): a stray actor
+        /// reference pins the whole combat object graph against GC between missions.</summary>
+        internal static void Reset()
+        {
+            Kills.Clear();
+            CurrentActivator = null;
+        }
+    }
+
+    /// <summary>Feeds PlayerKillTracker.CurrentActivator — the panic-ejection
+    /// attribution fallback.</summary>
+    [HarmonyPatch(typeof(AbstractActor), "OnActivationBegin")]
+    public static class OnActivationBeginPatch
+    {
+        public static void Prefix(AbstractActor __instance)
+        {
+            PlayerKillTracker.CurrentActivator = __instance;
+        }
     }
 
     /// <summary>H5: records every hostile destroyed by the player's team (any cause —
@@ -49,6 +74,49 @@ namespace BTCantinaMissions.Patches
         }
     }
 
+    /// <summary>H5a: forced ejections credit the attacker who caused them. The base
+    /// EjectPilot discards the damage source and reports the death as self-inflicted
+    /// (HandleDeath(this.GUID)), so a pilot bailing out from our shot would never
+    /// register in H5 — record it here instead. Voluntary ejections (AI morale panic
+    /// via EjectSequence, the player's own eject order) carry a self or non-enemy
+    /// source and stay uncounted.</summary>
+    [HarmonyPatch(typeof(AbstractActor), nameof(AbstractActor.EjectPilot))]
+    public static class EjectPilotPatch
+    {
+        public static void Postfix(AbstractActor __instance, string sourceID, int stackItemID,
+            DeathMethod deathMethod, bool isSilent)
+        {
+            // only completed ejections: with no pilot aboard the base method did nothing
+            // (FlagForDeath/HandleDeath never ran)
+            if (!__instance.IsFlaggedForDeath || !__instance.HasHandledDeath) return;
+
+            // skirmish has no campaign state — its kills must not leak anywhere
+            if (UnityGameInstance.BattleTechGame?.Simulation == null) return;
+
+            var combat = __instance.Combat;
+            var playerTeam = combat?.LocalPlayerTeam;
+            if (playerTeam == null) return;
+
+            var killer = string.IsNullOrEmpty(sourceID) ? null : combat.FindActorByGUID(sourceID);
+            if (killer == __instance)
+            {
+                // self-attributed ejection: PanicSystem discards the attacker and passes
+                // the victim's own GUID — the real attacker is whoever's activation is
+                // resolving (panic rolls are batched to its end). Voluntary ejections
+                // happen in the victim's own activation, so this stays uncounted for them.
+                killer = PlayerKillTracker.CurrentActivator;
+            }
+            if (killer == null || killer.team != playerTeam) return;
+            if (!playerTeam.IsEnemy(__instance.team)) return;
+
+            // a real kill path may have credited this actor already — never twice
+            if (PlayerKillTracker.Kills.Contains(__instance)) return;
+
+            PlayerKillTracker.Kills.Add(__instance);
+            Core.Debug($"[H5] Ejection credited: {__instance.Description.Name} bailed out from {killer.Description.Name}");
+        }
+    }
+
     /// <summary>H6: applies recorded player-team kills to active DestroyUnits jobs at
     /// contract completion. Works regardless of mission result.</summary>
     [HarmonyPatch(typeof(Contract), nameof(Contract.CompleteContract))]
@@ -60,7 +128,7 @@ namespace BTCantinaMissions.Patches
             // (static Core.State survives exit to the main menu)
             if (UnityGameInstance.BattleTechGame?.Simulation == null)
             {
-                PlayerKillTracker.Kills.Clear();
+                PlayerKillTracker.Reset();
                 return;
             }
 
@@ -103,7 +171,7 @@ namespace BTCantinaMissions.Patches
             }
 
             // consume: the list must be empty for the next mission whatever happens below
-            PlayerKillTracker.Kills.Clear();
+            PlayerKillTracker.Reset();
 
             if (deadTags.Count == 0) return;
             Core.Log($"[H6] Mission ended ({result}), {deadTags.Count} targets destroyed by the player");

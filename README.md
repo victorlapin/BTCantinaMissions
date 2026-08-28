@@ -40,8 +40,9 @@ drift in modpacks degrades gracefully with a log warning instead of crashing.
   - **DestroyUnits** — kill N units matching a tag set (`unit_vtol`, `unit_mech&unit_light`,
     `unit_light&unit_turret`...) — mechs, vehicles and turrets alike. Only units
     **destroyed by your own lance** count: allied and employer forces (MissionControl
-    allies, base turrets) finishing your targets do not advance the job. Works in any
-    **campaign** contract, regardless of mission outcome; skirmish never counts.
+    allies, base turrets) finishing your targets do not advance the job. Forcing a
+    pilot to eject (including PanicSystem panic ejections) counts as a kill. Works in
+    any **campaign** contract, regardless of mission outcome; skirmish never counts.
   - **CollectItems** — obtain N of a specific component.
     `Acquire` mode: keep them, the reward pays for reaching the goal.
     `Deliver` mode: the items are removed from your inventory on delivery.
