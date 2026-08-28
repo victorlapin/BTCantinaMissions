@@ -55,8 +55,9 @@ instead of crashing.
     save load. Stock above the target shows as "· N in stock" — selling from a
     surplus keeps the job ready; dropping below the target sets it back with a
     red toast.
-  - **CollectMech** — bring in a mech of the given chassis family (e.g. any Locust).
-  - **CollectMechParts** — collect N salvage parts of the family.
+  - **CollectMech** — bring in a unit of the given chassis family (e.g. any Locust;
+    with LewdableTanks this includes vehicles — any Scimitar, Saracen, VTOL...).
+  - **CollectMechParts** — collect N salvage parts of the family (mech or vehicle).
 - Rewards: fixed C-Bills plus an optional item collection roll, shown in a reward
   popup with a full breakdown. Delivering items you no longer have is blocked.
 - **Location-specific jobs**: some jobs only appear on cantinas located on planets
@@ -165,9 +166,6 @@ To give a planet a cantina, add the tag from `PlanetTag` (default `planet_other_
   design; see the note for modders above.
 - **No chassis-specific destroy jobs** ("Destroy Wasp") yet — requires the
   LewdableTanks `VAssemblyVariant` integration.
-- **Vehicle collect jobs** are not authored yet (the family resolver already
-  handles LewdableTanks fake-vehicles — wiring them into CollectMech /
-  CollectMechParts jobs is pending).
 - **IRTweaks** is a hard dependency because the cantina button replaces the
   vanilla store button — its `StreamlinedMainMenu` feature must stay enabled,
   otherwise the store becomes unreachable (no runtime check for that flag).

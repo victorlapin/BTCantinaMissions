@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using BattleTech;
+using CustomComponents;
 using HBS.Collections;
+using LewdableTanks;
 
 namespace BTCantinaMissions.Domain
 {
@@ -215,6 +217,45 @@ namespace BTCantinaMissions.Domain
                     if (!string.IsNullOrEmpty(name))
                         return name;
                 }
+            }
+
+            // Pass 3: vehicles (LewdableTanks) — vehicle families are PrefabIDs, not
+            // chassisdef id prefixes; match via VAssemblyVariant and take the real
+            // vehicle chassis display name
+            if (Integrations.IsLT)
+            {
+                var vehicleName = FindVehicleChassisName(dm, target);
+                if (!string.IsNullOrEmpty(vehicleName))
+                    return vehicleName;
+            }
+
+            return null;
+        }
+
+        /// <summary>Vehicle display name by family (PrefabID): scans VehicleDefs and
+        /// matches VAssemblyVariant. LT types are isolated here for soft-dependency JIT;
+        /// fail-soft against LT version drift. Runs once per family (chassisNameCache).</summary>
+        private static string FindVehicleChassisName(BattleTech.Data.DataManager dm, string target)
+        {
+            try
+            {
+                foreach (var kvp in dm.VehicleDefs)
+                {
+                    var chassis = kvp.Value?.Chassis;
+                    if (chassis == null) continue;
+
+                    var prefab = chassis.GetComponent<VAssemblyVariant>()?.PrefabID;
+                    if (!string.Equals(prefab, target, StringComparison.OrdinalIgnoreCase))
+                        continue;
+
+                    var name = chassis.Description?.Name;
+                    if (!string.IsNullOrEmpty(name))
+                        return name;
+                }
+            }
+            catch (Exception e)
+            {
+                Core.LogWarning($"[BoardGenerator] LewdableTanks API drift: {e.GetType().Name}: {e.Message}");
             }
 
             return null;
