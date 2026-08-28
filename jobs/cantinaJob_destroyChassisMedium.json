@@ -8,7 +8,7 @@
   "MinTargetCount": 2,
   "MaxTargetCount": 3,
   "Reward": {
-    "CBills": 400000,
+    "CBills": 350000,
     "ItemCollection": "CantinaReward_Tier2",
     "ItemCount": 1
   },

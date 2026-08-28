@@ -5,10 +5,10 @@
     "Icon": ""
   },
   "ObjectiveType": "DestroyChassis",
-  "MinTargetCount": 1,
-  "MaxTargetCount": 2,
+  "MinTargetCount": 2,
+  "MaxTargetCount": 3,
   "Reward": {
-    "CBills": 650000,
+    "CBills": 450000,
     "ItemCollection": "CantinaReward_Tier3",
     "ItemCount": 1
   },
