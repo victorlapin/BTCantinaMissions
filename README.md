@@ -41,7 +41,10 @@ instead of crashing.
 - **Esc** closes the board and reward popups.
 - Job types:
   - **DestroyUnits** — kill N units matching a tag set (`unit_vtol`, `unit_mech&unit_light`,
-    `unit_light&unit_turret`...) — mechs, vehicles and turrets alike. Only units
+    `unit_light&unit_turret`...) — mechs, vehicles and turrets alike.
+  - **DestroyChassis** — kill N units of a specific chassis family ("Destroy 3 Locust",
+    "Destroy 2 Scimitar") — mechs and vehicles (LewdableTanks); forcing the pilot to
+    eject counts. Only units
     **destroyed by your own lance** count: allied and employer forces (MissionControl
     allies, base turrets) finishing your targets do not advance the job. Forcing a
     pilot to eject (including PanicSystem panic ejections) counts as a kill. Works in
@@ -91,12 +94,12 @@ Jobs are `CantinaJobDef` JSON files in `jobs/` (registered as a ModTek
     "Name": "Collect {target}",     // {target} is substituted from the pool
     "Icon": ""
   },
-  "ObjectiveType": "CollectItems",  // DestroyUnits | CollectItems | CollectMech | CollectMechParts
+  "ObjectiveType": "CollectItems",  // DestroyUnits | DestroyChassis | CollectItems | CollectMech | CollectMechParts
 
   // Target pool — the generator picks one random entry per board slot.
   // Use the pool matching the objective type; single-entry pool = fixed target.
   "UnitTagPool": ["unit_vtol", "unit_light&unit_mech"],        // DestroyUnits, & = all tags
-  "ChassisPool": ["locust", "stinger"],                        // CollectMech / CollectMechParts
+  "ChassisPool": ["locust", "stinger", "Scimitar"],            // DestroyChassis / CollectMech / CollectMechParts
   "ItemPool": [                                                // CollectItems — explicit catalog:
     { "Id": "Weapon_Laser_Medium", "ItemType": "Weapon" },     //   the ID prefix alone is not
     { "Id": "Gear_Engine_XL", "ItemType": "HeatSink" }         //   reliable for modded items
@@ -164,8 +167,6 @@ To give a planet a cantina, add the tag from `PlanetTag` (default `planet_other_
 - **Destroy targets** are limited to traits the player can identify in combat
   (unit type, weight class, recognizable archetypes such as carriers) — by
   design; see the note for modders above.
-- **No chassis-specific destroy jobs** ("Destroy Wasp") yet — requires the
-  LewdableTanks `VAssemblyVariant` integration.
 - **IRTweaks** is a hard dependency because the cantina button replaces the
   vanilla store button — its `StreamlinedMainMenu` feature must stay enabled,
   otherwise the store becomes unreachable (no runtime check for that flag).

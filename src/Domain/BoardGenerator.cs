@@ -137,6 +137,7 @@ namespace BTCantinaMissions.Domain
             {
                 case ObjectiveType.CollectMech:
                 case ObjectiveType.CollectMechParts:
+                case ObjectiveType.DestroyChassis:
                     {
                         var name = FindChassisName(dm, target);
                         if (name != null) return name;

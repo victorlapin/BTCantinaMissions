@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using BattleTech;
 using BTCantinaMissions.Domain;
@@ -136,6 +137,7 @@ namespace BTCantinaMissions.Patches
             if (combat == null) return;
 
             var deadTags = new List<TagSet>();
+            var deadFamilies = new List<string>();
             foreach (var actor in PlayerKillTracker.Kills)
             {
                 // only kills from THIS combat: the tracker is static and may still
@@ -153,6 +155,8 @@ namespace BTCantinaMissions.Patches
                     foreach (var t in mech.MechDef.Chassis.ChassisTags) tags.Add(t);
                     foreach (var t in mech.MechDef.MechTags) tags.Add(t);
                     deadTags.Add(tags);
+                    // chassis family for DestroyChassis (fake vehicles resolve here too)
+                    deadFamilies.Add(ChassisFamilyResolver.GetFamily(mech.MechDef));
                 }
                 else if (vehicle?.VehicleDef != null)
                 {
@@ -160,6 +164,7 @@ namespace BTCantinaMissions.Patches
                     var tags = new TagSet();
                     foreach (var t in vehicle.VehicleDef.VehicleTags) tags.Add(t);
                     deadTags.Add(tags);
+                    deadFamilies.Add(null); // no MechDef → no family (safety branch, LT vehicles are fake mechs)
                 }
                 else if (turret?.TurretDef != null)
                 {
@@ -167,6 +172,7 @@ namespace BTCantinaMissions.Patches
                     var tags = new TagSet();
                     foreach (var t in turret.TurretDef.TurretTags) tags.Add(t);
                     deadTags.Add(tags);
+                    deadFamilies.Add(null); // turrets have no chassis family
                 }
             }
 
@@ -179,13 +185,29 @@ namespace BTCantinaMissions.Patches
             foreach (var job in Core.State.ActiveJobs)
             {
                 var def = JobCatalog.GetDef(job.DefId);
-                if (def?.ObjectiveType != ObjectiveType.DestroyUnits) continue;
-
                 var count = 0;
-                foreach (var tagSet in deadTags)
+
+                if (def?.ObjectiveType == ObjectiveType.DestroyUnits)
                 {
-                    if (BoardGenerator.MatchesTarget(tagSet, job.ResolvedTarget))
-                        count++;
+                    foreach (var tagSet in deadTags)
+                    {
+                        if (BoardGenerator.MatchesTarget(tagSet, job.ResolvedTarget))
+                            count++;
+                    }
+                }
+                else if (def?.ObjectiveType == ObjectiveType.DestroyChassis)
+                {
+                    // forced ejections are in the kill list already (H5a) — a chassis
+                    // target forced to bail out counts as destroyed
+                    foreach (var family in deadFamilies)
+                    {
+                        if (string.Equals(family, job.ResolvedTarget, StringComparison.OrdinalIgnoreCase))
+                            count++;
+                    }
+                }
+                else
+                {
+                    continue;
                 }
 
                 if (count > 0)

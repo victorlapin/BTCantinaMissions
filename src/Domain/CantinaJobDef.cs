@@ -8,6 +8,7 @@ namespace BTCantinaMissions.Domain
     public enum ObjectiveType
     {
         DestroyUnits,
+        DestroyChassis,
         CollectItems,
         CollectMech,
         CollectMechParts

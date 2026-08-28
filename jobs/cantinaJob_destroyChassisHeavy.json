@@ -1,0 +1,36 @@
+{
+  "Description": {
+    "Id": "cantinaJob_destroyChassisHeavy",
+    "Name": "Destroy {target}",
+    "Icon": ""
+  },
+  "ObjectiveType": "DestroyChassis",
+  "MinTargetCount": 1,
+  "MaxTargetCount": 2,
+  "Reward": {
+    "CBills": 650000,
+    "ItemCollection": "CantinaReward_Tier3",
+    "ItemCount": 1
+  },
+  "MinSystemDifficulty": 10,
+  "MaxSystemDifficulty": 20,
+  "Weight": 3,
+  "ChassisPool": [
+    "catapult",
+    "orion",
+    "quickdraw",
+    "thunderbolt",
+    "jagermech",
+    "warhammer",
+    "marauder",
+    "archer",
+    "crusader",
+    "grasshopper",
+    "Manticore",
+    "Demon",
+    "Bulldog",
+    "Brutus",
+    "Patton",
+    "Palisade"
+  ]
+}

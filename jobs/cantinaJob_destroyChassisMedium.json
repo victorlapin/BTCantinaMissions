@@ -1,0 +1,36 @@
+{
+  "Description": {
+    "Id": "cantinaJob_destroyChassisMedium",
+    "Name": "Destroy {target}",
+    "Icon": ""
+  },
+  "ObjectiveType": "DestroyChassis",
+  "MinTargetCount": 2,
+  "MaxTargetCount": 3,
+  "Reward": {
+    "CBills": 400000,
+    "ItemCollection": "CantinaReward_Tier2",
+    "ItemCount": 1
+  },
+  "MinSystemDifficulty": 5,
+  "MaxSystemDifficulty": 14,
+  "Weight": 4,
+  "ChassisPool": [
+    "hunchback",
+    "centurion",
+    "wolverine",
+    "trebuchet",
+    "shadowhawk",
+    "griffin",
+    "vindicator",
+    "blackjack",
+    "cicada",
+    "kintaro",
+    "Vedette",
+    "Condor",
+    "Drillson",
+    "Regulator",
+    "Sleipnir",
+    "Ballista"
+  ]
+}
