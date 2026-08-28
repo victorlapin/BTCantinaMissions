@@ -174,10 +174,15 @@ MIT — see [LICENSE](LICENSE).
 
 ## Status
 
-v0.4 (in testing) — on top of the v0.3 functional core (board generation, all
-four job types, persistence, rewards, notifications, paginated UI):
-inventory-tracking hardening (all `AddItemStat`/`RemoveItemStat` overloads,
-stat-key id normalization), Deliver progress mirrors the live inventory with
-an on-board stock display, turret destroy targets, confirm dialogs for
-Deliver/Abandon (Enter confirms, Esc cancels), Esc closes the board and
-reward popups.
+v0.4 — on top of the v0.3 functional core (board generation, all four job
+types, persistence, rewards, notifications, paginated UI): inventory-tracking
+hardening (all `AddItemStat`/`RemoveItemStat` overloads, stat-key id
+normalization), Deliver progress mirrors the live inventory with an on-board
+stock display, turret destroy targets, MRM/LBX ammo in reward rolls, confirm
+dialogs for Deliver/Abandon (Enter confirms, Esc cancels), Esc closes the
+board and reward popups.
+
+Planned for v0.5: kill attribution (only units destroyed by the player's own
+lance count — MissionControl allies/employer forces doing the work for you
+currently also advance DestroyUnits jobs) and LewdableTanks integration
+(vehicle collect jobs, chassis-specific destroy jobs).
