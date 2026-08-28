@@ -1,0 +1,27 @@
+{
+  "Description": {
+    "Id": "cantinaJob_collectVehicleMedium",
+    "Name": "Collect {target}",
+    "Icon": ""
+  },
+  "ObjectiveType": "CollectMech",
+  "MinTargetCount": 1,
+  "MaxTargetCount": 1,
+  "Reward": {
+    "CBills": 100000
+  },
+  "MinSystemDifficulty": 5,
+  "MaxSystemDifficulty": 14,
+  "Weight": 4,
+  "ChassisPool": [
+    "Ballista",
+    "TarantulaHover",
+    "Sleipnir",
+    "Vedette",
+    "Condor",
+    "Prowler",
+    "Regulator",
+    "Drillson",
+    "Zephyr"
+  ]
+}

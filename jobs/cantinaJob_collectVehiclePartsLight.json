@@ -1,0 +1,29 @@
+{
+  "Description": {
+    "Id": "cantinaJob_collectVehiclePartsLight",
+    "Name": "Collect {target} parts",
+    "Icon": ""
+  },
+  "ObjectiveType": "CollectMechParts",
+  "MinTargetCount": 3,
+  "MaxTargetCount": 5,
+  "Reward": {
+    "CBills": 80000
+  },
+  "MinSystemDifficulty": 3,
+  "MaxSystemDifficulty": 10,
+  "Weight": 5,
+  "ChassisPool": [
+    "Scorpion",
+    "JedgarHover",
+    "Cavalry",
+    "Harasser",
+    "Ignis",
+    "Scimitar",
+    "Galleon",
+    "Saladin",
+    "Striker",
+    "Saracen",
+    "Karnov"
+  ]
+}

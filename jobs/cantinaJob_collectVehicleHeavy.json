@@ -1,0 +1,30 @@
+{
+  "Description": {
+    "Id": "cantinaJob_collectVehicleHeavy",
+    "Name": "Collect {target}",
+    "Icon": ""
+  },
+  "ObjectiveType": "CollectMech",
+  "MinTargetCount": 1,
+  "MaxTargetCount": 1,
+  "Reward": {
+    "CBills": 125000
+  },
+  "MinSystemDifficulty": 10,
+  "MaxSystemDifficulty": 20,
+  "Weight": 3,
+  "ChassisPool": [
+    "Brutus",
+    "Vargr",
+    "ThumperSPG",
+    "Palisade",
+    "Bulldog",
+    "Demon",
+    "PrimeMover",
+    "Manticore",
+    "VonLuckner",
+    "Gallant",
+    "Igor",
+    "Patton"
+  ]
+}

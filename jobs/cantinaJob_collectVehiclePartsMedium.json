@@ -1,0 +1,27 @@
+{
+  "Description": {
+    "Id": "cantinaJob_collectVehiclePartsMedium",
+    "Name": "Collect {target} parts",
+    "Icon": ""
+  },
+  "ObjectiveType": "CollectMechParts",
+  "MinTargetCount": 2,
+  "MaxTargetCount": 4,
+  "Reward": {
+    "CBills": 130000
+  },
+  "MinSystemDifficulty": 7,
+  "MaxSystemDifficulty": 16,
+  "Weight": 4,
+  "ChassisPool": [
+    "Ballista",
+    "TarantulaHover",
+    "Sleipnir",
+    "Vedette",
+    "Condor",
+    "Prowler",
+    "Regulator",
+    "Drillson",
+    "Zephyr"
+  ]
+}

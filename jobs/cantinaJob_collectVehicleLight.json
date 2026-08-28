@@ -1,0 +1,29 @@
+{
+  "Description": {
+    "Id": "cantinaJob_collectVehicleLight",
+    "Name": "Collect {target}",
+    "Icon": ""
+  },
+  "ObjectiveType": "CollectMech",
+  "MinTargetCount": 1,
+  "MaxTargetCount": 1,
+  "Reward": {
+    "CBills": 60000
+  },
+  "MinSystemDifficulty": 1,
+  "MaxSystemDifficulty": 8,
+  "Weight": 4,
+  "ChassisPool": [
+    "Scorpion",
+    "JedgarHover",
+    "Cavalry",
+    "Harasser",
+    "Ignis",
+    "Scimitar",
+    "Galleon",
+    "Saladin",
+    "Striker",
+    "Saracen",
+    "Karnov"
+  ]
+}

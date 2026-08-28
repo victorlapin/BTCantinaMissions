@@ -1,0 +1,30 @@
+{
+  "Description": {
+    "Id": "cantinaJob_collectVehiclePartsHeavy",
+    "Name": "Collect {target} parts",
+    "Icon": ""
+  },
+  "ObjectiveType": "CollectMechParts",
+  "MinTargetCount": 2,
+  "MaxTargetCount": 3,
+  "Reward": {
+    "CBills": 160000
+  },
+  "MinSystemDifficulty": 12,
+  "MaxSystemDifficulty": 20,
+  "Weight": 3,
+  "ChassisPool": [
+    "Brutus",
+    "Vargr",
+    "ThumperSPG",
+    "Palisade",
+    "Bulldog",
+    "Demon",
+    "PrimeMover",
+    "Manticore",
+    "VonLuckner",
+    "Gallant",
+    "Igor",
+    "Patton"
+  ]
+}
