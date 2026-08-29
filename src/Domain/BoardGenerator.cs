@@ -273,6 +273,7 @@ namespace BTCantinaMissions.Domain
         {
             {"unit_vtol", "VTOL"},
             {"unit_legendary", "Legendary unit"},
+            {"unit_primitive", "Primitive units"},
         };
 
         /// <summary>Splits a composite target ("unit_mech&unit_light") into individual tags.</summary>

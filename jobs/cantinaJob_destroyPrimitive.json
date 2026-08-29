@@ -1,0 +1,21 @@
+{
+  "Description": {
+    "Id": "cantinaJob_destroyPrimitive",
+    "Name": "Destroy {target}",
+    "Icon": ""
+  },
+  "ObjectiveType": "DestroyUnits",
+  "MinTargetCount": 3,
+  "MaxTargetCount": 4,
+  "Reward": {
+    "CBills": 200000,
+    "ItemCollection": "CantinaReward_Tier1",
+    "ItemCount": 1
+  },
+  "MinSystemDifficulty": 1,
+  "MaxSystemDifficulty": 8,
+  "Weight": 3,
+  "UnitTagPool": [
+    "unit_primitive"
+  ]
+}
