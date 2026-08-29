@@ -1,0 +1,61 @@
+{
+  "Description": {
+    "Id": "cantinaJob_collectQuicsell",
+    "Name": "Collect {target}",
+    "Icon": ""
+  },
+  "ObjectiveType": "CollectItems",
+  "MinTargetCount": 4,
+  "MaxTargetCount": 6,
+  "ItemMode": "Deliver",
+  "ItemPool": [
+    {
+      "Id": "Weapon_MachineGun_Quicsell",
+      "ItemType": "Weapon"
+    },
+    {
+      "Id": "Weapon_MachineGun_Light_Quicsell",
+      "ItemType": "Weapon"
+    },
+    {
+      "Id": "Weapon_MachineGun_Heavy_Quicsell",
+      "ItemType": "Weapon"
+    },
+    {
+      "Id": "Weapon_SRM_2_Streak_Quicsell",
+      "ItemType": "Weapon"
+    },
+    {
+      "Id": "Gear_EngineCooling_HeatSinks_1_Quicsell",
+      "ItemType": "HeatSink"
+    },
+    {
+      "Id": "Gear_JumpJet_Lite_Quicsell",
+      "ItemType": "JumpJet"
+    },
+    {
+      "Id": "Gear_Sensors_Searchlight_Quicsell",
+      "ItemType": "Upgrade"
+    },
+    {
+      "Id": "HandHeld_Weapon_FireBomb_x1_Quicsell",
+      "ItemType": "Weapon"
+    },
+    {
+      "Id": "HandHeld_Weapon_Grenade_x1_Quicsell",
+      "ItemType": "Weapon"
+    },
+    {
+      "Id": "HandHeld_Weapon_LimpetMine_x1_Quicsell",
+      "ItemType": "Weapon"
+    }
+  ],
+  "Reward": {
+    "CBills": 53000,
+    "ItemCollection": "CantinaReward_QuicsellStore",
+    "ItemCount": 1
+  },
+  "MinSystemDifficulty": 1,
+  "MaxSystemDifficulty": 12,
+  "Weight": 3
+}
