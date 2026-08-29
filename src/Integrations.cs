@@ -117,7 +117,7 @@ namespace BTCantinaMissions
                 if (assembly.FullName.StartsWith("LewdableTanks"))
                 {
                     Core.Log("LewdableTanks found");
-                    IsCS = true;
+                    IsLT = true;
                     return;
                 }
             }
