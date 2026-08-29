@@ -9,7 +9,7 @@
   "MaxTargetCount": 4,
   "Reward": {
     "CBills": 150000,
-    "ItemCollection": "CantinaReward_Tier1",
+    "ItemCollection": "CantinaReward_Quicsell",
     "ItemCount": 1
   },
   "MinSystemDifficulty": 1,
