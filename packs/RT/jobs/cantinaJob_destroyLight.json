@@ -20,6 +20,7 @@
     "unit_light&unit_vehicle",
     "unit_light&unit_mech",
     "unit_light&unit_turret",
-    "unit_light&unit_quicsell&unit_mech"
+    "unit_light&unit_quicsell&unit_mech",
+    "unit_light&unit_omni&unit_mech"
   ]
 }

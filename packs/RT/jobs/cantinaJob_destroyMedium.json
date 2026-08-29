@@ -20,6 +20,7 @@
     "unit_medium&unit_vehicle",
     "unit_carrier&unit_vehicle",
     "unit_medium&unit_turret",
-    "unit_medium&unit_quicsell&unit_mech"
+    "unit_medium&unit_quicsell&unit_mech",
+    "unit_medium&unit_omni&unit_mech"
   ]
 }

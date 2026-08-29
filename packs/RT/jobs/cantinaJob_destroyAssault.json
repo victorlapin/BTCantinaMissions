@@ -19,6 +19,7 @@
     "unit_assault&unit_mech",
     "unit_assault&unit_vehicle",
     "unit_assault&unit_turret",
-    "unit_assault&unit_quicsell&unit_mech"
+    "unit_assault&unit_quicsell&unit_mech",
+    "unit_assault&unit_omni&unit_mech"
   ]
 }
