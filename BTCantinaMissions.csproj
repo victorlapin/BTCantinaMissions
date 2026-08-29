@@ -95,14 +95,11 @@
       <PackDir>$(MSBuildProjectDirectory)\packs\$(Pack)</PackDir>
     </PropertyGroup>
     <ItemGroup>
-      <StaleJobs Include="$(DeployDir)\jobs\*.json" />
-      <StaleRewards Include="$(DeployDir)\rewards\*.csv" />
       <PackManifest Include="$(PackDir)\mod.json" />
       <PackSettings Include="$(PackDir)\settings.json" />
       <PackJobs Include="$(PackDir)\jobs\**\*.json" />
       <PackRewards Include="$(PackDir)\rewards\**\*.csv" />
     </ItemGroup>
-    <Delete Files="@(StaleJobs);@(StaleRewards)" />
     <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(DeployDir)" />
     <Copy SourceFiles="@(PackManifest)" DestinationFolder="$(DeployDir)" />
     <!-- settings.json is user-owned runtime config: seed from the pack only when
@@ -111,6 +108,15 @@
           Condition="!Exists('$(DeployDir)\settings.json')" />
     <Copy SourceFiles="@(PackJobs)" DestinationFiles="@(PackJobs->'$(DeployDir)\jobs\%(RecursiveDir)%(Filename)%(Extension)')" />
     <Copy SourceFiles="@(PackRewards)" DestinationFiles="@(PackRewards->'$(DeployDir)\rewards\%(RecursiveDir)%(Filename)%(Extension)')" />
+    <!-- stale cleanup runs LAST: deleting before copying is not atomic — a failed
+         DLL copy (game holding the file) used to leave the folders emptied -->
+    <ItemGroup>
+      <StaleJobs Include="$(DeployDir)\jobs\*.json"
+                 Exclude="@(PackJobs->'$(DeployDir)\jobs\%(RecursiveDir)%(Filename)%(Extension)')" />
+      <StaleRewards Include="$(DeployDir)\rewards\*.csv"
+                    Exclude="@(PackRewards->'$(DeployDir)\rewards\%(RecursiveDir)%(Filename)%(Extension)')" />
+    </ItemGroup>
+    <Delete Files="@(StaleJobs);@(StaleRewards)" />
     <Message Importance="high" Text="Deployed $(TargetFileName) + $(Pack) pack to $(DeployDir)" />
   </Target>
 
