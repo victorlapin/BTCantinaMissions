@@ -20,8 +20,11 @@ pack configuration. To support another modpack, copy `packs/RT` as a starting
 point and retarget the pools — see `packs/RT/BALANCE.md` for the balancing
 methodology.
 
-Planets carrying the tag configured in `PlanetTag` (default: `planet_other_cantina`)
-get a cantina. The store button in the location bar (the one next to Hiring hall) is
+Planets carrying the tag configured in `PlanetTag` get a cantina. The default is
+the vanilla `planet_pop_large` (populous worlds — roughly a fifth of the systems
+on a typical map), so the mod works on unmodified maps; modders wanting curated
+placement can point `PlanetTag` at a custom tag instead.
+The store button in the location bar (the one next to Hiring hall) is
 **replaced** by a **Cantina** button. It is enabled everywhere: on cantina planets it
 opens the full job board; anywhere else it opens your **contract ledger** — active
 jobs with live progress, deliverable and abandonable from any world, but no new
@@ -102,7 +105,8 @@ overwritten afterwards — local tweaks survive updates.
 
 ```jsonc
 {
-  "PlanetTag": "planet_other_cantina", // which planets have a cantina
+  "PlanetTag": "planet_pop_large",      // which planets have a cantina (vanilla tag:
+                                      //   populous worlds, no map edits needed)
   "JobsPerBoard": 4,                  // jobs offered per board
   "MaxActiveJobs": 3,                 // concurrent active jobs
   "NotifyOnProgress": true,            // toasts on progress ticks
@@ -183,7 +187,8 @@ Reward collections are vanilla `ItemCollectionDef` CSVs (`packs/<Pack>/rewards/`
 `ItemCount`; missing or empty collections are not an error — the C-Bills still
 pay out.
 
-To give a planet a cantina, add the tag from `PlanetTag` (default `planet_other_cantina`) to its definition.
+Out of the box every `planet_pop_large` world has a cantina. For curated placement,
+set `PlanetTag` to a custom tag and add it to the chosen star system definitions.
 
 ## Building from source
 
