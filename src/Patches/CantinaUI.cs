@@ -124,6 +124,12 @@ namespace BTCantinaMissions.Patches
             EventBodySpacing.Apply(__instance,
                 evtId == "cantina_board" || evtId == "cantina_reward");
 
+            // Restore vanilla options buttons state
+            if (__instance.optionsList != null)
+                foreach (var btn in __instance.optionsList)
+                    if (btn != null && btn.button != null)
+                        btn.button.enabled = true;
+
             if (evtId != "cantina_board") return;
             if (evt?.Options == null) return;
 
