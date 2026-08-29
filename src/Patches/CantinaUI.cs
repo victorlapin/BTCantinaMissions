@@ -94,6 +94,23 @@ namespace BTCantinaMissions.Patches
         }
     }
 
+    /// <summary>Body line spacing for cantina popups. The panel is shared with
+    /// vanilla events, so the bump must be applied for ours and restored for
+    /// everything else — the original value is captured once on first use.</summary>
+    internal static class EventBodySpacing
+    {
+        internal const float Factor = 1.3f;
+        private static float? vanilla;
+
+        internal static void Apply(SGEventPanel panel, bool ours)
+        {
+            var text = panel?.eventDescription;
+            if (text == null) return;
+            if (vanilla == null) vanilla = text.lineSpacing;
+            text.lineSpacing = ours ? vanilla.Value * Factor : vanilla.Value;
+        }
+    }
+
     /// <summary>Extends SGEventPanel's prebuilt option-button pool (cloning the first
     /// button) when an event has more options than the pool holds. Keeps the panel in
     /// its vanilla reuse mode — buttons are Init'ed and deactivated by ClearOptions,
@@ -103,7 +120,11 @@ namespace BTCantinaMissions.Patches
     {
         public static void Prefix(SGEventPanel __instance, SimGameEventDef evt)
         {
-            if (evt?.Description?.Id != "cantina_board") return;
+            var evtId = evt?.Description?.Id;
+            EventBodySpacing.Apply(__instance,
+                evtId == "cantina_board" || evtId == "cantina_reward");
+
+            if (evtId != "cantina_board") return;
             if (evt?.Options == null) return;
 
             var avail = __instance.availableOptionButtons;
