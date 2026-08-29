@@ -160,9 +160,13 @@ are `planet_other_blackmarket` (exotic hardware) and `planet_other_comstar`
 (electronics contracts). Use it for regional/location flavor.
 
 Destroy-units targets should be things the player can identify in combat by sight
-(unit type, weight class, recognizable archetype like carriers) — internal spawn
-markers such as `unit_indirectFire` are invisible to players and make frustrating
-jobs.
+(unit type, weight class, recognizable archetype like carriers). A tag's display
+name is controllable: add a `DisplayNameTagOverrides` entry in `settings.json`
+to map any specific tag to a proper human-readable name (unlisted tags fall back
+to automatic humanization of the tag id). That fixes what the **board** says — but
+the player still has to recognize the target on the field, so purely internal
+spawn markers such as `unit_indirectFire` remain frustrating targets even with a
+pretty name.
 
 Reward collections are vanilla `ItemCollectionDef` CSVs (`packs/<Pack>/rewards/`;
 `rewards/` in the installed mod) — `id, type, count, weight`. A roll grants one weighted-random entry per
