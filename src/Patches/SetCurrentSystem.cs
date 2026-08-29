@@ -1,5 +1,6 @@
 using BattleTech;
 using BTCantinaMissions.Domain;
+using BTCantinaMissions.UI;
 using HarmonyLib;
 
 namespace BTCantinaMissions.Patches
@@ -25,6 +26,7 @@ namespace BTCantinaMissions.Patches
             }
 
             BoardGenerator.RefreshBoard(system);
+            Notifications.OnNewJobsAvailable();
         }
     }
 }

@@ -31,7 +31,7 @@ namespace BTCantinaMissions.UI
             }
         }
 
-        public static void OnNewQuarterBegin()
+        public static void OnNewJobsAvailable()
         {
             var message = "New cantina jobs available";
             Show(message);

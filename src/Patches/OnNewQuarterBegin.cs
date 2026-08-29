@@ -26,7 +26,7 @@ namespace BTCantinaMissions.Patches
             {
                 Core.Log($"[H1] Month end, refreshing board");
                 BoardGenerator.RefreshBoard(curSystem);
-                Notifications.OnNewQuarterBegin();
+                Notifications.OnNewJobsAvailable();
             }
         }
     }
