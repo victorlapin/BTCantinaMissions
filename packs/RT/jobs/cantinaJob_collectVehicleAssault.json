@@ -1,0 +1,28 @@
+{
+  "Description": {
+    "Id": "cantinaJob_collectVehicleAssault",
+    "Name": "Collect {target}",
+    "Icon": ""
+  },
+  "ObjectiveType": "CollectMech",
+  "MinTargetCount": 1,
+  "MaxTargetCount": 1,
+  "Reward": {
+    "CBills": 160000
+  },
+  "MinSystemDifficulty": 15,
+  "MaxSystemDifficulty": 20,
+  "Weight": 3,
+  "ChassisPool": [
+    "Demolisher",
+    "Schrek",
+    "Behemoth",
+    "HeavyCarrier",
+    "Sturmfeur",
+    "Ontos",
+    "Partisan",
+    "LongTomSPG",
+    "Alacorn",
+    "FuryCMD"
+  ]
+}

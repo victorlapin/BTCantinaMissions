@@ -1,0 +1,28 @@
+{
+  "Description": {
+    "Id": "cantinaJob_collectMechAssault",
+    "Name": "Collect {target}",
+    "Icon": ""
+  },
+  "ObjectiveType": "CollectMech",
+  "MinTargetCount": 1,
+  "MaxTargetCount": 1,
+  "Reward": {
+    "CBills": 600000
+  },
+  "MinSystemDifficulty": 15,
+  "MaxSystemDifficulty": 20,
+  "Weight": 3,
+  "ChassisPool": [
+    "victor",
+    "awesome",
+    "cyclops",
+    "highlander",
+    "banshee",
+    "battlemaster",
+    "stalker",
+    "kingcrab",
+    "zeus",
+    "atlas"
+  ]
+}

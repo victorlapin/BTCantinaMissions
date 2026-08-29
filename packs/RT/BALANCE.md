@@ -28,13 +28,14 @@ valued at chassis cost / parts-to-assemble — one part, not the whole mech). Wh
 
 ## CollectMech / CollectVehicle (Acquire — the unit stays with the player)
 
-Bounty, not value: ~8–10% of the pool floor (cheapest variant of the cheapest
-family — worst-case orientation; richer families are a bonus).
+Bounty, not value — historically anchored at ~8–10% of the pool floor; the
+upper tiers continue the ladder instead (assault mech chassis floors dip below
+the heavy legend due to cheap variants, so a percentage would break monotonicity).
 
 | Tier | Pool floor | Reward |
 |---|---|---|
-| Mech light / medium / heavy | ~1.9M | 150k / 250k / 400k |
-| Vehicle L / M / H | 568k / 1,040k / 1,254k | 60k / 100k / 125k |
+| Mech light / medium / heavy / assault | ladder | 150k / 250k / 400k / 600k |
+| Vehicle L / M / H / A | 568k / 1,040k / 1,254k / 1,350k | 60k / 100k / 125k / 160k |
 
 Parts jobs inherit ×1.33 of the whole-unit job of the same tier (the original
 tuning ratio: 200/300/450k vs 150/250/400k; vehicles mirror it).

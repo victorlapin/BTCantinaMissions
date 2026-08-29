@@ -1,0 +1,28 @@
+{
+  "Description": {
+    "Id": "cantinaJob_collectVehiclePartsAssault",
+    "Name": "Collect {target} parts",
+    "Icon": ""
+  },
+  "ObjectiveType": "CollectMechParts",
+  "MinTargetCount": 2,
+  "MaxTargetCount": 3,
+  "Reward": {
+    "CBills": 210000
+  },
+  "MinSystemDifficulty": 15,
+  "MaxSystemDifficulty": 20,
+  "Weight": 3,
+  "ChassisPool": [
+    "Demolisher",
+    "Schrek",
+    "Behemoth",
+    "HeavyCarrier",
+    "Sturmfeur",
+    "Ontos",
+    "Partisan",
+    "LongTomSPG",
+    "Alacorn",
+    "FuryCMD"
+  ]
+}
