@@ -54,17 +54,3 @@ At payout time c-bills are multiplied by `Finances.ContractPricePerDifficulty /
 200000` — the career "Contract Payment" slider (Cheapskate 50% … Generous 150%).
 200k (Normal) is the baseline all numbers above are balanced against. Target
 counts and item rolls are never scaled.
-
-## Pool curation filters
-
-- **Clan**: fully-clan families are out (every def carries `unit_vehicle_clan`
-  in `VehicleTags.items` — e.g. Ares, ClanCarrier); mixed families are fine
-  (Zephya-class, e.g. Zephyr 1/4). Note: the tags array key is `items`, not
-  `tags`.
-- **Pirate-niche**: families whose defs carry only pirate/mercenary factions
-  without a Great House are out (Thunderstruck → replaced by Igor).
-- **Price outliers**: cheap families that break the pool floor are out
-  (Mockingbird 241k, Hetzer 736k, CarrierMissiles 917k in the collect pools —
-  destroy pools are cost-agnostic, only commonality matters there).
-- Vehicle families must be written exactly as `VAssemblyVariant.PrefabID`
-  appears in the chassis data (case-sensitive display).
