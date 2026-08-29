@@ -2,6 +2,16 @@
 
 A job board in the local cantina for HBS BattleTech (Unity + HarmonyX, ModTek).
 
+<p align="center">
+  <img src="img/Screenshot_1.jpg" alt="The cantina job board: offered jobs with rewards, pagination and active jobs" width="890"><br>
+  <em>The job board on a cantina world — offers with payouts, page switcher, active jobs.</em>
+</p>
+
+<p align="center">
+  <img src="img/Screenshot_2.jpg" alt="Abandon confirmation dialog over the board" width="890"><br>
+  <em>Abandoning a job asks for confirmation — all progress is lost. Delivering a consuming job gets one too, spelling out exactly what leaves your inventory.</em>
+</p>
+
 The DLL is modpack-agnostic; job/reward definitions live in per-modpack packs
 (`packs/<Name>/` in the repo). Releases are **self-contained drop-in zips per
 supported modpack** (`BTCantinaMissions-<Pack>-v<version>.zip`); the RT pack
