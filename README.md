@@ -86,7 +86,12 @@ instead of crashing.
   "NotifyOnProgress": true,            // toasts on progress ticks
   "NotifyOnReady": true,               // green READY toast / red NOT READY toast
   "DebugLogging": false,               // verbose log to .modtek/battletech.log
-  "DumpStateOnSave": false             // debug: state_dump.json next to the mod
+  "DumpStateOnSave": false,            // debug: state_dump.json next to the mod
+  "DisplayNameTagOverrides": {         // display names for DestroyUnits tag targets;
+    "unit_vtol": "VTOL",               // replaces the whole dictionary when present —
+    "unit_legendary": "Legendary unit",  // include the defaults you want to keep;
+    "unit_primitive": "Primitive unit"  // unlisted tags fall back to humanization
+  }
 }
 ```
 

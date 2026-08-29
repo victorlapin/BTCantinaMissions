@@ -268,14 +268,6 @@ namespace BTCantinaMissions.Domain
             return s?.Replace("_", "").Replace("-", "").ToLowerInvariant() ?? "";
         }
 
-        /// <summary>Display names for tags that need special casing.</summary>
-        private static readonly Dictionary<string, string> tagOverrides = new Dictionary<string, string>
-        {
-            {"unit_vtol", "VTOL"},
-            {"unit_legendary", "Legendary unit"},
-            {"unit_primitive", "Primitive units"},
-        };
-
         /// <summary>Splits a composite target ("unit_mech&unit_light") into individual tags.</summary>
         public static string[] SplitTarget(string target)
         {
@@ -304,7 +296,7 @@ namespace BTCantinaMissions.Domain
             foreach (var part in parts)
             {
                 var tag = part.Trim();
-                if (tagOverrides.TryGetValue(tag, out var known))
+                if (Core.Settings.DisplayNameTagOverrides != null && Core.Settings.DisplayNameTagOverrides.TryGetValue(tag, out var known))
                 {
                     words.Add(known);
                     continue;
