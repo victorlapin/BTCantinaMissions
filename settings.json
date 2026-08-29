@@ -1,9 +1,0 @@
-{
-  "PlanetTag": "planet_other_cantina",
-  "JobsPerBoard": 4,
-  "MaxActiveJobs": 3,
-  "NotifyOnProgress": true,
-  "NotifyOnReady": true,
-  "DebugLogging": false,
-  "DumpStateOnSave": false
-}

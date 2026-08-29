@@ -3,3 +3,4 @@ BTSimpleMechAssembly
 bin
 obj
 Directory.Build.Props
+dist/

@@ -11,8 +11,7 @@
   ],
   "OptionallyDependsOn": [
     "CustomSalvage",
-    "LewdableTanks",
-    "BTSimpleMechAssembly"
+    "LewdableTanks"
   ],
   "DLL": "BTCantinaMissions.dll",
   "CustomResourceTypes": [

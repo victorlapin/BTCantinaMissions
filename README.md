@@ -2,6 +2,14 @@
 
 A job board in the local cantina for HBS BattleTech (Unity + HarmonyX, ModTek).
 
+The DLL is modpack-agnostic; job/reward definitions live in per-modpack packs
+(`packs/<Name>/` in the repo). Releases are **self-contained drop-in zips per
+supported modpack** (`BTCantinaMissions-<Pack>-v<version>.zip`); the RT pack
+(the maintained one) ships with the release. Requirements below describe the RT
+pack configuration. To support another modpack, copy `packs/RT` as a starting
+point and retarget the pools — see `packs/RT/BALANCE.md` for the balancing
+methodology.
+
 Planets carrying the tag configured in `PlanetTag` (default: `planet_other_cantina`)
 get a cantina. The store button in the location bar (the one next to Hiring hall) is
 **replaced** by a **Cantina** button. It is enabled everywhere: on cantina planets it
@@ -78,6 +86,10 @@ instead of crashing.
 
 ## Settings (`settings.json`)
 
+A template with the pack's defaults ships inside each pack zip (repo:
+`packs/<Pack>/settings.json`); it is only seeded on install and never
+overwritten afterwards — local tweaks survive updates.
+
 ```jsonc
 {
   "PlanetTag": "planet_other_cantina", // which planets have a cantina
@@ -97,8 +109,10 @@ instead of crashing.
 
 ## For modders: adding jobs
 
-Jobs are `CantinaJobDef` JSON files in `jobs/` (registered as a ModTek
-`CustomResourceTypes` entry in `mod.json`):
+Jobs are `CantinaJobDef` JSON files (in the repo: `packs/<Pack>/jobs/`; in the
+installed mod: `jobs/` at the mod root — the packaging step flattens the pack).
+They are registered as a ModTek `CustomResourceTypes` entry in the pack's
+`mod.json`:
 
 ```jsonc
 {
@@ -150,8 +164,8 @@ Destroy-units targets should be things the player can identify in combat by sigh
 markers such as `unit_indirectFire` are invisible to players and make frustrating
 jobs.
 
-Reward collections are vanilla `ItemCollectionDef` CSVs in `rewards/`
-(`id, type, count, weight`). A roll grants one weighted-random entry per
+Reward collections are vanilla `ItemCollectionDef` CSVs (`packs/<Pack>/rewards/`;
+`rewards/` in the installed mod) — `id, type, count, weight`. A roll grants one weighted-random entry per
 `ItemCount`; missing or empty collections are not an error — the C-Bills still
 pay out.
 
@@ -164,7 +178,13 @@ To give a planet a cantina, add the tag from `PlanetTag` (default `planet_other_
   Use `-c Release` for shipping binaries; `-p:DeployDir=...` copies the DLL into
   the mod folder automatically after the build.
 - Copy `CHANGEME.Directory.Build.Props` to `Directory.Build.Props` and point it at
-  your game/mod folders.
+  your game/mod folders (the build then deploys the DLL **plus the dev pack**
+  — `packs/RT` by default, override with `-p:Pack=<Name>` — into the game mod
+  folder, cleaning stale pack files first).
+- Release artifacts: `python package.py [Pack ...]` builds the DLL and zips
+  every pack (or the listed ones) into `dist/`. Packs are versioned in lockstep
+  with the DLL — a `mod.json` version mismatch against `AssemblyVersion` fails
+  the packaging.
 - HarmonyX is referenced from `ModTek/lib`; private fields are accessed via
   [Krafs.Publicizer](https://github.com/pardeike/Publicizer) — `Assembly-CSharp`
   and `BTSimpleMechAssembly` are publicized (compile-time copies only; at runtime

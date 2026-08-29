@@ -11,6 +11,7 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <DebugType>none</DebugType>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <Pack Condition="'$(Pack)' == ''">RT</Pack>
   </PropertyGroup>
 
   <!-- Lets dotnet build target .NET Framework without installed targeting packs (VS Code friendly) -->
@@ -85,10 +86,32 @@
     <Compile Include="src\**\*.cs" />
   </ItemGroup>
 
-  <!-- Optional deployment: dotnet build -p:DeployDir="D:\path\to\Mods\BTCantinaMissions" -->
+  <!-- Optional deployment: dotnet build -p:DeployDir="D:\path\to\Mods\BTCantinaMissions"
+       (overridable pack: -p:Pack=RT). Copies the DLL plus the dev pack flattened to
+       the mod-root layout ModTek expects; stale pack files are removed first so
+       renamed/deleted defs don't linger as ghosts. -->
   <Target Name="Deploy" AfterTargets="Build" Condition="'$(DeployDir)' != ''">
+    <PropertyGroup>
+      <PackDir>$(MSBuildProjectDirectory)\packs\$(Pack)</PackDir>
+    </PropertyGroup>
+    <ItemGroup>
+      <StaleJobs Include="$(DeployDir)\jobs\*.json" />
+      <StaleRewards Include="$(DeployDir)\rewards\*.csv" />
+      <PackManifest Include="$(PackDir)\mod.json" />
+      <PackSettings Include="$(PackDir)\settings.json" />
+      <PackJobs Include="$(PackDir)\jobs\**\*.json" />
+      <PackRewards Include="$(PackDir)\rewards\**\*.csv" />
+    </ItemGroup>
+    <Delete Files="@(StaleJobs);@(StaleRewards)" />
     <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(DeployDir)" />
-    <Message Importance="high" Text="Deployed $(TargetFileName) to $(DeployDir)" />
+    <Copy SourceFiles="@(PackManifest)" DestinationFolder="$(DeployDir)" />
+    <!-- settings.json is user-owned runtime config: seed from the pack only when
+         absent, never clobber local tweaks (test tags, debug flags) -->
+    <Copy SourceFiles="@(PackSettings)" DestinationFolder="$(DeployDir)"
+          Condition="!Exists('$(DeployDir)\settings.json')" />
+    <Copy SourceFiles="@(PackJobs)" DestinationFiles="@(PackJobs->'$(DeployDir)\jobs\%(RecursiveDir)%(Filename)%(Extension)')" />
+    <Copy SourceFiles="@(PackRewards)" DestinationFiles="@(PackRewards->'$(DeployDir)\rewards\%(RecursiveDir)%(Filename)%(Extension)')" />
+    <Message Importance="high" Text="Deployed $(TargetFileName) + $(Pack) pack to $(DeployDir)" />
   </Target>
 
 </Project>

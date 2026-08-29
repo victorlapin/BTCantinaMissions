@@ -1,0 +1,14 @@
+{
+  "PlanetTag": "planet_other_cantina",
+  "JobsPerBoard": 4,
+  "MaxActiveJobs": 3,
+  "NotifyOnProgress": true,
+  "NotifyOnReady": true,
+  "DebugLogging": false,
+  "DumpStateOnSave": false,
+  "DisplayNameTagOverrides": {
+    "unit_vtol": "VTOL",
+    "unit_legendary": "Legendary unit",
+    "unit_primitive": "Primitive units"
+  }
+}
