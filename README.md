@@ -3,10 +3,12 @@
 A job board in the local cantina for HBS BattleTech (Unity + HarmonyX, ModTek).
 
 Planets carrying the tag configured in `PlanetTag` (default: `planet_other_cantina`)
-get a cantina. The store button in the location bar (the one next to Hiring hall) is 
-**replaced** by a **Cantina** button: enabled (and opening the board) on cantina 
-planets, disabled elsewhere. The store itself stays reachable through the left
-navigation menu (provided by IRTweaks).
+get a cantina. The store button in the location bar (the one next to Hiring hall) is
+**replaced** by a **Cantina** button. It is enabled everywhere: on cantina planets it
+opens the full job board; anywhere else it opens your **contract ledger** — active
+jobs with live progress, deliverable and abandonable from any world, but no new
+offers (those are only posted on cantina worlds). The store itself stays reachable
+through the left navigation menu (provided by IRTweaks).
 Inside the board: small jobs — destroy specific units, collect items, acquire
 mechs or salvage parts. Take a job, do the work out in the field, come back and
 deliver it for C-Bills (and bonus items). The board refreshes monthly.

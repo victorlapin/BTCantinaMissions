@@ -19,6 +19,10 @@ namespace BTCantinaMissions.UI
         private static int currentPage = 0;
         private static string currentFlavor = "";
 
+        /// <summary>Mode of the popup currently being shown: full board on cantina
+        /// worlds, ledger (active jobs only) everywhere else.</summary>
+        private static bool currentIsCantina;
+
         private static readonly string[] boardFlavor =
 {
             "The cantina's notice board is cluttered with scribbled job offers.",
@@ -26,6 +30,14 @@ namespace BTCantinaMissions.UI
             "Holo-ads flicker over a board thick with mercenary job slips.",
             "The smell of fried synth-protein hangs over a wall of contracts.",
             "Half the board is pin-up holos; the other half is honest work."
+        };
+
+        private static readonly string[] ledgerFlavor =
+        {
+            "A dog-eared contract ledger, updated with every HPG ping.",
+            "Your fixer's confirmation chits, filed by date and payoff.",
+            "Merc work never sleeps — the ledger keeps the receipts.",
+            "The company's open contracts, far from any cantina wall."
         };
 
         private static readonly string[] rewardFlavor =
@@ -56,20 +68,26 @@ namespace BTCantinaMissions.UI
             var state = Core.State;
             var sim = UnityGameInstance.BattleTechGame.Simulation;
 
+            var system = sim.CurSystem;
+            currentIsCantina = system != null && system.Tags.Contains(Core.Settings.PlanetTag);
+
             if (Core.State.Board == null)
             {
-                // could happen after loading a save without initialized board
+                // could happen after loading a save without initialized board;
+                // generate offers only on cantina worlds — the ledger works
+                // with an empty board just fine
                 Core.State.Board = new SystemBoard();
-                BoardGenerator.RefreshBoard(sim.CurSystem);
+                if (currentIsCantina) BoardGenerator.RefreshBoard(system);
             }
 
             currentPage = 0;   // fresh open always starts at the first page
-            currentFlavor = Flavor(boardFlavor);
+            currentFlavor = Flavor(currentIsCantina ? boardFlavor : ledgerFlavor);
 
             // ── Option stubs ──────────────────────────────
             // No more stubs than the popup can display: pagination renders at most MAX_BUTTONS
+            var slots = currentIsCantina ? state.Board.Slots.Count : 0;
             var optionsCount = Math.Min(
-                state.Board.Slots.Count + state.ActiveJobs.Count + 1,
+                slots + state.ActiveJobs.Count + 1,
                 MAX_BUTTONS);
             var options = new SimGameEventOption[optionsCount];
             for (int i = 0; i < optionsCount; i++)
@@ -83,7 +101,7 @@ namespace BTCantinaMissions.UI
             }
 
             // ── Build event ───────────────────────────────
-            var desc = new BaseDescriptionDef("cantina_board", "Cantina", "", "uixTxrSpot_HiringHall");
+            var desc = new BaseDescriptionDef("cantina_board", "Cantina Jobs", "", "uixTxrSpot_HiringHall");
 
             var evt = new SimGameEventDef(
                 SimGameEventDef.EventPublishState.PUBLISHED,
@@ -236,29 +254,39 @@ namespace BTCantinaMissions.UI
             sb.AppendLine();
             sb.AppendLine();
 
-            if (state.ActiveJobs.Count >= Core.Settings.MaxActiveJobs)
+            if (currentIsCantina)
             {
-                sb.AppendLine("<b>Available jobs (limit reached — deliver or abandon a job first):</b>");
-            }
-            else
-            {
-                sb.AppendLine("<b>Available jobs:</b>");
-            }
+                var inTransit = UnityGameInstance.BattleTechGame.Simulation?.TravelState
+                    != SimGameTravelStatus.IN_SYSTEM;
 
-            sb.AppendLine();
+                if (state.ActiveJobs.Count >= Core.Settings.MaxActiveJobs)
+                {
+                    sb.AppendLine("<b>Available jobs (limit reached — deliver or abandon a job first):</b>");
+                }
+                else if (inTransit)
+                {
+                    sb.AppendLine("<b>Available jobs (in transit — land to take them):</b>");
+                }
+                else
+                {
+                    sb.AppendLine("<b>Available jobs:</b>");
+                }
 
-            if (state.Board?.Slots.Count > 0)
-            {
-                foreach (var job in state.Board.Slots)
-                    sb.AppendLine($"  {OfferedDisplayString(job)}{RewardSuffix(job)}");
-            }
-            else
-            {
-                sb.AppendLine("  No jobs available.");
-            }
+                sb.AppendLine();
 
-            sb.AppendLine();
-            sb.AppendLine();
+                if (state.Board?.Slots.Count > 0)
+                {
+                    foreach (var job in state.Board.Slots)
+                        sb.AppendLine($"  {OfferedDisplayString(job)}{RewardSuffix(job)}");
+                }
+                else
+                {
+                    sb.AppendLine("  No jobs available.");
+                }
+
+                sb.AppendLine();
+                sb.AppendLine();
+            }
 
             sb.AppendLine($"<b>Your active jobs (max. {Core.Settings.MaxActiveJobs})</b>:");
             sb.AppendLine();
@@ -285,13 +313,17 @@ namespace BTCantinaMissions.UI
         {
             var state = Core.State;
             var atLimit = state.ActiveJobs.Count >= Core.Settings.MaxActiveJobs;
+            var inTransit = UnityGameInstance.BattleTechGame.Simulation?.TravelState
+                != SimGameTravelStatus.IN_SYSTEM;
             sgEventPanel.eventDescription.SetText(BuildBody(state));
 
-            // Content entries in display order: board offers first, then active jobs
+            // Content entries in display order: board offers first, then active jobs.
+            // Ledger mode (non-cantina worlds): offers are not shown and cannot be
+            // taken — the board physically hangs on a cantina wall
             var entries = new List<OptionEntry>();
-            foreach (var job in state.Board.Slots)
+            foreach (var job in currentIsCantina ? state.Board.Slots : new List<JobInstance>())
             {
-                entries.Add(new OptionEntry($"{(atLimit ? "[Take]" : UIColors.Wrap("[Take]", UIColor.Blue))} {job.ResolvedName}", !atLimit, arg =>
+                entries.Add(new OptionEntry($"{((atLimit || inTransit) ? "[Take]" : UIColors.Wrap("[Take]", UIColor.Blue))} {job.ResolvedName}", !atLimit && !inTransit, arg =>
                 {
                     var result = Core.State.TryTake(job.InstanceId);
                     Core.Log($"[Board] Take: {result}");

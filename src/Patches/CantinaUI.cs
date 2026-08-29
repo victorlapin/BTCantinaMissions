@@ -23,7 +23,7 @@ namespace BTCantinaMissions.Patches
             var isCantina = currSystem != null && currSystem.Tags.Contains(Core.Settings.PlanetTag);
             SetTooltip(button, isCantina
                 ? "Browse the cantina job board"
-                : "No cantina on this planet");
+                : "Review your active cantina jobs");
 
             if (isCantina)
             {
@@ -34,7 +34,9 @@ namespace BTCantinaMissions.Patches
             }
             else
             {
-                button.SetState(ButtonState.Disabled, false);
+                // Ledger mode: your own contracts are reviewable (and deliverable)
+                // anywhere — only the job board itself needs a cantina
+                button.SetState(ButtonState.Enabled, false);
             }
         }
 
@@ -55,7 +57,8 @@ namespace BTCantinaMissions.Patches
     }
 
 
-    /// <summary>Intercepts the Store button click on cantina planets to show the cantina event popup.</summary>
+    /// <summary>Intercepts the Store button click everywhere: cantina planets open the
+    /// full board, other worlds open the ledger (active jobs only).</summary>
     [HarmonyPatch(typeof(SGLocationWidget), nameof(SGLocationWidget.ReceiveButtonPress))]
     public static class SGLocationWidget_ReceiveButtonPress
     {
@@ -63,22 +66,9 @@ namespace BTCantinaMissions.Patches
         {
             Core.Debug($"[UI] Button pressed: {button}");
             if (button != "Store") return true;
-            if (!IsCantinaPlanetEnabled) return true;
 
             CantinaPopup.Show();
             return false;
-        }
-
-        private static bool IsCantinaPlanetEnabled
-        {
-            get
-            {
-                var sim = UnityGameInstance.BattleTechGame.Simulation;
-                var system = sim?.CurSystem;
-                if (system == null) return false;
-                if (!system.Tags.Contains(Core.Settings.PlanetTag)) return false;
-                return sim.GetReputation(system.OwnerValue) > SimGameReputation.LOATHED;
-            }
         }
     }
 
