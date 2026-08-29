@@ -14,3 +14,7 @@ Weapon_Autocannon_AC_20,Weapon,1,5
 Gear_HeatSink_Prototype,HeatSink,1,4
 Ammo_AmmunitionBox_MRM_Streak,AmmunitionBox,3,4
 Ammo_AmmunitionBox_LBX_20_Dragons_Breath,AmmunitionBox,4,4
+Ammo_AmmunitionBox_LRM_Double,AmmunitionBox,2,4
+Ammo_AmmunitionBox_Gauss_Double,AmmunitionBox,4,3
+Ammo_AmmunitionBox_UAC_10_Double,AmmunitionBox,6,3
+Ammo_AmmunitionBox_UAC_20_Double,AmmunitionBox,4,3

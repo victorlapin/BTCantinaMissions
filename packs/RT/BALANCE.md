@@ -20,8 +20,10 @@ this pack) is far below every payout — by design.
 ## Reward collections (rolls)
 
 Expected value per roll = Σ(count × weight × cost) / Σ(weight), kept at
-~18k / 88k / 176k for Tier1/2/3 (ComStar ~148k, Exotic ~101k). When adding
-entries, keep the EV within ±0.5% — recalculate, don't eyeball.
+~18k / 88k / 176k for Tier1/2/3 (ComStar ~148k, Exotic ~101k, Quicsell ~18.3k —
+the joke-brand collection, EV-locked to Tier1 parity so swapping it into a job
+changes the flavor, not the value). When adding entries, keep the EV within
+±0.5% — recalculate, don't eyeball.
 
 ## CollectMech / CollectVehicle (Acquire — the unit stays with the player)
 
