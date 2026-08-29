@@ -125,6 +125,38 @@ namespace BTCantinaMissions.Domain
             return new JobInstance(def.Id, target, name, targetCount, systemId);
         }
 
+        /// <summary>Re-resolves display names for all persisted jobs (active list +
+        /// board slots). Called on save load: ResolvedName is persisted, so jobs saved
+        /// while a name source was unavailable (e.g. the vehicle registry not yet
+        /// populated) would otherwise carry the raw target string forever.</summary>
+        public static void RefreshDisplayNames(SimGameState sim)
+        {
+            // the caller passes the rehydrating instance: BattleTechGame.Simulation
+            // may not be assigned yet at Rehydrate time
+            var dm = sim?.DataManager;
+            if (dm == null) return;
+
+            var changed = 0;
+            void Refresh(JobInstance job)
+            {
+                var def = JobCatalog.GetDef(job.DefId);
+                if (def == null || !def.Name.Contains("{target}")) return;
+                var fresh = def.Name.Replace("{target}", ResolveDisplayName(def, job.ResolvedTarget));
+                if (fresh != job.ResolvedName)
+                {
+                    job.ResolvedName = fresh;
+                    changed++;
+                }
+            }
+
+            foreach (var job in Core.State.ActiveJobs) Refresh(job);
+            if (Core.State.Board?.Slots != null)
+                foreach (var job in Core.State.Board.Slots) Refresh(job);
+
+            if (changed > 0)
+                Core.Log($"[Load] Display names refreshed for {changed} job(s)");
+        }
+
         /// <summary>Resolves the human-readable display name for a pool target
         /// by looking up actual game data via DataManager. Falls back to
         /// simple humanization if lookup fails.</summary>
@@ -177,7 +209,11 @@ namespace BTCantinaMissions.Domain
                 return cached;
 
             var name = FindChassisNameUncached(dm, target);
-            chassisNameCache[target] = name;
+            // cache positive results only: a null often means "registry not populated
+            // yet" (the sim DataManager may not carry VehicleDefs until something loads
+            // them) — caching it would pin the raw fallback forever
+            if (name != null)
+                chassisNameCache[target] = name;
             return name;
         }
 
@@ -238,14 +274,20 @@ namespace BTCantinaMissions.Domain
         /// fail-soft against LT version drift. Runs once per family (chassisNameCache).</summary>
         private static string FindVehicleChassisName(BattleTech.Data.DataManager dm, string target)
         {
+            var scanned = 0;
+            var withVariant = 0;
             try
             {
                 foreach (var kvp in dm.VehicleDefs)
                 {
+                    scanned++;
                     var chassis = kvp.Value?.Chassis;
                     if (chassis == null) continue;
 
                     var prefab = chassis.GetComponent<VAssemblyVariant>()?.PrefabID;
+                    if (prefab == null) continue;
+                    withVariant++;
+
                     if (!string.Equals(prefab, target, StringComparison.OrdinalIgnoreCase))
                         continue;
 
@@ -259,6 +301,7 @@ namespace BTCantinaMissions.Domain
                 Core.LogWarning($"[BoardGenerator] LewdableTanks API drift: {e.GetType().Name}: {e.Message}");
             }
 
+            Core.Debug($"[BoardGenerator] vehicle name miss for '{target}': scanned={scanned}, withVariant={withVariant}");
             return null;
         }
 

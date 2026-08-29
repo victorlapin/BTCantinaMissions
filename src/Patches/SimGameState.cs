@@ -41,6 +41,8 @@ namespace BTCantinaMissions.Patches
     {
         public static void Postfix(SimGameState __instance)
         {
+            BoardGenerator.RefreshDisplayNames(__instance);
+
             foreach (var job in Core.State.ActiveJobs)
             {
                 var def = JobCatalog.GetDef(job.DefId);
