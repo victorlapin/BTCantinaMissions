@@ -63,7 +63,7 @@ instead of crashing.
   confirms, **Esc** cancels.
 - **Esc** closes the board and reward popups.
 - Job types:
-  - **DestroyUnits** — kill N units matching a tag set (`unit_vtol`, `unit_mech&unit_light`,
+  - **DestroyTagged** — kill N units matching a tag set (`unit_vtol`, `unit_mech&unit_light`,
     `unit_light&unit_turret`...) — mechs, vehicles and turrets alike.
   - **DestroyChassis** — kill N units of a specific chassis family ("Destroy 3 Locust",
     "Destroy 2 Scimitar") — mechs and vehicles (LewdableTanks); forcing the pilot to
@@ -113,7 +113,7 @@ overwritten afterwards — local tweaks survive updates.
   "NotifyOnReady": true,               // green READY toast / red NOT READY toast
   "DebugLogging": false,               // verbose log to .modtek/battletech.log
   "DumpStateOnSave": false,            // debug: state_dump.json next to the mod
-  "DisplayNameTagOverrides": {         // display names for DestroyUnits tag targets;
+  "DisplayNameTagOverrides": {         // display names for DestroyTagged tag targets;
     "unit_vtol": "VTOL",               // replaces the whole dictionary when present —
     "unit_legendary": "Legendary unit",  // include the defaults you want to keep;
     "unit_primitive": "Primitive unit"  // unlisted tags fall back to humanization
@@ -135,11 +135,11 @@ They are registered as a ModTek `CustomResourceTypes` entry in the pack's
     "Name": "Collect {target}",     // {target} is substituted from the pool
     "Icon": ""
   },
-  "ObjectiveType": "CollectItems",  // DestroyUnits | DestroyChassis | CollectItems | CollectMech | CollectMechParts
+  "ObjectiveType": "CollectItems",  // DestroyTagged | DestroyChassis | CollectItems | CollectMech | CollectMechParts
 
   // Target pool — the generator picks one random entry per board slot.
   // Use the pool matching the objective type; single-entry pool = fixed target.
-  "UnitTagPool": ["unit_vtol", "unit_light&unit_mech"],        // DestroyUnits, & = all tags
+  "UnitTagPool": ["unit_vtol", "unit_light&unit_mech"],        // DestroyTagged, & = all tags
   "ChassisPool": ["locust", "stinger", "Scimitar"],            // DestroyChassis / CollectMech / CollectMechParts
   "ItemPool": [                                                // CollectItems — explicit catalog:
     { "Id": "Weapon_Laser_Medium", "ItemType": "Weapon" },     //   the ID prefix alone is not

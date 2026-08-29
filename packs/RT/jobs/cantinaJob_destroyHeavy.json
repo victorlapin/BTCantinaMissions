@@ -4,7 +4,7 @@
     "Name": "Destroy {target}",
     "Icon": ""
   },
-  "ObjectiveType": "DestroyUnits",
+  "ObjectiveType": "DestroyTagged",
   "MinTargetCount": 2,
   "MaxTargetCount": 4,
   "Reward": {

@@ -7,7 +7,7 @@ namespace BTCantinaMissions.Domain
     /// <summary>Type of objective a cantina job requires.</summary>
     public enum ObjectiveType
     {
-        DestroyUnits,
+        DestroyTagged,
         DestroyChassis,
         CollectItems,
         CollectMech,
@@ -38,7 +38,7 @@ namespace BTCantinaMissions.Domain
 
         // Target pool: generator picks a random entry.
         // Single-element pool = static target.
-        public List<string> UnitTagPool;            // DestroyUnits: unit tags ("unit_vtol")
+        public List<string> UnitTagPool;            // DestroyTagged: unit tags ("unit_vtol")
         public List<string> ChassisPool;            // CollectMech/Parts: chassis families ("locust")
         public List<TargetItemDef> ItemPool;        // CollectItems: explicit id + catalog
 

@@ -12,7 +12,7 @@ namespace BTCantinaMissions
         public bool DebugLogging = false;
         public bool DumpStateOnSave = false;
 
-        /// <summary>Display names for unit tags (DestroyUnits targets). A value in
+        /// <summary>Display names for unit tags (DestroyTagged targets). A value in
         /// settings.json replaces the whole dictionary — include the defaults you
         /// want to keep. Tags not listed fall back to humanization (strip "unit_",
         /// capitalize).</summary>

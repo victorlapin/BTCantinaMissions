@@ -10,7 +10,7 @@ namespace BTCantinaMissions.Patches
 {
     /// <summary>Victims destroyed by the player's own team during the current combat.
     /// Attribution matters: MissionControl can drop allied lances and employer forces
-    /// fight alongside the player — only the player's own work advances DestroyUnits
+    /// fight alongside the player — only the player's own work advances DestroyTagged
     /// jobs. Stored as actor references on purpose: encounter GUIDs repeat across runs,
     /// object identity cannot; entries from other combats are filtered out by the
     /// actor.Combat check at counting time. Never persisted.</summary>
@@ -118,7 +118,7 @@ namespace BTCantinaMissions.Patches
         }
     }
 
-    /// <summary>H6: applies recorded player-team kills to active DestroyUnits jobs at
+    /// <summary>H6: applies recorded player-team kills to active DestroyTagged jobs at
     /// contract completion. Works regardless of mission result.</summary>
     [HarmonyPatch(typeof(Contract), nameof(Contract.CompleteContract))]
     public static class CompleteContractPatch
@@ -187,7 +187,7 @@ namespace BTCantinaMissions.Patches
                 var def = JobCatalog.GetDef(job.DefId);
                 var count = 0;
 
-                if (def?.ObjectiveType == ObjectiveType.DestroyUnits)
+                if (def?.ObjectiveType == ObjectiveType.DestroyTagged)
                 {
                     foreach (var tagSet in deadTags)
                     {

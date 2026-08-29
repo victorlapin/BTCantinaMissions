@@ -152,7 +152,7 @@ namespace BTCantinaMissions.Domain
                         if (name != null) return name;
                         break;
                     }
-                case ObjectiveType.DestroyUnits:
+                case ObjectiveType.DestroyTagged:
                     {
                         // "unit_vtol" → strip prefix, capitalize
                         if (target.StartsWith("unit_"))
