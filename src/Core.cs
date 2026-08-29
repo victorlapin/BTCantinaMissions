@@ -33,6 +33,8 @@ namespace BTCantinaMissions
             Log($"[Init] Settings: tag={Settings.PlanetTag}, jobsPerBoard={Settings.JobsPerBoard}, " +
                     $"maxActive={Settings.MaxActiveJobs}");
 
+            Integrations.VerifyHardDependencies();
+
             JsonSaveBlock<CampaignState> saveBlock = new JsonSaveBlock<CampaignState>
             {
                 Data = State

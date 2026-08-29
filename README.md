@@ -204,9 +204,15 @@ To give a planet a cantina, add the tag from `PlanetTag` (default `planet_other_
 - **Destroy targets** are limited to traits the player can identify in combat
   (unit type, weight class, recognizable archetypes such as carriers) — by
   design; see the note for modders above.
+- **JwTweaks** is a hard dependency for persistence: mod state survives
+  saves/loads exclusively through its custom save blocks. The `CustomSaveBlocks`
+  feature must be enabled — with it off, the board regenerates on every load
+  and all job progress is lost. Startup checks the toggle in JwTweaks' mod.json
+  and logs a loud warning when it is off (there is no in-game notice).
 - **IRTweaks** is a hard dependency because the cantina button replaces the
   vanilla store button — its `StreamlinedMainMenu` feature must stay enabled,
-  otherwise the store becomes unreachable (no runtime check for that flag).
+  otherwise the store becomes unreachable. Startup checks this toggle too and
+  warns in the log.
 - The monthly board refresh is anchored to the financial report and is skipped
   while in transit (the board regenerates on the next cantina arrival).
 - English only, no localization.
