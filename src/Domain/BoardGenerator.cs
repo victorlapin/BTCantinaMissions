@@ -308,7 +308,7 @@ namespace BTCantinaMissions.Domain
         /// <summary>Normalizes a chassis key fragment: lowercase, strip _ and -.</summary>
         private static string NormalizeChassisKey(string s)
         {
-            return s?.Replace("_", "").Replace("-", "").ToLowerInvariant() ?? "";
+            return s?.Replace("_", "").Replace("-", "").Replace(" ", "").ToLowerInvariant() ?? "";
         }
 
         /// <summary>Splits a composite target ("unit_mech&unit_light") into individual tags.</summary>
