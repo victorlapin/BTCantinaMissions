@@ -6,6 +6,8 @@
   "NotifyOnReady": true,
   "DebugLogging": false,
   "DumpStateOnSave": false,
+  "CantinaHotkey": "",
+  "InterceptStoreButton": true,
   "DisplayNameTagOverrides": {
     "unit_vtol": "VTOL",
     "unit_legendary": "Legendary unit",

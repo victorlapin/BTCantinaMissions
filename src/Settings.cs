@@ -12,6 +12,16 @@ namespace BTCantinaMissions
         public bool DebugLogging = false;
         public bool DumpStateOnSave = false;
 
+        /// <summary>Keyboard shortcut opening the cantina board/ledger from the ship
+        /// room (a UnityEngine KeyCode name, e.g. "F7"). Empty = disabled. Primary
+        /// entry for modpacks where the store button must stay vanilla.</summary>
+        public string CantinaHotkey = "";
+
+        /// <summary>Replace the location-bar store button with the Cantina button
+        /// (RT pack default: the store stays reachable via IRTweaks' left menu).
+        /// false leaves the store button vanilla — pair with CantinaHotkey.</summary>
+        public bool InterceptStoreButton = true;
+
         /// <summary>Display names for unit tags (DestroyTagged targets). A value in
         /// settings.json replaces the whole dictionary — include the defaults you
         /// want to keep. Tags not listed fall back to humanization (strip "unit_",

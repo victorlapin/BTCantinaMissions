@@ -24,12 +24,20 @@ Planets carrying the tag configured in `PlanetTag` get a cantina. The default is
 the vanilla `planet_pop_large` (populous worlds — roughly a fifth of the systems
 on a typical map), so the mod works on unmodified maps; modders wanting curated
 placement can point `PlanetTag` at a custom tag instead.
-The store button in the location bar (the one next to Hiring hall) is
+By default the store button in the location bar (the one next to Hiring hall) is
 **replaced** by a **Cantina** button. It is enabled everywhere: on cantina planets it
 opens the full job board; anywhere else it opens your **contract ledger** — active
 jobs with live progress, deliverable and abandonable from any world, but no new
 offers (those are only posted on cantina worlds). The store itself stays reachable
 through the left navigation menu (provided by IRTweaks).
+
+Two settings change how you get in:
+
+- `InterceptStoreButton: false` leaves the store button completely vanilla — for
+  modpacks where the store has no alternative entry (no IRTweaks left menu).
+- `CantinaHotkey` (e.g. `"F7"`) opens the board/ledger with a key press from the
+  ship room view (the same scope where the location bar lives) — independent of
+  the button.
 Inside the board: small jobs — destroy specific units, collect items, acquire
 mechs or salvage parts. Take a job, do the work out in the field, come back and
 deliver it for C-Bills (and bonus items). The board refreshes monthly.
@@ -40,7 +48,7 @@ deliver it for C-Bills (and bonus items). The board refreshes monthly.
 |---|---|
 | [ModTek](https://github.com/BattletechModders/ModTek) | required |
 | [JwTweaks](https://github.com/wmtorode/JwTweaks) (CustomSaveBlocks enabled) | **hard dependency** — mod state persists through its custom save blocks |
-| [IRTweaks](https://github.com/BattletechModders/IRTweaks) (StreamlinedMainMenu enabled) | **hard dependency** — provides the left navigation menu, the only remaining way into the store once the vanilla store button is repurposed |
+| [IRTweaks](https://github.com/BattletechModders/IRTweaks) (StreamlinedMainMenu enabled) | optional — required for the default store-button takeover (`InterceptStoreButton: true`): its left menu is the store's only remaining entrance. Packs that keep the store vanilla ship `InterceptStoreButton: false` + `CantinaHotkey` instead |
 | [CustomSalvage](https://github.com/BattletechModders/CustomSalvage) | optional — improves chassis-family resolution for mech/part jobs |
 | [LewdableTanks](https://github.com/BattletechModders/LewdableTanks) | optional — vehicles enter the hooks as fake mechs; enables chassis-family resolution for them (`VAssemblyVariant`) |
 | [BTSimpleMechAssembly](https://github.com/mcb5637/BTSimpleMechAssembly) | optional — alternative chassis-family source for mech/part jobs |
@@ -113,6 +121,10 @@ overwritten afterwards — local tweaks survive updates.
   "NotifyOnReady": true,               // green READY toast / red NOT READY toast
   "DebugLogging": false,               // verbose log to .modtek/battletech.log
   "DumpStateOnSave": false,            // debug: state_dump.json next to the mod
+  "CantinaHotkey": "",                 // optional KeyCode ("F7") opening the board/ledger
+                                      //   from the ship room view; empty = disabled
+  "InterceptStoreButton": true,        // replace the store button with the Cantina button;
+                                      //   false keeps the store vanilla (use the hotkey)
   "DisplayNameTagOverrides": {         // display names for DestroyTagged tag targets;
     "unit_vtol": "VTOL",               // replaces the whole dictionary when present —
     "unit_legendary": "Legendary unit",  // include the defaults you want to keep;
@@ -224,10 +236,10 @@ set `PlanetTag` to a custom tag and add it to the chosen star system definitions
   feature must be enabled — with it off, the board regenerates on every load
   and all job progress is lost. Startup checks the toggle in JwTweaks' mod.json
   and logs a loud warning when it is off (there is no in-game notice).
-- **IRTweaks** is a hard dependency because the cantina button replaces the
-  vanilla store button — its `StreamlinedMainMenu` feature must stay enabled,
-  otherwise the store becomes unreachable. Startup checks this toggle too and
-  warns in the log.
+- **IRTweaks** matters only for the default setup (`InterceptStoreButton: true`):
+  its left menu is the store's only entrance while the button is repurposed.
+  Running this flag without IRTweaks' `StreamlinedMainMenu` leaves the store
+  unreachable — a misconfiguration the mod does not compensate for.
 - The monthly board refresh is anchored to the financial report and is skipped
   while in transit (the board regenerates on the next cantina arrival).
 - English only, no localization.
@@ -246,5 +258,12 @@ stock display, turret destroy targets, MRM/LBX ammo in reward rolls, confirm
 dialogs for Deliver/Abandon (Enter confirms, Esc cancels), Esc closes the
 board and reward popups.
 
-Planned for v0.5: LewdableTanks integration (vehicle collect jobs,
-chassis-specific destroy jobs).
+v0.5 (unreleased) — on top of v0.4: kill attribution (only the player's own
+lance counts; forced ejections — PanicSystem included — count too), LewdableTanks
+integration (vehicle collect jobs, chassis families), DestroyChassis jobs,
+assault tiers across all job families, a contract ledger mode (jobs viewable and
+deliverable on any world), a travel gate on taking jobs, monthly-refresh hardening,
+career Contract Payment scaling of C-Bill rewards, a per-modpack data pack layout
+(`packs/<Name>/`, per-pack zips), an optional `CantinaHotkey` entry independent
+of the store button, and joke content (Quicsell jobs and rewards, primitive
+hunts, omni targets).

@@ -15,6 +15,8 @@ namespace BTCantinaMissions.Patches
     {
         public static void Postfix(SGLocationWidget __instance, StarSystem currSystem)
         {
+            if (!Core.Settings.InterceptStoreButton) return; // keep the store button vanilla
+
             var button = __instance.storeButton;
             if (button == null) return;
 
@@ -64,6 +66,8 @@ namespace BTCantinaMissions.Patches
     {
         public static bool Prefix(string button)
         {
+            if (!Core.Settings.InterceptStoreButton) return true;
+
             Core.Debug($"[UI] Button pressed: {button}");
             if (button != "Store") return true;
 
@@ -91,6 +95,40 @@ namespace BTCantinaMissions.Patches
             __instance.Dismiss();
             __result = true;
             return false;
+        }
+    }
+
+    /// <summary>Optional hotkey entry (CantinaHotkey, e.g. "F7"): opens the board or
+    /// ledger from the ship room without the store-button takeover. SGTimeFloatyStack
+    /// runs every frame while the ship room exists — the same scope the button lives
+    /// in; queueHasActiveItem guards against stacking popups.</summary>
+    [HarmonyPatch(typeof(SGTimeFloatyStack), "Update")]
+    public static class SGTimeFloatyStack_Update
+    {
+        private static KeyCode? hotkey;
+
+        public static void Postfix()
+        {
+            if (hotkey == null)
+            {
+                if (string.IsNullOrEmpty(Core.Settings.CantinaHotkey)) return;
+                if (!System.Enum.TryParse(Core.Settings.CantinaHotkey, true, out KeyCode parsed))
+                {
+                    Core.LogWarning($"[UI] CantinaHotkey '{Core.Settings.CantinaHotkey}' is not a KeyCode — hotkey disabled");
+                    hotkey = KeyCode.None; // cache the failure, stay quiet
+                    return;
+                }
+                hotkey = parsed;
+            }
+            if (hotkey == KeyCode.None) return;
+            if (!Input.GetKeyDown(hotkey.Value)) return;
+
+            var sim = UnityGameInstance.BattleTechGame?.Simulation;
+            if (sim == null) return;
+            if (sim.InterruptQueue.queueHasActiveItem) return; // a popup is already up
+
+            Core.Debug("[UI] Cantina hotkey pressed");
+            CantinaPopup.Show();
         }
     }
 
