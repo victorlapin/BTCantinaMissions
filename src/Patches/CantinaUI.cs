@@ -99,7 +99,7 @@ namespace BTCantinaMissions.Patches
     /// everything else — the original value is captured once on first use.</summary>
     internal static class EventBodySpacing
     {
-        internal const float Factor = 1.3f;
+        internal const float Factor = 2f;
         private static float? vanilla;
 
         internal static void Apply(SGEventPanel panel, bool ours)
