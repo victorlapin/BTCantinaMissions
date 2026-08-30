@@ -6,8 +6,7 @@
   "Author": "Victor Lapin",
   "Website": "https://github.com/victorlapin/BTCantinaMissions",
   "DependsOn": [
-    "JwTweaks",
-    "IRTweaks"
+    "JwTweaks"
   ],
   "OptionallyDependsOn": [
     "CustomSalvage",

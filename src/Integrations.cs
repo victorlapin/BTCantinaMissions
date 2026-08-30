@@ -43,20 +43,11 @@ namespace BTCantinaMissions
         /// themselves load, so disk state is runtime state.</summary>
         public static void VerifyHardDependencies()
         {
-            var irtweaks = Array.Find(AppDomain.CurrentDomain.GetAssemblies(),
-                a => string.Equals(a.GetName().Name, "IRTweaks", StringComparison.OrdinalIgnoreCase));
-
             CheckDependencyToggle(
                 ModJsonPathFor(typeof(SaveSerializationManager).Assembly, "JwTweaks"),
                 s => s?["CustomSaveBlocks"]?.Value<bool>() != true,
                 "JwTweaks 'CustomSaveBlocks' is DISABLED — cantina job state will not persist: " +
                 "the board regenerates on every load and all job progress is lost");
-
-            CheckDependencyToggle(
-                ModJsonPathFor(irtweaks, "IRTweaks"),
-                s => s?["Fixes"]?["StreamlinedMainMenu"]?.Value<bool>() != true,
-                "IRTweaks 'StreamlinedMainMenu' is DISABLED — the store becomes unreachable " +
-                "(the cantina button replaces the vanilla store button)");
         }
 
         /// <summary>mod.json path for a loaded mod assembly; falls back to a sibling
