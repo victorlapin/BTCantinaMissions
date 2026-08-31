@@ -57,6 +57,9 @@ def package(pack: str, version: str) -> pathlib.Path:
         settings = pack_dir / "settings.json"
         if settings.is_file():
             zf.write(settings, "BTCantinaMissions/settings.json")
+        install = pack_dir / "INSTALLATION.md"
+        if install.is_file():
+            zf.write(install, "BTCantinaMissions/INSTALLATION.md")
         for pattern in ("jobs/**/*.json", "rewards/**/*.csv"):
             for f in pack_dir.glob(pattern):
                 zf.write(f, f"BTCantinaMissions/{f.relative_to(pack_dir).as_posix()}")
