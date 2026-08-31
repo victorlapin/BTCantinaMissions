@@ -1,7 +1,7 @@
 {
   "Name": "BTCantinaMissions",
   "Enabled": true,
-  "Version": "0.4.0",
+  "Version": "0.5.0",
   "Description": "Cantina missions: MW5-like job boards on cantina planets, refreshed monthly.",
   "Author": "Victor Lapin",
   "Website": "https://github.com/victorlapin/BTCantinaMissions",

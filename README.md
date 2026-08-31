@@ -258,7 +258,7 @@ stock display, turret destroy targets, MRM/LBX ammo in reward rolls, confirm
 dialogs for Deliver/Abandon (Enter confirms, Esc cancels), Esc closes the
 board and reward popups.
 
-v0.5 (unreleased) — on top of v0.4: kill attribution (only the player's own
+v0.5 — on top of v0.4: kill attribution (only the player's own
 lance counts; forced ejections — PanicSystem included — count too), LewdableTanks
 integration (vehicle collect jobs, chassis families), DestroyChassis jobs,
 assault tiers across all job families, a contract ledger mode (jobs viewable and
