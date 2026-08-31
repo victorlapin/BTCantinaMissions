@@ -1,4 +1,4 @@
-# BTCantinaMissions — BEXT pack installation
+# BTCantinaMissions — BTX pack installation
 
 ## Requirements
 

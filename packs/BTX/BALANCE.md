@@ -1,12 +1,11 @@
-# BEXT pack — balance notes
+# BTX pack — balance notes
 
 All prices come from the VANILLA base game defs (`StreamingAssets/data`:
 `weapon`, `ammunitionBox`, `heatsinks`, `jumpjets`, `upgrades`). The short
 RT-style ids (`Weapon_Laser_Medium`) are RT-made items and do not exist here;
 vanilla ids carry the `_0-STOCK` / manufacturer suffix. BEXT references plain
 vanilla ids heavily in its collections (MediumLaser_0-STOCK x250, PPC x234),
-so every pool id below circulates in the BEXT economy. `_NU_` families
-(Gauss, Pulse) are CAC automerge derivatives without static costs — skipped.
+so every pool id below circulates in the BEXT economy.
 
 ## CollectItems (Deliver)
 
