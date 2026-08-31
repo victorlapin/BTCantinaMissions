@@ -1,0 +1,47 @@
+{
+  "Description": {
+    "Id": "cantinaJob_collectItemsCheap",
+    "Name": "Collect {target}",
+    "Icon": ""
+  },
+  "ObjectiveType": "CollectItems",
+  "MinTargetCount": 6,
+  "MaxTargetCount": 12,
+  "ItemMode": "Deliver",
+  "ItemPool": [
+    {
+      "Id": "Weapon_MachineGun_MachineGun_0-STOCK",
+      "ItemType": "Weapon"
+    },
+    {
+      "Id": "Weapon_Laser_SmallLaser_0-STOCK",
+      "ItemType": "Weapon"
+    },
+    {
+      "Id": "Weapon_SRM_SRM2_0-STOCK",
+      "ItemType": "Weapon"
+    },
+    {
+      "Id": "Weapon_Flamer_Flamer_0-STOCK",
+      "ItemType": "Weapon"
+    },
+    {
+      "Id": "Ammo_AmmunitionBox_Generic_SRM",
+      "ItemType": "AmmunitionBox"
+    },
+    {
+      "Id": "Ammo_AmmunitionBox_Generic_MG",
+      "ItemType": "AmmunitionBox"
+    },
+    {
+      "Id": "Ammo_AmmunitionBox_Generic_AC2",
+      "ItemType": "AmmunitionBox"
+    }
+  ],
+  "Reward": {
+    "CBills": 240000
+  },
+  "MinSystemDifficulty": 1,
+  "MaxSystemDifficulty": 3,
+  "Weight": 8
+}

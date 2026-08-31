@@ -1,0 +1,23 @@
+{
+  "Description": {
+    "Id": "cantinaJob_destroyMedium",
+    "Name": "Destroy {target}",
+    "Icon": ""
+  },
+  "ObjectiveType": "DestroyTagged",
+  "MinTargetCount": 3,
+  "MaxTargetCount": 5,
+  "UnitTagPool": [
+    "unit_medium&unit_mech",
+    "unit_medium&unit_vehicle",
+    "unit_medium&unit_turret"
+  ],
+  "Reward": {
+    "CBills": 450000,
+    "ItemCollection": "CantinaReward_Tier2",
+    "ItemCount": 1
+  },
+  "MinSystemDifficulty": 3,
+  "MaxSystemDifficulty": 6,
+  "Weight": 8
+}

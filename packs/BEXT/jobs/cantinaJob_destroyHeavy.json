@@ -1,0 +1,24 @@
+{
+  "Description": {
+    "Id": "cantinaJob_destroyHeavy",
+    "Name": "Destroy {target}",
+    "Icon": ""
+  },
+  "ObjectiveType": "DestroyTagged",
+  "MinTargetCount": 2,
+  "MaxTargetCount": 4,
+  "UnitTagPool": [
+    "unit_heavy&unit_mech",
+    "unit_heavy&unit_vehicle",
+    "unit_heavy&unit_turret",
+    "unit_assault&unit_mech"
+  ],
+  "Reward": {
+    "CBills": 700000,
+    "ItemCollection": "CantinaReward_Tier3",
+    "ItemCount": 1
+  },
+  "MinSystemDifficulty": 5,
+  "MaxSystemDifficulty": 10,
+  "Weight": 7
+}

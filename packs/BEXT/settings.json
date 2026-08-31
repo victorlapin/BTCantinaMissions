@@ -1,0 +1,11 @@
+{
+  "PlanetTag": "planet_pop_large",
+  "JobsPerBoard": 4,
+  "MaxActiveJobs": 3,
+  "NotifyOnProgress": true,
+  "NotifyOnReady": true,
+  "DebugLogging": false,
+  "DumpStateOnSave": false,
+  "CantinaHotkey": "F7",
+  "InterceptStoreButton": false
+}

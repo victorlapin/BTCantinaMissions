@@ -1,0 +1,30 @@
+{
+  "Description": {
+    "Id": "cantinaJob_destroyChassisAssault",
+    "Name": "Destroy {target}",
+    "Icon": ""
+  },
+  "ObjectiveType": "DestroyChassis",
+  "MinTargetCount": 2,
+  "MaxTargetCount": 3,
+  "ChassisPool": [
+    "BattleMaster",
+    "Atlas",
+    "Cyclops",
+    "Stalker",
+    "Highlander",
+    "Zeus",
+    "Charger",
+    "Longbow",
+    "Annihilator",
+    "Victor"
+  ],
+  "Reward": {
+    "CBills": 700000,
+    "ItemCollection": "CantinaReward_Tier3",
+    "ItemCount": 1
+  },
+  "MinSystemDifficulty": 8,
+  "MaxSystemDifficulty": 10,
+  "Weight": 3
+}

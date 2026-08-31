@@ -1,0 +1,28 @@
+{
+  "Description": {
+    "Id": "cantinaJob_collectMechHeavy",
+    "Name": "Collect {target}",
+    "Icon": ""
+  },
+  "ObjectiveType": "CollectMech",
+  "MinTargetCount": 1,
+  "MaxTargetCount": 1,
+  "ChassisPool": [
+    "Warhammer",
+    "Crusader",
+    "Marauder",
+    "Archer",
+    "Catapult",
+    "Orion",
+    "Thunderbolt",
+    "Rifleman",
+    "JagerMech",
+    "Grasshopper"
+  ],
+  "Reward": {
+    "CBills": 500000
+  },
+  "MinSystemDifficulty": 5,
+  "MaxSystemDifficulty": 8,
+  "Weight": 3
+}

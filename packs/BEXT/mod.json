@@ -1,0 +1,28 @@
+{
+  "Name": "BTCantinaMissions",
+  "Enabled": true,
+  "Version": "0.4.0",
+  "Description": "Cantina missions: MW5-like job boards on cantina planets, refreshed monthly. BEXT data pack.",
+  "Author": "Victor Lapin",
+  "Website": "https://github.com/victorlapin/BTCantinaMissions",
+  "DependsOn": [
+    "JwTweaks"
+  ],
+  "OptionallyDependsOn": [
+    "BTSimpleMechAssembly"
+  ],
+  "DLL": "BTCantinaMissions.dll",
+  "CustomResourceTypes": [
+    "CantinaJobDef"
+  ],
+  "Manifest": [
+    {
+      "Type": "CantinaJobDef",
+      "Path": "jobs"
+    },
+    {
+      "Type": "ItemCollectionDef",
+      "Path": "rewards"
+    }
+  ]
+}

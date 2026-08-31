@@ -1,0 +1,30 @@
+{
+  "Description": {
+    "Id": "cantinaJob_destroyChassisLight",
+    "Name": "Destroy {target}",
+    "Icon": ""
+  },
+  "ObjectiveType": "DestroyChassis",
+  "MinTargetCount": 2,
+  "MaxTargetCount": 3,
+  "ChassisPool": [
+    "Locust",
+    "Wasp",
+    "Commando",
+    "Javelin",
+    "Raven",
+    "Hermes",
+    "Firefly",
+    "Flea",
+    "Stinger",
+    "Spider"
+  ],
+  "Reward": {
+    "CBills": 300000,
+    "ItemCollection": "CantinaReward_Tier1",
+    "ItemCount": 1
+  },
+  "MinSystemDifficulty": 1,
+  "MaxSystemDifficulty": 3,
+  "Weight": 3
+}

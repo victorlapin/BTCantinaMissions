@@ -1,0 +1,28 @@
+{
+  "Description": {
+    "Id": "cantinaJob_collectMechLight",
+    "Name": "Collect {target}",
+    "Icon": ""
+  },
+  "ObjectiveType": "CollectMech",
+  "MinTargetCount": 1,
+  "MaxTargetCount": 1,
+  "ChassisPool": [
+    "Locust",
+    "Wasp",
+    "Commando",
+    "Javelin",
+    "Raven",
+    "Hermes",
+    "Firefly",
+    "Flea",
+    "Stinger",
+    "Spider"
+  ],
+  "Reward": {
+    "CBills": 250000
+  },
+  "MinSystemDifficulty": 1,
+  "MaxSystemDifficulty": 3,
+  "Weight": 3
+}

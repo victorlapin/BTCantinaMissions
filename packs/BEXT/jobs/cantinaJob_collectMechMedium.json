@@ -1,0 +1,28 @@
+{
+  "Description": {
+    "Id": "cantinaJob_collectMechMedium",
+    "Name": "Collect {target}",
+    "Icon": ""
+  },
+  "ObjectiveType": "CollectMech",
+  "MinTargetCount": 1,
+  "MaxTargetCount": 1,
+  "ChassisPool": [
+    "Phoenix Hawk",
+    "Hunchback",
+    "Centurion",
+    "Wolverine",
+    "Blackjack",
+    "Shadow Hawk",
+    "Griffin",
+    "Crab",
+    "Hatchetman",
+    "Kintaro"
+  ],
+  "Reward": {
+    "CBills": 400000
+  },
+  "MinSystemDifficulty": 3,
+  "MaxSystemDifficulty": 6,
+  "Weight": 3
+}

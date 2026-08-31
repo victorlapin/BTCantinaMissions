@@ -1,0 +1,28 @@
+{
+  "Description": {
+    "Id": "cantinaJob_collectMechPartsMedium",
+    "Name": "Collect {target} parts",
+    "Icon": ""
+  },
+  "ObjectiveType": "CollectMechParts",
+  "MinTargetCount": 2,
+  "MaxTargetCount": 3,
+  "ChassisPool": [
+    "Phoenix Hawk",
+    "Hunchback",
+    "Centurion",
+    "Wolverine",
+    "Blackjack",
+    "Shadow Hawk",
+    "Griffin",
+    "Crab",
+    "Hatchetman",
+    "Kintaro"
+  ],
+  "Reward": {
+    "CBills": 400000
+  },
+  "MinSystemDifficulty": 4,
+  "MaxSystemDifficulty": 7,
+  "Weight": 3
+}
