@@ -72,6 +72,9 @@ namespace BTCantinaMissions.Patches
 
             PlayerKillTracker.Kills.Add(__instance);
             Core.Debug($"[H5] Player kill: {__instance.Description.Name} by {killer.Description.Name}");
+
+            // cantina combat feedback: floatie over matching targets
+            CombatFeedback.OnKill(__instance);
         }
     }
 
@@ -115,6 +118,9 @@ namespace BTCantinaMissions.Patches
 
             PlayerKillTracker.Kills.Add(__instance);
             Core.Debug($"[H5] Ejection credited: {__instance.Description.Name} bailed out from {killer.Description.Name}");
+
+            // cantina combat feedback: floatie over matching targets
+            CombatFeedback.OnKill(__instance);
         }
     }
 
@@ -217,6 +223,11 @@ namespace BTCantinaMissions.Patches
                     Notifications.OnProgress(job);
                 }
             }
+
+            // NOTE: no CombatFeedback.Reset() here — the AAR screen reads session
+            // data AFTER CompleteContract; reset happens on the next combat's
+            // first kill (OnKill re-baselines when the combat changes)
+
         }
     }
 }
