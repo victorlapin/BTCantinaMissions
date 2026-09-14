@@ -148,38 +148,29 @@ namespace BTCantinaMissions.Patches
         }
     }
 
-    /// <summary>H8c: dual-purpose hook on RefreshInfo (fires in MechLab/stores
-    /// via the MechComponentRef SetData path, not on salvage's controller path).
-    /// With MechLabHighlight off: cleans up outlines from pooled salvage widgets.
-    /// With MechLabHighlight on: highlights cantina targets in MechLab/stores —
-    /// ComponentRef is available here, no controller navigation needed.</summary>
-    [HarmonyPatch(typeof(InventoryItemElement_NotListView), nameof(InventoryItemElement_NotListView.RefreshInfo))]
-    public static class SalvageHighlightCleanup
+    /// <summary>H8c: MechLab/store highlighting + cleanup. Hooks SetTooltipData()
+    /// — the ONLY method called by BOTH SetData overloads. Gets ID from
+    /// ComponentRef (MechComponentRef path) or controller fallback.</summary>
+    [HarmonyPatch(typeof(InventoryItemElement_NotListView), nameof(InventoryItemElement_NotListView.SetTooltipData))]
+    public static class MechLabHighlightPatch
     {
         public static void Postfix(InventoryItemElement_NotListView __instance)
         {
-            if (!Core.Settings.MechLabHighlight)
+            if (UnityGameInstance.BattleTechGame?.Simulation == null) return;
+            if (Core.State?.ActiveJobs == null || Core.State.ActiveJobs.Count == 0)
             {
-                // cleanup mode: disable outline from pooled salvage reuse
-                var outline = __instance.GetComponentInChildren<UnityEngine.UI.Outline>();
-                if (outline != null && outline.enabled)
-                {
-                    outline.enabled = false;
-                    Core.Debug("[H8c] Outline cleaned on widget reuse");
-                }
+                Clear(__instance);
                 return;
             }
-
-            // highlight mode: check item against cantina jobs
-            if (UnityGameInstance.BattleTechGame?.Simulation == null) return;
-            if (Core.State?.ActiveJobs == null || Core.State.ActiveJobs.Count == 0) return;
 
             var defId = __instance.ComponentRef?.ComponentDefID;
             if (string.IsNullOrEmpty(defId))
             {
-                // no ID — clean any leftover outline
-                var o = __instance.GetComponentInChildren<UnityEngine.UI.Outline>();
-                if (o != null && o.enabled) o.enabled = false;
+                defId = SalvageHighlight.GetDefId(__instance);
+            }
+            if (string.IsNullOrEmpty(defId))
+            {
+                Clear(__instance);
                 return;
             }
 
@@ -189,17 +180,24 @@ namespace BTCantinaMissions.Patches
                 if (def == null) continue;
                 if (!SalvageHighlight.MatchesJob(defId, def, job)) continue;
 
-                SalvageHighlight.ApplyOutline(__instance);
+                if (Core.Settings.MechLabHighlight)
+                {
+                    SalvageHighlight.ApplyOutline(__instance);
+                    Core.Debug($"[H8c] MechLab highlight: {defId} (job: {job.ResolvedName})");
+                }
                 return;
             }
 
-            // no match — clean any leftover outline
-            var outline2 = __instance.GetComponentInChildren<UnityEngine.UI.Outline>();
-            if (outline2 != null && outline2.enabled)
-            {
-                outline2.enabled = false;
-            }
+            Clear(__instance);
         }
 
+        private static void Clear(InventoryItemElement_NotListView item)
+        {
+            var outline = item.GetComponentInChildren<UnityEngine.UI.Outline>();
+            if (outline != null && outline.enabled)
+            {
+                outline.enabled = false;
+            }
+        }
     }
 }
