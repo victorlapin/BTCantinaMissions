@@ -18,9 +18,8 @@ namespace BTCantinaMissions
         /// screen. false = no highlighting during salvage selection.</summary>
         public bool SalvageHighlight = true;
 
-        /// <summary>Blue outline on cantina collectible items in the MechLab
-        /// inventory and stores — helps avoid selling/installing cantina targets.
-        /// Requires active collect-type jobs.</summary>
+        /// <summary>Blue outline on cantina collectibles in the MechLab
+        /// inventory — helps avoid selling/installing cantina targets.</summary>
         public bool MechLabHighlight = false;
         public bool DebugLogging = false;
         public bool DumpStateOnSave = false;
