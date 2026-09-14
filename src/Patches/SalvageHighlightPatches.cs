@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using BattleTech;
 using BattleTech.UI;
 using BTCantinaMissions.Domain;
@@ -7,56 +8,35 @@ using HarmonyLib;
 
 namespace BTCantinaMissions.Patches
 {
-    /// <summary>H8: adds a gold outline to salvage items matching active cantina
-    /// collect jobs. Hooks AddNewSalvageEntryToWidget — fires for EVERY item
-    /// added to the salvage list (initial population AND CustomSalvage
-    /// disassembly). SalvageDef is passed directly, no controller navigation.</summary>
-    [HarmonyPatch(typeof(AAR_SalvageScreen), nameof(AAR_SalvageScreen.AddNewSalvageEntryToWidget))]
-    public static class SalvageItem_CantinaHighlight
+    /// <summary>Shared salvage highlight logic: ID extraction, matching, outline
+    /// application. Used by both H8 (per-item) and H8b (rescan) hooks.</summary>
+    internal static class SalvageHighlight
     {
-        public static void Postfix(AAR_SalvageScreen __instance, SalvageDef salvageDef)
+        internal static string GetDefId(InventoryItemElement_NotListView item)
         {
-            if (salvageDef == null) return;
-            if (UnityGameInstance.BattleTechGame?.Simulation == null) return;
-            if (Core.State?.ActiveJobs == null || Core.State.ActiveJobs.Count == 0) return;
-
-            var defId = salvageDef.MechComponentDef?.Description?.Id
-                        ?? salvageDef.Description?.Id;
-            if (string.IsNullOrEmpty(defId)) return;
-
-            // find the UI item just created for this salvageDef (last in the list)
-            var selection = __instance.salvageSelection;
-            if (selection == null) return;
-            var items = selection.GetSalvageInventory();
-            if (items == null || items.Count == 0) return;
-            var item = items[items.Count - 1];
-            if (item == null) return;
-
-            foreach (var job in Core.State.ActiveJobs)
-            {
-                var def = JobCatalog.GetDef(job.DefId);
-                if (def == null) continue;
-
-                var isMatch = false;
-                if (def.ObjectiveType == ObjectiveType.CollectItems)
-                {
-                    isMatch = string.Equals(defId, job.ResolvedTarget, StringComparison.OrdinalIgnoreCase);
-                }
-                else if (def.ObjectiveType == ObjectiveType.CollectMech ||
-                         def.ObjectiveType == ObjectiveType.CollectMechParts)
-                {
-                    isMatch = CheckChassisFamily(defId, job.ResolvedTarget);
-                }
-
-                if (!isMatch) continue;
-
-                ApplyOutline(item);
-                Core.Debug($"[H8] Cantina highlight: {defId} (job: {job.ResolvedName})");
-                return;
-            }
+            var ctrl = item.controller;
+            if (ctrl == null) return null;
+            var salvageDef = ctrl.GetType().GetField("salvageDef")?.GetValue(ctrl) as SalvageDef;
+            if (salvageDef == null) return null;
+            return salvageDef.MechComponentDef?.Description?.Id
+                   ?? salvageDef.Description?.Id;
         }
 
-        private static void ApplyOutline(InventoryItemElement_NotListView item)
+        internal static bool MatchesJob(string defId, CantinaJobDef def, JobInstance job)
+        {
+            if (def.ObjectiveType == ObjectiveType.CollectItems)
+            {
+                return string.Equals(defId, job.ResolvedTarget, StringComparison.OrdinalIgnoreCase);
+            }
+            if (def.ObjectiveType == ObjectiveType.CollectMech ||
+                def.ObjectiveType == ObjectiveType.CollectMechParts)
+            {
+                return CheckChassisFamily(defId, job.ResolvedTarget);
+            }
+            return false;
+        }
+
+        internal static void ApplyOutline(InventoryItemElement_NotListView item)
         {
             var images = item.GetComponentsInChildren<UnityEngine.UI.Image>();
             UnityEngine.UI.Image target = null;
@@ -86,6 +66,81 @@ namespace BTCantinaMissions.Patches
             if (mechDef == null) return false;
             var family = ChassisFamilyResolver.GetFamily(mechDef);
             return string.Equals(family, targetFamily, StringComparison.OrdinalIgnoreCase);
+        }
+    }
+
+    /// <summary>H8: fires for EVERY item added to the salvage list — initial
+    /// population, CustomSalvage disassembly, leftover additions. Highlights
+    /// matching items as they appear.</summary>
+    [HarmonyPatch(typeof(AAR_SalvageScreen), nameof(AAR_SalvageScreen.AddNewSalvageEntryToWidget))]
+    public static class SalvageItem_CantinaHighlight
+    {
+        public static void Postfix(AAR_SalvageScreen __instance, SalvageDef salvageDef)
+        {
+            if (salvageDef == null) return;
+            if (UnityGameInstance.BattleTechGame?.Simulation == null) return;
+            if (Core.State?.ActiveJobs == null || Core.State.ActiveJobs.Count == 0) return;
+
+            var defId = salvageDef.MechComponentDef?.Description?.Id
+                        ?? salvageDef.Description?.Id;
+            if (string.IsNullOrEmpty(defId)) return;
+
+            var selection = __instance.salvageSelection;
+            if (selection == null) return;
+            var items = selection.GetSalvageInventory();
+            if (items == null || items.Count == 0) return;
+            var item = items[items.Count - 1];
+            if (item == null) return;
+
+            foreach (var job in Core.State.ActiveJobs)
+            {
+                var def = JobCatalog.GetDef(job.DefId);
+                if (def == null) continue;
+                if (!SalvageHighlight.MatchesJob(defId, def, job)) continue;
+
+                SalvageHighlight.ApplyOutline(item);
+                Core.Debug($"[H8] Cantina highlight: {defId} (job: {job.ResolvedName})");
+                return;
+            }
+        }
+    }
+
+    /// <summary>H8b: re-scan after screen transitions (confirmation, leftover
+    /// addition). Re-parenting resets Outline on child Image; postfix restores
+    /// highlights so quick-sell doesn't catch cantina targets by accident.</summary>
+    [HarmonyPatch(typeof(AAR_SalvageChosen), nameof(AAR_SalvageChosen.SetInitialText))]
+    public static class SalvageRescan_CantinaHighlight
+    {
+        public static void Postfix()
+        {
+            if (UnityGameInstance.BattleTechGame?.Simulation == null) return;
+            if (Core.State?.ActiveJobs == null || Core.State.ActiveJobs.Count == 0) return;
+
+            var selection = UnityEngine.Object.FindObjectOfType<AAR_SalvageSelection>();
+            if (selection == null) return;
+            var items = selection.GetSalvageInventory();
+            if (items == null || items.Count == 0) return;
+
+            var highlighted = 0;
+            foreach (var item in items)
+            {
+                var defId = SalvageHighlight.GetDefId(item);
+                if (string.IsNullOrEmpty(defId)) continue;
+
+                foreach (var job in Core.State.ActiveJobs)
+                {
+                    var def = JobCatalog.GetDef(job.DefId);
+                    if (def == null) continue;
+                    if (!SalvageHighlight.MatchesJob(defId, def, job)) continue;
+
+                    SalvageHighlight.ApplyOutline(item);
+                    highlighted++;
+                    break;
+                }
+            }
+
+            if (highlighted > 0)
+                Core.Debug($"[H8b] Rescan: re-applied {highlighted} outlines");
         }
     }
 }
