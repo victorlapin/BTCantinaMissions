@@ -118,8 +118,8 @@ namespace BTCantinaMissions.UI
             return "Cantina objectives:\n" + string.Join("\n", lines);
         }
 
-        /// <summary>AAR entries: one per job with kills this session, for the real
-        /// After Action Report objectives list (H7).</summary>
+        /// <summary>AAR entries: both completed AND partial progress (Other Results
+        /// panel shows text lines, no Failed/Success binary — partial is fine here).</summary>
         internal static List<AAREntry> BuildAAREntries()
         {
             var result = new List<AAREntry>();
@@ -133,7 +133,9 @@ namespace BTCantinaMissions.UI
                 result.Add(new AAREntry
                 {
                     JobInstanceId = job.InstanceId,
-                    Title = $"Cantina: {job.ResolvedName} ({total}/{job.TargetCount})",
+                    Title = total >= job.TargetCount
+                        ? $"{job.ResolvedName} — COMPLETE ({total}/{job.TargetCount})"
+                        : $"{job.ResolvedName} progress: +{kills} → {total}/{job.TargetCount}",
                     Completed = total >= job.TargetCount
                 });
             }
