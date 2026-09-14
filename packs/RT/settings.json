@@ -1,13 +1,14 @@
 {
   "PlanetTag": "planet_pop_large",
-  "JobsPerBoard": 4,
-  "MaxActiveJobs": 3,
+  "JobsPerBoard": 5,
+  "MaxActiveJobs": 4,
   "NotifyOnProgress": true,
   "NotifyOnReady": true,
   "DebugLogging": false,
   "DumpStateOnSave": false,
   "CantinaHotkey": "",
   "InterceptStoreButton": true,
+  "CombatFloaties": true,
   "DisplayNameTagOverrides": {
     "unit_vtol": "VTOL",
     "unit_legendary": "Legendary unit",

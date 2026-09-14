@@ -1,11 +1,12 @@
 {
   "PlanetTag": "planet_pop_large",
-  "JobsPerBoard": 4,
-  "MaxActiveJobs": 3,
+  "JobsPerBoard": 5,
+  "MaxActiveJobs": 4,
   "NotifyOnProgress": true,
   "NotifyOnReady": true,
   "DebugLogging": false,
   "DumpStateOnSave": false,
   "CantinaHotkey": "F7",
-  "InterceptStoreButton": false
+  "InterceptStoreButton": false,
+  "CombatFloaties": false
 }

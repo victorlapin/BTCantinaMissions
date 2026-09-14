@@ -104,6 +104,11 @@ instead of crashing.
   with a certain tag — exotic hardware on `planet_other_blackmarket` worlds,
   electronics contracts on `planet_other_comstar` worlds.
 - Toast notifications for progress, READY state and rewards (toggle in settings).
+- **Combat feedback**: killing a cantina target shows a gold floatie over the
+  unit (`Cantina: Destroy VTOLs 3/5`, green `COMPLETE!` when done). After the
+  mission, cantina results appear in the After Action Report's **Other Results**
+  panel alongside payment and reputation lines. Floaties can be disabled with
+  `CombatFloaties: false` — tracking and AAR lines are unaffected.
 
 ## Settings (`settings.json`)
 
@@ -119,6 +124,9 @@ overwritten afterwards — local tweaks survive updates.
   "MaxActiveJobs": 3,                 // concurrent active jobs
   "NotifyOnProgress": true,            // toasts on progress ticks
   "NotifyOnReady": true,               // green READY toast / red NOT READY toast
+  "CombatFloaties": true,              // gold floaties over cantina targets killed
+                                      //   in combat ("Cantina: 3/5"); false = silent
+                                      //   tracking (progress and AAR still work)
   "DebugLogging": false,               // verbose log to .modtek/battletech.log
   "DumpStateOnSave": false,            // debug: state_dump.json next to the mod
   "CantinaHotkey": "",                 // optional KeyCode ("F7") opening the board/ledger
@@ -265,5 +273,6 @@ assault tiers across all job families, a contract ledger mode (jobs viewable and
 deliverable on any world), a travel gate on taking jobs, monthly-refresh hardening,
 career Contract Payment scaling of C-Bill rewards, a per-modpack data pack layout
 (`packs/<Name>/`, per-pack zips), an optional `CantinaHotkey` entry independent
-of the store button, and joke content (Quicsell jobs and rewards, primitive
-hunts, omni targets).
+of the store button, joke content (Quicsell jobs and rewards, primitive
+hunts, omni targets), combat floaties over killed cantina targets and cantina
+results in the After Action Report.
