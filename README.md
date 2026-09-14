@@ -117,6 +117,8 @@ instead of crashing.
 - **Salvage highlight**: collect-type job targets get a cyan outline on the
   salvage screen — making it obvious what to pick up. Works on initial salvage
   and on items added after CustomSalvage disassembly (full mech → parts).
+  With `MechLabHighlight: true` the same outline appears in the **MechLab and
+  stores** — a visual reminder not to sell or install items the cantina wants.
 
 ## Settings (`settings.json`)
 
@@ -132,9 +134,13 @@ overwritten afterwards — local tweaks survive updates.
   "MaxActiveJobs": 3,                 // concurrent active jobs
   "NotifyOnProgress": true,            // toasts on progress ticks
   "NotifyOnReady": true,               // green READY toast / red NOT READY toast
-  "CombatFloaties": true,              // gold floaties over cantina targets killed
+  "CombatFloaties": true,              // cyan floaties over cantina targets killed
                                       //   in combat ("Cantina: 3/5"); false = silent
                                       //   tracking (progress and AAR still work)
+  "SalvageHighlight": true,            // cyan outline on cantina collectibles in the
+                                      //   salvage screen (helps pick the right items)
+  "MechLabHighlight": false,           // cyan outline on cantina collectibles in the
+                                      //   MechLab and stores (helps avoid selling them)
   "DebugLogging": false,               // verbose log to .modtek/battletech.log
   "DumpStateOnSave": false,            // debug: state_dump.json next to the mod
   "CantinaHotkey": "",                 // optional KeyCode ("F7") opening the board/ledger

@@ -13,6 +13,15 @@ namespace BTCantinaMissions
         /// <summary>Show combat floaties over killed cantina targets ("Cantina:
         /// Destroy VTOLs 3/5"). false = silent tracking, progress still applies.</summary>
         public bool CombatFloaties = true;
+
+        /// <summary>Blue outline on cantina collectible items in the salvage
+        /// screen. false = no highlighting during salvage selection.</summary>
+        public bool SalvageHighlight = true;
+
+        /// <summary>Blue outline on cantina collectible items in the MechLab
+        /// inventory and stores — helps avoid selling/installing cantina targets.
+        /// Requires active collect-type jobs.</summary>
+        public bool MechLabHighlight = false;
         public bool DebugLogging = false;
         public bool DumpStateOnSave = false;
 
