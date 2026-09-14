@@ -8,5 +8,7 @@
   "DumpStateOnSave": false,
   "CantinaHotkey": "F7",
   "InterceptStoreButton": false,
-  "CombatFloaties": false
+  "CombatFloaties": false,
+  "SalvageHighlight": true,
+  "MechLabHighlight": false
 }
