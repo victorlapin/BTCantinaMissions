@@ -12,6 +12,11 @@ A job board in the local cantina for HBS BattleTech (Unity + HarmonyX, ModTek).
   <em>Abandoning a job asks for confirmation — all progress is lost. Delivering a consuming job gets one too, spelling out exactly what leaves your inventory.</em>
 </p>
 
+<p align="center">
+  <img src="img/Screenshot_3.jpg" alt="Salvage screen with cantina target highlighted" width="890"><br>
+  <em>The salvage screen highlights cantina-collectible items with a cyan outline — including mech parts created by disassembling full mechs (CustomSalvage).</em>
+</p>
+
 The DLL is modpack-agnostic; job/reward definitions live in per-modpack packs
 (`packs/<Name>/` in the repo). Releases are **self-contained drop-in zips per
 supported modpack** (`BTCantinaMissions-<Pack>-v<version>.zip`); the RT pack
@@ -104,11 +109,14 @@ instead of crashing.
   with a certain tag — exotic hardware on `planet_other_blackmarket` worlds,
   electronics contracts on `planet_other_comstar` worlds.
 - Toast notifications for progress, READY state and rewards (toggle in settings).
-- **Combat feedback**: killing a cantina target shows a gold floatie over the
+- **Combat feedback**: killing a cantina target shows a cyan floatie over the
   unit (`Cantina: Destroy VTOLs 3/5`, green `COMPLETE!` when done). After the
   mission, cantina results appear in the After Action Report's **Other Results**
   panel alongside payment and reputation lines. Floaties can be disabled with
   `CombatFloaties: false` — tracking and AAR lines are unaffected.
+- **Salvage highlight**: collect-type job targets get a cyan outline on the
+  salvage screen — making it obvious what to pick up. Works on initial salvage
+  and on items added after CustomSalvage disassembly (full mech → parts).
 
 ## Settings (`settings.json`)
 
@@ -274,5 +282,6 @@ deliverable on any world), a travel gate on taking jobs, monthly-refresh hardeni
 career Contract Payment scaling of C-Bill rewards, a per-modpack data pack layout
 (`packs/<Name>/`, per-pack zips), an optional `CantinaHotkey` entry independent
 of the store button, joke content (Quicsell jobs and rewards, primitive
-hunts, omni targets), combat floaties over killed cantina targets and cantina
-results in the After Action Report.
+hunts, omni targets), combat floaties over killed cantina targets, cantina
+results in the After Action Report, and cyan salvage-screen highlights on
+collectible items (including CustomSalvage disassembly).
