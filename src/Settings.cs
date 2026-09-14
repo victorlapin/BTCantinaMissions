@@ -9,6 +9,10 @@ namespace BTCantinaMissions
         public int MaxActiveJobs = 3;
         public bool NotifyOnProgress = true;
         public bool NotifyOnReady = true;
+
+        /// <summary>Show combat floaties over killed cantina targets ("Cantina:
+        /// Destroy VTOLs 3/5"). false = silent tracking, progress still applies.</summary>
+        public bool CombatFloaties = true;
         public bool DebugLogging = false;
         public bool DumpStateOnSave = false;
 

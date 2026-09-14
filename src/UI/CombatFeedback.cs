@@ -88,12 +88,15 @@ namespace BTCantinaMissions.UI
                 baselineProgress.TryGetValue(job.InstanceId, out var baseline);
                 var total = baseline + session;
 
-                var text = total >= job.TargetCount
-                    ? UIColors.Wrap($"Cantina: {job.ResolvedName} — COMPLETE!", UIColor.Green)
-                    : UIColors.Wrap($"Cantina: {job.ResolvedName} {total}/{job.TargetCount}", UIColor.Gold);
-
-                PublishFloatie(victim, text);
-                Core.Debug($"[CombatFeedback] {text} over {victim.Description.Name}");
+                // session tracking continues even with floaties disabled (AAR needs it)
+                if (Core.Settings.CombatFloaties)
+                {
+                    var text = total >= job.TargetCount
+                        ? UIColors.Wrap($"Cantina: {job.ResolvedName} — COMPLETE!", UIColor.Green)
+                        : UIColors.Wrap($"Cantina: {job.ResolvedName} {total}/{job.TargetCount}", UIColor.Gold);
+                    PublishFloatie(victim, text);
+                    Core.Debug($"[CombatFeedback] {text} over {victim.Description.Name}");
+                }
             }
         }
 
