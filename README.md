@@ -287,7 +287,12 @@ assault tiers across all job families, a contract ledger mode (jobs viewable and
 deliverable on any world), a travel gate on taking jobs, monthly-refresh hardening,
 career Contract Payment scaling of C-Bill rewards, a per-modpack data pack layout
 (`packs/<Name>/`, per-pack zips), an optional `CantinaHotkey` entry independent
-of the store button, joke content (Quicsell jobs and rewards, primitive
-hunts, omni targets), combat floaties over killed cantina targets, cantina
-results in the After Action Report, and cyan salvage-screen highlights on
-collectible items (including CustomSalvage disassembly).
+of the store button, and joke content (Quicsell jobs and rewards, primitive
+hunts, omni targets).
+
+v0.6 — on top of v0.5: combat feedback (cyan floaties over killed cantina
+targets with live progress; cantina results in the After Action Report's
+Other Results panel), cyan salvage-screen highlights on collectible items
+(including CustomSalvage disassembly and post-confirmation rescan), and an
+optional MechLab highlight (`MechLabHighlight: true`) marking cantina
+collectibles in the MechLab inventory to prevent accidental selling.
