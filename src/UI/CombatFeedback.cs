@@ -93,7 +93,7 @@ namespace BTCantinaMissions.UI
                 {
                     var text = total >= job.TargetCount
                         ? UIColors.Wrap($"Cantina: {job.ResolvedName} — COMPLETE!", UIColor.Green)
-                        : UIColors.Wrap($"Cantina: {job.ResolvedName} {total}/{job.TargetCount}", UIColor.Gold);
+                        : UIColors.Wrap($"Cantina: {job.ResolvedName} {total}/{job.TargetCount}", UIColor.Blue);
                     PublishFloatie(victim, text);
                     Core.Debug($"[CombatFeedback] {text} over {victim.Description.Name}");
                 }

@@ -2,6 +2,7 @@ using System;
 using BattleTech;
 using BattleTech.UI;
 using BTCantinaMissions.Domain;
+using BTCantinaMissions.UI;
 using HarmonyLib;
 
 namespace BTCantinaMissions.Patches
@@ -72,7 +73,7 @@ namespace BTCantinaMissions.Patches
 
             var outline = target.GetComponent<UnityEngine.UI.Outline>()
                           ?? target.gameObject.AddComponent<UnityEngine.UI.Outline>();
-            outline.effectColor = new UnityEngine.Color(1f, 0.84f, 0f, 0.9f);
+            outline.effectColor = UIColors.Color(UIColor.Blue);
             outline.effectDistance = new UnityEngine.Vector2(2f, -2f);
             outline.enabled = true;
         }

@@ -12,6 +12,13 @@ namespace BTCantinaMissions.UI
     {
         private static readonly Dictionary<UIColor, string> hexCache = new Dictionary<UIColor, string>();
 
+        /// <summary>UnityEngine.Color for a UIColor value (respects the active
+        /// color preset, including colorblind variants).</summary>
+        public static UnityEngine.Color Color(UIColor color)
+        {
+            return LazySingletonBehavior<UIManager>.Instance.UIColorRefs.GetUIColor(color);
+        }
+
         /// <summary>Hex string like "#85DBF6FF" for a UIColor value.</summary>
         public static string Hex(UIColor color)
         {
