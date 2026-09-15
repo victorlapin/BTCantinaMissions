@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using BattleTech;
 using BattleTech.UI;
 using BTCantinaMissions.Domain;
@@ -8,8 +7,10 @@ using HarmonyLib;
 
 namespace BTCantinaMissions.Patches
 {
-    /// <summary>Shared salvage highlight logic: ID extraction, matching, outline
-    /// application. Used by both H8 (per-item) and H8b (rescan) hooks.</summary>
+    /// <summary>Shared salvage highlight logic: ID extraction, job matching,
+    /// outline application. ProcessItem is the single per-item entry point;
+    /// the H8c/H8e/H8f/H8b hooks below are thin wrappers over it, each
+    /// covering a different point in the widget lifecycle.</summary>
     internal static class SalvageHighlight
     {
         internal static string GetDefId(InventoryItemElement_NotListView item)
@@ -36,8 +37,13 @@ namespace BTCantinaMissions.Patches
             return false;
         }
 
-        /// <summary>Applies the Blue outline border. Cleaned by H8c when the
-        /// pooled widget is reused in MechLab/stores (RefreshInfo path).</summary>
+        /// <summary>True when outlining should be applied. The hooks are
+        /// shared across screens (salvage, MechLab), so either flag enables
+        /// it; per-item clearing always runs to keep pooled widgets
+        /// clean.</summary>
+        internal static bool ShouldHighlight =>
+            Core.Settings.SalvageHighlight || Core.Settings.MechLabHighlight;
+
         internal static void ApplyOutline(InventoryItemElement_NotListView item)
         {
             var images = item.GetComponentsInChildren<UnityEngine.UI.Image>();
@@ -60,6 +66,62 @@ namespace BTCantinaMissions.Patches
             outline.enabled = true;
         }
 
+        internal static void ClearOutline(InventoryItemElement_NotListView item)
+        {
+            var outline = item.GetComponentInChildren<UnityEngine.UI.Outline>();
+            if (outline != null && outline.enabled)
+            {
+                outline.enabled = false;
+            }
+        }
+
+        /// <summary>Per-item matching: resolves the def ID, matches it against
+        /// active jobs, applies or clears the outline. Salvage-screen widgets
+        /// (ListElementController_Salvage*) resolve through their salvageDef
+        /// only — CustomSalvage leaves stale ComponentRefs on pooled and
+        /// reused widgets (a disassembled mech's cockpit card can still carry
+        /// the previous salvage screen's cockpit ref), producing false
+        /// matches. MechLab and other screens have no salvageDef and rely on
+        /// ComponentRef. Returns true when outlined.</summary>
+        internal static bool ProcessItem(InventoryItemElement_NotListView item)
+        {
+            if (Core.State?.ActiveJobs == null || Core.State.ActiveJobs.Count == 0)
+            {
+                ClearOutline(item);
+                return false;
+            }
+
+            var salvageController = item.controller is ListElementController_SalvageFullMech_NotListView
+                                 || item.controller is ListElementController_SalvageMechPart_NotListView
+                                 || item.controller is ListElementController_SalvageGear_NotListView
+                                 || item.controller is ListElementController_SalvageWeapon_NotListView;
+            var defId = salvageController
+                ? GetDefId(item)
+                : item.ComponentRef?.ComponentDefID ?? GetDefId(item);
+            if (string.IsNullOrEmpty(defId))
+            {
+                ClearOutline(item);
+                return false;
+            }
+
+            foreach (var job in Core.State.ActiveJobs)
+            {
+                var def = JobCatalog.GetDef(job.DefId);
+                if (def == null) continue;
+                if (!MatchesJob(defId, def, job)) continue;
+
+                if (ShouldHighlight)
+                {
+                    ApplyOutline(item);
+                    Core.Debug($"[Salvage] Cantina highlight: {defId} (job: {job.ResolvedName})");
+                }
+                return true;
+            }
+
+            ClearOutline(item);
+            return false;
+        }
+
         private static bool CheckChassisFamily(string mechDefId, string targetFamily)
         {
             if (string.IsNullOrEmpty(targetFamily)) return false;
@@ -71,46 +133,68 @@ namespace BTCantinaMissions.Patches
         }
     }
 
-    /// <summary>H8: fires for EVERY item added to the salvage list — initial
-    /// population, CustomSalvage disassembly, leftover additions. Highlights
-    /// matching items as they appear.</summary>
-    [HarmonyPatch(typeof(AAR_SalvageScreen), nameof(AAR_SalvageScreen.AddNewSalvageEntryToWidget))]
+    /// <summary>H8c: fires for EVERY item on ANY screen that uses
+    /// InventoryItemElement_NotListView (salvage, MechLab). It runs inside
+    /// SetData, BEFORE the controller is handed its salvageDef — so on the
+    /// salvage screen H8c alone can only CLEAR stale outlines; the actual
+    /// highlighting there is completed by H8f/H8e/H8b once controller data is
+    /// available. For MechLab items (ComponentRef set by the game) H8c is the
+    /// primary and sufficient hook.</summary>
+    [HarmonyPatch(typeof(InventoryItemElement_NotListView), nameof(InventoryItemElement_NotListView.SetTooltipData))]
     public static class SalvageItem_CantinaHighlight
     {
-        public static void Postfix(AAR_SalvageScreen __instance, SalvageDef salvageDef)
+        public static void Postfix(InventoryItemElement_NotListView __instance)
         {
-            if (!Core.Settings.SalvageHighlight) return;
-            if (salvageDef == null) return;
             if (UnityGameInstance.BattleTechGame?.Simulation == null) return;
-            if (Core.State?.ActiveJobs == null || Core.State.ActiveJobs.Count == 0) return;
-
-            var defId = salvageDef.MechComponentDef?.Description?.Id
-                        ?? salvageDef.Description?.Id;
-            if (string.IsNullOrEmpty(defId)) return;
-
-            var selection = __instance.salvageSelection;
-            if (selection == null) return;
-            var items = selection.GetSalvageInventory();
-            if (items == null || items.Count == 0) return;
-            var item = items[items.Count - 1];
-            if (item == null) return;
-
-            foreach (var job in Core.State.ActiveJobs)
-            {
-                var def = JobCatalog.GetDef(job.DefId);
-                if (def == null) continue;
-                if (!SalvageHighlight.MatchesJob(defId, def, job)) continue;
-
-                SalvageHighlight.ApplyOutline(item);
-                Core.Debug($"[H8] Cantina highlight: {defId} (job: {job.ResolvedName})");
-                return;
-            }
+            SalvageHighlight.ProcessItem(__instance);
         }
     }
 
-    /// <summary>H8b: re-scan after screen transitions (confirmation, leftover
-    /// addition). Re-parenting resets Outline on child Image; postfix restores
-    /// highlights so quick-sell doesn't catch cantina targets by accident.</summary>
+    /// <summary>H8e: leftover items created AFTER salvage confirmation.
+    /// SalvageConfirmed() builds fresh widgets for every leftover via
+    /// AddNewSalvageLeftover → InitAndCreate, where SetData (and thus
+    /// SetTooltipData/H8c) runs BEFORE the controller's salvageDef is
+    /// assigned — H8c sees an empty controller and can't resolve the ID.
+    /// AddLeftovers receives the exact widget after the controller is fully
+    /// initialized.</summary>
+    [HarmonyPatch(typeof(AAR_SalvageChosen), nameof(AAR_SalvageChosen.AddLeftovers))]
+    public static class SalvageLeftover_CantinaHighlight
+    {
+        public static void Postfix(InventoryItemElement_NotListView item)
+        {
+            if (!Core.Settings.SalvageHighlight) return;
+            if (UnityGameInstance.BattleTechGame?.Simulation == null) return;
+
+            SalvageHighlight.ProcessItem(item);
+        }
+    }
+
+    /// <summary>H8f: every item added to any MechLabInventoryWidget list —
+    /// the salvage selection screen, MechLab inventory, and every mid-screen
+    /// list rebuild (CustomSalvage mech disassembly rebuilds the whole
+    /// salvage list through this). Unlike H8c this fires AFTER the
+    /// controller is fully initialized (InitAndCreate completes before
+    /// OnAddItem), so salvageDef is readable and GetDefId works for freshly
+    /// created widgets.</summary>
+    [HarmonyPatch(typeof(MechLabInventoryWidget), nameof(MechLabInventoryWidget.OnAddItem))]
+    public static class SalvageListAdd_CantinaHighlight
+    {
+        public static void Postfix(IMechLabDraggableItem item)
+        {
+            if (UnityGameInstance.BattleTechGame?.Simulation == null) return;
+
+            var widget = item as InventoryItemElement_NotListView;
+            if (widget == null) return;
+
+            SalvageHighlight.ProcessItem(widget);
+        }
+    }
+
+    /// <summary>H8b: full rescan when the salvage screen opens — SetInitialText
+    /// fires once after the initial list population, when all controllers are
+    /// ready. It is the primary highlight pass for the selection screen (H8c
+    /// fires too early there); it also re-applies highlights on reopen and
+    /// clears non-matching items.</summary>
     [HarmonyPatch(typeof(AAR_SalvageChosen), nameof(AAR_SalvageChosen.SetInitialText))]
     public static class SalvageRescan_CantinaHighlight
     {
@@ -128,76 +212,10 @@ namespace BTCantinaMissions.Patches
             var highlighted = 0;
             foreach (var item in items)
             {
-                var defId = SalvageHighlight.GetDefId(item);
-                if (string.IsNullOrEmpty(defId)) continue;
-
-                foreach (var job in Core.State.ActiveJobs)
-                {
-                    var def = JobCatalog.GetDef(job.DefId);
-                    if (def == null) continue;
-                    if (!SalvageHighlight.MatchesJob(defId, def, job)) continue;
-
-                    SalvageHighlight.ApplyOutline(item);
-                    highlighted++;
-                    break;
-                }
+                if (SalvageHighlight.ProcessItem(item)) highlighted++;
             }
 
-            if (highlighted > 0)
-                Core.Debug($"[H8b] Rescan: re-applied {highlighted} outlines");
-        }
-    }
-
-    /// <summary>H8c: MechLab/store highlighting + cleanup. Hooks SetTooltipData()
-    /// — the ONLY method called by BOTH SetData overloads. Gets ID from
-    /// ComponentRef (MechComponentRef path) or controller fallback.</summary>
-    [HarmonyPatch(typeof(InventoryItemElement_NotListView), nameof(InventoryItemElement_NotListView.SetTooltipData))]
-    public static class MechLabHighlightPatch
-    {
-        public static void Postfix(InventoryItemElement_NotListView __instance)
-        {
-            if (UnityGameInstance.BattleTechGame?.Simulation == null) return;
-            if (Core.State?.ActiveJobs == null || Core.State.ActiveJobs.Count == 0)
-            {
-                Clear(__instance);
-                return;
-            }
-
-            var defId = __instance.ComponentRef?.ComponentDefID;
-            if (string.IsNullOrEmpty(defId))
-            {
-                defId = SalvageHighlight.GetDefId(__instance);
-            }
-            if (string.IsNullOrEmpty(defId))
-            {
-                Clear(__instance);
-                return;
-            }
-
-            foreach (var job in Core.State.ActiveJobs)
-            {
-                var def = JobCatalog.GetDef(job.DefId);
-                if (def == null) continue;
-                if (!SalvageHighlight.MatchesJob(defId, def, job)) continue;
-
-                if (Core.Settings.MechLabHighlight)
-                {
-                    SalvageHighlight.ApplyOutline(__instance);
-                    Core.Debug($"[H8c] MechLab highlight: {defId} (job: {job.ResolvedName})");
-                }
-                return;
-            }
-
-            Clear(__instance);
-        }
-
-        private static void Clear(InventoryItemElement_NotListView item)
-        {
-            var outline = item.GetComponentInChildren<UnityEngine.UI.Outline>();
-            if (outline != null && outline.enabled)
-            {
-                outline.enabled = false;
-            }
+            Core.Debug($"[H8b] Rescan: {highlighted} outlined, {items.Count - highlighted} cleared");
         }
     }
 }
