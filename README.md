@@ -296,3 +296,10 @@ Other Results panel), cyan salvage-screen highlights on collectible items
 (including CustomSalvage disassembly and post-confirmation rescan), and an
 optional MechLab highlight (`MechLabHighlight: true`) marking cantina
 collectibles in the MechLab inventory to prevent accidental selling.
+
+v0.6.1 — salvage-highlight fixes: outlines now survive salvage confirmation
+(leftover widgets are created after the screen's own init hooks stop firing)
+and CustomSalvage mech disassembly (the whole list is rebuilt mid-screen);
+full-unit salvage cards (whole mechs/vehicles, mech parts) no longer pick up
+a false highlight from a stale internal-component reference left by
+CustomSalvage on their widgets.
