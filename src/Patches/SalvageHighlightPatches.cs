@@ -125,9 +125,15 @@ namespace BTCantinaMissions.Patches
         private static bool CheckChassisFamily(string mechDefId, string targetFamily)
         {
             if (string.IsNullOrEmpty(targetFamily)) return false;
+            // salvage items are mostly gear/weapon ids — skip the DataManager
+            // round-trip for anything that can't be a mechdef
+            if (!mechDefId.StartsWith("mechdef_", StringComparison.OrdinalIgnoreCase)) return false;
             var sim = UnityGameInstance.BattleTechGame.Simulation;
-            var mechDef = sim?.DataManager?.MechDefs?.Get(mechDefId);
-            if (mechDef == null) return false;
+            if (sim?.DataManager?.MechDefs == null ||
+                !sim.DataManager.MechDefs.TryGet(mechDefId, out MechDef mechDef))
+            {
+                return false;
+            }
             var family = ChassisFamilyResolver.GetFamily(mechDef);
             return string.Equals(family, targetFamily, StringComparison.OrdinalIgnoreCase);
         }
