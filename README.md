@@ -303,3 +303,9 @@ and CustomSalvage mech disassembly (the whole list is rebuilt mid-screen);
 full-unit salvage cards (whole mechs/vehicles, mech parts) no longer pick up
 a false highlight from a stale internal-component reference left by
 CustomSalvage on their widgets.
+
+v0.6.2 — crash fix: with an active mech-collect job, chassis-family matching
+queried the MechDef store with every salvage item's id, and non-mech ids
+(e.g. gear) threw KeyNotFoundException out of the list-population hook.
+Non-mechdef ids are now filtered before lookup and the store is queried via
+TryGet.
