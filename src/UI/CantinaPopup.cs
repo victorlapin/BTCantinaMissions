@@ -50,6 +50,20 @@ namespace BTCantinaMissions.UI
 
         private static readonly Random random = new Random();
 
+        // ── v0.7 delivery staging ─────────────────────────────────────
+        // In-place mode switch of the board popup (ARCHITECTURE.md §10): the
+        // Deliver click turns the popup into a variant/unit picker instead of
+        // queueing a separate event. Back / Leave / reopening resets it.
+        private class DeliveryStage
+        {
+            public JobInstance Job;
+            public bool IsMech;
+            public readonly Dictionary<string, int> StagedParts = new Dictionary<string, int>();
+            public int StagedTotal;
+        }
+
+        private static DeliveryStage stage;
+
         /// <summary>Event popup without the SIM_GAME_EVENT_RESOLVED autosave that
         /// QueueEventPopup attaches to every event (the board is not a real event).</summary>
         private class BoardPopupEntry : SimGameInterruptManager.EventPopupEntry
@@ -82,6 +96,7 @@ namespace BTCantinaMissions.UI
 
             currentPage = 0;   // fresh open always starts at the first page
             currentFlavor = Flavor(currentIsCantina ? boardFlavor : ledgerFlavor);
+            stage = null;      // stale staging never survives a reopen
 
             // ── Option stubs ──────────────────────────────
             // No more stubs than the popup can display: pagination renders at most MAX_BUTTONS
@@ -187,7 +202,8 @@ namespace BTCantinaMissions.UI
         }
 
         /// <summary>Offered-job line: CollectItems shows the player's current inventory
-        /// count instead of a dead 0/9 — what you see is what gets seeded on Take.</summary>
+        /// count instead of a dead 0/9 — what you see is what gets seeded on Take.
+        /// v0.7: Deliver-mode parts/mech offers mirror the live family counts too.</summary>
         private static string OfferedDisplayString(JobInstance job)
         {
             var def = JobCatalog.GetDef(job.DefId);
@@ -195,6 +211,17 @@ namespace BTCantinaMissions.UI
             {
                 var have = ItemCatalog.GetInventoryCount(
                     UnityGameInstance.BattleTechGame.Simulation, def, job);
+                if (have > 0)
+                    return $"{job.ResolvedName} ({Math.Min(have, job.TargetCount)}/{job.TargetCount})";
+            }
+            else if (def?.ItemMode == ItemModeType.Deliver)
+            {
+                var sim = UnityGameInstance.BattleTechGame.Simulation;
+                var have = 0;
+                if (def.ObjectiveType == ObjectiveType.CollectMechParts)
+                    have = FamilyInventory.CountParts(sim, job.ResolvedTarget);
+                else if (def.ObjectiveType == ObjectiveType.CollectMech)
+                    have = FamilyInventory.CountUnits(sim, job.ResolvedTarget);
                 if (have > 0)
                     return $"{job.ResolvedName} ({Math.Min(have, job.TargetCount)}/{job.TargetCount})";
             }
@@ -311,6 +338,12 @@ namespace BTCantinaMissions.UI
 
         public static void MakeOptions(SGEventPanel sgEventPanel)
         {
+            if (stage != null)
+            {
+                MakeStagingOptions(sgEventPanel);
+                return;
+            }
+
             var state = Core.State;
             var atLimit = state.ActiveJobs.Count >= Core.Settings.MaxActiveJobs;
             var inTransit = UnityGameInstance.BattleTechGame.Simulation?.TravelState
@@ -331,10 +364,21 @@ namespace BTCantinaMissions.UI
                     {
                         // seed progress with what the player already holds — AddProgress
                         // clamps at the target and flips the job to READY when it is enough
-                        var have = ItemCatalog.GetInventoryCount(
-                            UnityGameInstance.BattleTechGame.Simulation,
-                            JobCatalog.GetDef(job.DefId), job);
+                        var sim = UnityGameInstance.BattleTechGame.Simulation;
+                        var takenDef = JobCatalog.GetDef(job.DefId);
+                        var have = ItemCatalog.GetInventoryCount(sim, takenDef, job);
                         if (have > 0) job.AddProgress(have);
+
+                        // v0.7: Deliver-mode parts/mech jobs mirror the live family
+                        // inventory instead of the (item-less) item seeding above
+                        if (takenDef?.ItemMode == ItemModeType.Deliver)
+                        {
+                            if (takenDef.ObjectiveType == ObjectiveType.CollectMechParts)
+                                job.SyncProgress(Domain.FamilyInventory.CountParts(sim, job.ResolvedTarget));
+                            else if (takenDef.ObjectiveType == ObjectiveType.CollectMech)
+                                job.SyncProgress(Domain.FamilyInventory.CountUnits(sim, job.ResolvedTarget));
+                        }
+
                         MakeOptions(sgEventPanel);
                     }
                 }));
@@ -378,20 +422,203 @@ namespace BTCantinaMissions.UI
                 }));
             }
 
-            SetOption(optionsList[index++], new OptionEntry("Leave", true, arg => { sgEventPanel.Dismiss(); }));
+            SetOption(optionsList[index++], new OptionEntry("Leave", true, arg => { stage = null; sgEventPanel.Dismiss(); }));
 
             // Hide the leftover stub buttons — their empty frames still stretch the popup
             for (int i = index; i < optionsList.Count; i++)
                 optionsList[i].gameObject.SetActive(false);
         }
 
+        // ── v0.7 staging renderers ────────────────────────────────────
+
+        private static void MakeStagingOptions(SGEventPanel sgEventPanel)
+        {
+            if (stage.IsMech)
+                MakeMechStageOptions(sgEventPanel);
+            else
+                MakePartsStageOptions(sgEventPanel);
+        }
+
+        private static void MakePartsStageOptions(SGEventPanel sgEventPanel)
+        {
+            var sim = UnityGameInstance.BattleTechGame.Simulation;
+            var job = stage.Job;
+            var parts = Domain.FamilyInventory.EnumerateParts(sim, job.ResolvedTarget);
+            var sb = new StringBuilder();
+            sb.AppendLine($"Deliver \"{job.ResolvedName}\"?");
+            sb.AppendLine();
+            sb.AppendLine($"Choose {job.TargetCount} part(s) of the family to hand over:");
+            sb.AppendLine();
+            foreach (var p in parts)
+            {
+                stage.StagedParts.TryGetValue(p.Id, out var staged);
+                sb.AppendLine($"  {p.DisplayName} — staged {staged}, in stock {p.Total}");
+            }
+            sb.AppendLine();
+            sb.Append($"Staged: {stage.StagedTotal}/{job.TargetCount}");
+            sgEventPanel.eventDescription.SetText(sb.ToString());
+
+            var optionsList = sgEventPanel.optionsList;
+            var index = 0;
+
+            foreach (var p in parts)
+            {
+                stage.StagedParts.TryGetValue(p.Id, out var staged);
+                var available = p.Total;
+                var canStage = staged < available && stage.StagedTotal < job.TargetCount;
+                var label = staged > 0
+                    ? $"{UIColors.Wrap("[+]", UIColor.Blue)} {p.DisplayName} — staged {staged}/{available}"
+                    : $"{UIColors.Wrap("[+]", UIColor.Blue)} {p.DisplayName} — {available} in stock";
+                var closure = p.Id;
+                SetOption(optionsList[index++], label, canStage, arg =>
+                {
+                    stage.StagedParts[closure] = stage.StagedParts.TryGetValue(closure, out var s) ? s + 1 : 1;
+                    stage.StagedTotal++;
+                    MakeStagingOptions(sgEventPanel);
+                });
+            }
+
+            if (stage.StagedTotal == job.TargetCount)
+            {
+                SetOption(optionsList[index++],
+                    $"{UIColors.Wrap("[Deliver]", UIColor.Green)} Hand over {job.TargetCount} part(s) — {PaymentString(job)}",
+                    true, arg =>
+                    {
+                        var selection = new Dictionary<string, int>(stage.StagedParts);
+                        var instanceId = stage.Job.InstanceId;
+                        stage = null;
+                        var ok = RewardService.DeliverParts(instanceId, selection);
+                        Core.Log($"[Board] Deliver parts: {(ok ? "success" : "failed")}");
+                        if (ok) MakeOptions(sgEventPanel);
+                    });
+            }
+            else if (stage.StagedTotal > 0)
+            {
+                SetOption(optionsList[index++], "Reset staging", true, arg =>
+                {
+                    stage.StagedParts.Clear();
+                    stage.StagedTotal = 0;
+                    MakeStagingOptions(sgEventPanel);
+                });
+            }
+
+            // staging is a mode of the board, not a separate screen — Leave stays
+            // the last button; Back returns to the board view without paging state
+            SetOption(optionsList[index++], new OptionEntry("Back", true, arg =>
+            {
+                stage = null;
+                currentPage = 0;
+                MakeOptions(sgEventPanel);
+            }));
+
+            SetOption(optionsList[index++], new OptionEntry("Leave", true, arg => { stage = null; sgEventPanel.Dismiss(); }));
+
+            for (int i = index; i < optionsList.Count; i++)
+                optionsList[i].gameObject.SetActive(false);
+        }
+
+        private static void MakeMechStageOptions(SGEventPanel sgEventPanel)
+        {
+            var sim = UnityGameInstance.BattleTechGame.Simulation;
+            var job = stage.Job;
+            var units = Domain.FamilyInventory.EnumerateDeliverableUnits(sim, job.ResolvedTarget);
+
+            var sb = new StringBuilder();
+            sb.AppendLine($"Deliver \"{job.ResolvedName}\"?");
+            sb.AppendLine();
+            sb.AppendLine("Select the 'Mech to hand over:");
+            sb.AppendLine();
+            if (units.Count == 0)
+            {
+                sb.AppendLine(UIColors.Wrap(
+                    "  No deliverable units — the family 'Mech is mid-refit (readying).", UIColor.LightGray));
+                sb.AppendLine(UIColors.Wrap("  Complete the refit and come back.", UIColor.LightGray));
+            }
+            else
+            {
+                foreach (var u in units)
+                    sb.AppendLine($"  {u.DisplayName}");
+                sb.AppendLine();
+                sb.AppendLine(UIColors.Wrap(
+                    "Active 'Mechs are stripped first — equipment returns to inventory.", UIColor.LightGray));
+            }
+            sb.AppendLine();
+            sb.Append($"Payment: {PaymentString(job)}");
+            sgEventPanel.eventDescription.SetText(sb.ToString());
+
+            var optionsList = sgEventPanel.optionsList;
+            var index = 0;
+
+            foreach (var u in units)
+            {
+                var closure = u.Key;
+                var label = $"{UIColors.Wrap("[Deliver]", UIColor.Green)} {u.DisplayName}";
+                SetOption(optionsList[index++], label, true, arg => ConfirmMechDelivery(sgEventPanel, job, closure, u.DisplayName));
+            }
+
+            SetOption(optionsList[index++], new OptionEntry("Back", true, arg =>
+            {
+                stage = null;
+                currentPage = 0;
+                MakeOptions(sgEventPanel);
+            }));
+            SetOption(optionsList[index++], new OptionEntry("Leave", true, arg => { stage = null; sgEventPanel.Dismiss(); }));
+
+            for (int i = index; i < optionsList.Count; i++)
+                optionsList[i].gameObject.SetActive(false);
+        }
+
+        /// <summary>Final yes/no for a whole-unit delivery — the unit leaves the
+        /// company permanently, so the deduction is spelled out before it's final.</summary>
+        private static void ConfirmMechDelivery(SGEventPanel sgEventPanel, JobInstance job, string unitKey, string unitName)
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine($"Hand over {unitName}?");
+            sb.AppendLine();
+            sb.AppendLine("The 'Mech will leave your company permanently.");
+            sb.AppendLine("Its equipment returns to your inventory.");
+            sb.AppendLine();
+            sb.Append("Payment: ");
+            sb.Append(PaymentString(job));
+
+            GenericPopupBuilder.Create("Deliver 'Mech", sb.ToString())
+                .AddButton("Cancel", null)
+                .AddButton("Deliver", () =>
+                {
+                    var instanceId = job.InstanceId;
+                    stage = null;
+                    var ok = RewardService.DeliverMechUnit(instanceId, unitKey);
+                    Core.Log($"[Board] Deliver mech: {(ok ? "success" : "failed")}");
+                    if (ok) MakeOptions(sgEventPanel);
+                })
+                .CancelOnEscape()
+                .IsNestedPopupWithBuiltInFader()
+                .Render();
+        }
+
         /// <summary>Delivery confirmation: Deliver-mode item jobs consume the collected
         /// items, so the player gets a blocking yes/no (with the deduction spelled out)
-        /// before the transfer is final. Non-consuming jobs deliver directly — there is
-        /// nothing to change one's mind about.</summary>
+        /// before the transfer is final. Parts/mech Deliver jobs switch the popup into
+        /// the staging mode instead — the selection itself is the confirmation.
+        /// Non-consuming jobs deliver directly — there is nothing to change one's mind about.</summary>
         private static void ConfirmDeliver(SGEventPanel sgEventPanel, JobInstance job)
         {
             var def = JobCatalog.GetDef(job.DefId);
+
+            if (def?.ItemMode == ItemModeType.Deliver
+                && (def.ObjectiveType == ObjectiveType.CollectMechParts
+                    || def.ObjectiveType == ObjectiveType.CollectMech))
+            {
+                stage = new DeliveryStage
+                {
+                    Job = job,
+                    IsMech = def.ObjectiveType == ObjectiveType.CollectMech
+                };
+
+                MakeStagingOptions(sgEventPanel);
+                return;
+            }
+
             var consumes = def?.ObjectiveType == ObjectiveType.CollectItems && def.ItemMode == ItemModeType.Deliver;
             if (!consumes)
             {
