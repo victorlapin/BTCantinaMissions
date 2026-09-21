@@ -34,8 +34,11 @@ namespace BTCantinaMissions.Patches
         }
     }
 
-    /// <summary>After a save is rehydrated, re-syncs Deliver CollectItems progress
-    /// with the actual inventory — self-healing against any drift between saves.</summary>
+    /// <summary>After a save is rehydrated, re-syncs Deliver job progress with
+    /// the actual holdings — self-healing against any drift between saves.
+    /// v0.7: covers all three carriers — items (inventory stats), mech parts
+    /// (family part stats) and whole units (hangar recount). Old saves with
+    /// pre-v0.7 monotonic counters heal on the first load.</summary>
     [HarmonyPatch(typeof(SimGameState), "Rehydrate")]
     public static class SimGameState_RehydratePatch
     {
@@ -46,11 +49,24 @@ namespace BTCantinaMissions.Patches
             foreach (var job in Core.State.ActiveJobs)
             {
                 var def = JobCatalog.GetDef(job.DefId);
-                if (def?.ObjectiveType != ObjectiveType.CollectItems) continue;
-                if (def.ItemMode != ItemModeType.Deliver) continue;
+                if (def?.ItemMode != ItemModeType.Deliver) continue;
 
                 var before = job.Progress;
-                job.SyncProgress(ItemCatalog.GetInventoryCount(__instance, def, job));
+                switch (def.ObjectiveType)
+                {
+                    case ObjectiveType.CollectItems:
+                        job.SyncProgress(ItemCatalog.GetInventoryCount(__instance, def, job));
+                        break;
+                    case ObjectiveType.CollectMechParts:
+                        job.SyncProgress(FamilyInventory.CountParts(__instance, job.ResolvedTarget));
+                        break;
+                    case ObjectiveType.CollectMech:
+                        job.SyncProgress(FamilyInventory.CountUnits(__instance, job.ResolvedTarget));
+                        break;
+                    default:
+                        continue;
+                }
+
                 if (job.Progress != before)
                     Core.Log($"[Load] Progress sync: {job.ResolvedName} {before} → {job.Progress}/{job.TargetCount}");
             }
