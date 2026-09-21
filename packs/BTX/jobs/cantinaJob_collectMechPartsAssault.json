@@ -5,6 +5,7 @@
     "Icon": ""
   },
   "ObjectiveType": "CollectMechParts",
+  "ItemMode": "Deliver",
   "MinTargetCount": 2,
   "MaxTargetCount": 3,
   "ChassisPool": [

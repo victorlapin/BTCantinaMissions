@@ -5,6 +5,7 @@
     "Icon": ""
   },
   "ObjectiveType": "CollectMechParts",
+  "ItemMode": "Deliver",
   "MinTargetCount": 3,
   "MaxTargetCount": 5,
   "Reward": {

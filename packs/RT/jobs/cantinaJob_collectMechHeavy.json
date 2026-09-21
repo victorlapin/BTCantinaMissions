@@ -5,6 +5,7 @@
     "Icon": ""
   },
   "ObjectiveType": "CollectMech",
+  "ItemMode": "Deliver",
   "MinTargetCount": 1,
   "MaxTargetCount": 1,
   "Reward": {
