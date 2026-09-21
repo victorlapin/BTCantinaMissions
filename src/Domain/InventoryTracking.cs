@@ -91,5 +91,60 @@ namespace BTCantinaMissions.Domain
             job.SyncProgress(ItemCatalog.GetInventoryCount(sim, def, job));
             return job.Progress != before || job.State != stateBefore;
         }
+
+        /// <summary>v0.7: a MECHPART stat changed — Deliver-mode CollectMechParts
+        /// jobs of the matching family re-mirror their progress from the live
+        /// part count (sold, scrapped, consumed by an assembly).</summary>
+        internal static void TrackPartChanged(string rawId)
+        {
+            var jobs = Core.State.ActiveJobs;
+            if (jobs.Count == 0) return;
+
+            var family = FamilyInventory.StatIdToFamily(rawId);
+            if (family == null) return;
+
+            foreach (var job in jobs)
+            {
+                if (!string.Equals(job.ResolvedTarget, family, StringComparison.OrdinalIgnoreCase)) continue;
+                var def = JobCatalog.GetDef(job.DefId);
+                if (def?.ObjectiveType != ObjectiveType.CollectMechParts) continue;
+                if (def.ItemMode != ItemModeType.Deliver) continue;
+
+                var wasReady = job.State == JobState.ReadyToDeliver;
+                var sim = UnityGameInstance.BattleTechGame.Simulation;
+                var before = job.Progress;
+                job.SyncProgress(FamilyInventory.CountParts(sim, family));
+
+                if (job.Progress != before)
+                    Core.Log($"[H3a] CollectMechParts reversal: {job.ResolvedName} ({job.Progress}/{job.TargetCount})");
+                if (wasReady && job.State == JobState.Taken && Core.Settings.NotifyOnReady)
+                    Notifications.OnReverted(job);
+            }
+        }
+
+        /// <summary>v0.7: hangar composition changed (AddMech / scrap) —
+        /// Deliver-mode CollectMech jobs re-mirror from the live unit count.</summary>
+        internal static void TrackUnitsChanged()
+        {
+            var jobs = Core.State.ActiveJobs;
+            if (jobs.Count == 0) return;
+
+            var sim = UnityGameInstance.BattleTechGame.Simulation;
+            foreach (var job in jobs)
+            {
+                var def = JobCatalog.GetDef(job.DefId);
+                if (def?.ObjectiveType != ObjectiveType.CollectMech) continue;
+                if (def.ItemMode != ItemModeType.Deliver) continue;
+
+                var wasReady = job.State == JobState.ReadyToDeliver;
+                var before = job.Progress;
+                job.SyncProgress(FamilyInventory.CountUnits(sim, job.ResolvedTarget));
+
+                if (job.Progress != before)
+                    Core.Log($"[H7] CollectMech mirror: {job.ResolvedName} ({job.Progress}/{job.TargetCount})");
+                if (wasReady && job.State == JobState.Taken && Core.Settings.NotifyOnReady)
+                    Notifications.OnReverted(job);
+            }
+        }
     }
 }

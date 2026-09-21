@@ -56,9 +56,15 @@ namespace BTCantinaMissions.Patches
     {
         public static void Postfix(SimGameState __instance, string id, string type, bool damaged)
         {
-            // see AddItemStatStringPatch: part stats churn (assembly consumes N parts at
-            // once) must not spam the log — CollectItems jobs can't hold part targets
-            if (type == "MECHPART") return;
+            // v0.7: MECHPART removals now feed the CollectMechParts live mirror
+            // (Deliver jobs drop when parts are sold, scrapped or consumed by an
+            // assembly); CollectItems jobs still can't hold part targets
+            if (type == "MECHPART")
+            {
+                Core.Debug($"[H3a] RemoveItemStat: {id} (MECHPART, damaged={damaged}) → parts mirror");
+                InventoryTracking.TrackPartChanged(id);
+                return;
+            }
 
             Core.Debug($"[H3a] RemoveItemStat: {id} ({type}, damaged={damaged}), activeJobs={Core.State.ActiveJobs.Count}");
             InventoryTracking.TrackItemRemoved(id);
@@ -88,7 +94,16 @@ namespace BTCantinaMissions.Patches
                 if (def?.ObjectiveType != ObjectiveType.CollectMech) continue;
                 if (!ChassisFamilyResolver.MatchesFamily(mech, job.ResolvedTarget)) continue;
 
-                job.AddProgress(1);
+                if (def.ItemMode == ItemModeType.Deliver)
+                {
+                    // v0.7: mirror — recount the hangar instead of a delta, so
+                    // store→ready→active transitions never double-count
+                    job.SyncProgress(FamilyInventory.CountUnits(UnityGameInstance.BattleTechGame.Simulation, job.ResolvedTarget));
+                }
+                else
+                {
+                    job.AddProgress(1);
+                }
                 Core.Log($"[H4] CollectMech progress: {job.ResolvedName} ({job.Progress}/{job.TargetCount})");
                 Notifications.OnProgress(job);
             }
@@ -127,7 +142,16 @@ namespace BTCantinaMissions.Patches
                 if (def?.ObjectiveType != ObjectiveType.CollectMechParts) continue;
                 if (!string.Equals(job.ResolvedTarget, family, StringComparison.OrdinalIgnoreCase)) continue;
 
-                job.AddProgress(1);
+                if (def.ItemMode == ItemModeType.Deliver)
+                {
+                    // v0.7: mirror — recount family parts instead of a delta
+                    // (assembly consumes parts in bursts; deltas would drift)
+                    job.SyncProgress(FamilyInventory.CountParts(__instance, family));
+                }
+                else
+                {
+                    job.AddProgress(1);
+                }
                 Core.Log($"[H4a] CollectMechParts progress: {job.ResolvedName} ({job.Progress}/{job.TargetCount})");
                 Notifications.OnProgress(job);
             }

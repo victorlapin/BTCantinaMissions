@@ -1,7 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Text;
 using BattleTech;
-using BattleTech.UI;
 using BTCantinaMissions.UI;
 
 namespace BTCantinaMissions.Domain
@@ -47,6 +47,97 @@ namespace BTCantinaMissions.Domain
 
             Grant(sim, job, def);
             return true;
+        }
+
+        /// <summary>v0.7: parts delivery — the staged selection (stat id → count,
+        /// from the CantinaPopup staging UI) is verified against the live
+        /// inventory, then consumed undamaged-first (or intact-only, per the
+        /// DamagedParts setting).</summary>
+        public static bool DeliverParts(string instanceId, Dictionary<string, int> selection)
+        {
+            var job = Core.State.FindActive(instanceId);
+            if (job == null || job.State != JobState.ReadyToDeliver) return false;
+
+            var sim = UnityGameInstance.BattleTechGame.Simulation;
+            var def = JobCatalog.GetDef(job.DefId);
+
+            var staged = 0;
+            foreach (var kv in selection)
+            {
+                var parts = FindParts(sim, job, kv.Key);
+                if (parts == null) return false;
+                var available = parts.Value.Total;
+                if (kv.Value < 0 || kv.Value > available)
+                {
+                    Core.LogWarning($"[Reward] Parts staging invalid: {kv.Key} x{kv.Value} (have {available})");
+                    return false;
+                }
+                staged += kv.Value;
+            }
+            if (staged != job.TargetCount)
+            {
+                Core.LogWarning($"[Reward] Parts staging mismatch: {staged}/{job.TargetCount}");
+                return false;
+            }
+
+            // same ordering as item delivery: the job leaves the list first, so
+            // the MECHPART mirror (H3a) does not reverse the job being delivered
+            if (!Core.State.Deliver(instanceId)) return false;
+
+            foreach (var kv in selection)
+            {
+                var clean = Math.Min(FindParts(sim, job, kv.Key).Value.Undamaged, kv.Value);
+                for (var i = 0; i < clean; i++)
+                    sim.RemoveItemStat(kv.Key, "MECHPART", false);
+                for (var i = clean; i < kv.Value; i++)
+                    sim.RemoveItemStat(kv.Key, "MECHPART", true);
+            }
+
+            Grant(sim, job, def);
+            return true;
+        }
+
+        /// <summary>v0.7: whole-unit delivery — active bays strip components back
+        /// into the inventory (lootable gear returns, H3 keeps collect jobs
+        /// honest), stored units are plain stat removal. Mirrors scrap without
+        /// the payout; the buyer already pays via the job reward.</summary>
+        public static bool DeliverMechUnit(string instanceId, string unitKey)
+        {
+            var job = Core.State.FindActive(instanceId);
+            if (job == null || job.State != JobState.ReadyToDeliver) return false;
+
+            var sim = UnityGameInstance.BattleTechGame.Simulation;
+
+            FamilyInventory.UnitEntry? found = null;
+            foreach (var unit in FamilyInventory.EnumerateDeliverableUnits(sim, job.ResolvedTarget))
+            {
+                if (unit.Key == unitKey) { found = unit; break; }
+            }
+            if (found == null)
+            {
+                Core.LogWarning($"[Reward] Deliverable unit not found: {unitKey}");
+                return false;
+            }
+            var target = found.Value;
+
+            if (!Core.State.Deliver(instanceId)) return false;
+
+            if (target.Active)
+                FamilyInventory.RemoveActiveUnit(sim, target.BaySlot);
+            else
+                FamilyInventory.RemoveStoredUnit(sim, target.StatId);
+
+            Grant(sim, job, JobCatalog.GetDef(job.DefId));
+            return true;
+        }
+
+        private static FamilyInventory.PartsEntry? FindParts(SimGameState sim, JobInstance job, string statId)
+        {
+            foreach (var parts in FamilyInventory.EnumerateParts(sim, job.ResolvedTarget))
+            {
+                if (parts.Id == statId) return parts;
+            }
+            return null;
         }
 
         /// <summary>Career economy scaling: the "Contract Payment" slider at career
