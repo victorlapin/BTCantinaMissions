@@ -26,19 +26,30 @@ between tiers deliberately as the collect job's payoff; MechPart entries are
 valued at chassis cost / parts-to-assemble — one part, not the whole mech). When adding entries, keep the EV within
 ±0.5% — recalculate, don't eyeball.
 
-## CollectMech / CollectVehicle (Acquire — the unit stays with the player)
+## CollectMech / CollectVehicle (Deliver since v0.7 — the unit/parts are handed over)
 
-Bounty, not value — historically anchored at ~8–10% of the pool floor; the
-upper tiers continue the ladder instead (assault mech chassis floors dip below
-the heavy legend due to cheap variants, so a percentage would break monotonicity).
+v0.7 turned these jobs consuming, so the anchor moved from "bounty for owning"
+to **trade**: the payout must clear the player's real alternative — selling the
+unit at the career "Shop Selling Prices" slider (~13% in this pack) — with a
+premium for the buyer's specific request.
 
-| Tier | Pool floor | Reward |
-|---|---|---|
-| Mech light / medium / heavy / assault | ladder | 150k / 250k / 400k / 600k |
-| Vehicle L / M / H / A | 568k / 1,040k / 1,254k / 1,350k | 60k / 100k / 125k / 160k |
+- **Deliver anchor** = shop-sell value × ~1.5 premium.
+- The mech ladder (150/250/400/600k) already clears the sell line on every tier
+  (2–6× vs sell) — numbers unchanged; the historic 8–10%-of-floor bounty
+  happened to land above the new anchor.
+- Vehicles sat BELOW the sell line (0.74–0.91×) — strictly dominated by selling;
+  lifted to the anchor (22.09): **160k / 230k / 300k / 350k** (L/M/H/A).
 
-Parts jobs inherit ×1.33 of the whole-unit job of the same tier (the original
-tuning ratio: 200/300/450k vs 150/250/400k; vehicles mirror it).
+| Tier | Pool floor | Sell ×0.13 | Reward |
+|---|---|---|---|
+| Mech light / medium / heavy / assault | 92k / 556k / 596k / 794k | 12k / 72k / 77k / 103k | 150k / 250k / 400k / 600k |
+| Vehicle L / M / H / A | 568k / 1,040k / 1,254k / 1,350k | 74k / 135k / 163k / 175k | **160k / 230k / 300k / 350k** |
+
+Parts jobs inherit ×1.33 of the whole-unit job of the same tier (vehicles:
+210/300/400/460k; mech parts unchanged at 200/300/450/800k). The min-vs-median
+family spread inside a tier (light pools hold both 92k and 537k families) is an
+accepted constant-reward compromise: cheap-family resolves pay a jackpot
+relative to their sell value, expensive ones stay comfortably above it.
 
 ## Destroy jobs
 

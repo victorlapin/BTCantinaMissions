@@ -9,7 +9,7 @@
   "MinTargetCount": 2,
   "MaxTargetCount": 4,
   "Reward": {
-    "CBills": 130000
+    "CBills": 300000
   },
   "MinSystemDifficulty": 7,
   "MaxSystemDifficulty": 16,
