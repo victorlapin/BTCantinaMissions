@@ -397,20 +397,33 @@ namespace BTCantinaMissions.UI
                 }
             }
 
-            // Pagination: Leave is always the last button; on multi-page boards
-            // the "Next >>" navigation takes one slot, leaving MAX_BUTTONS - 2 content buttons
+            RenderEntries(sgEventPanel, entries,
+                new OptionEntry("Leave", true, arg => { stage = null; sgEventPanel.Dismiss(); }),
+                MakeOptions);
+        }
+
+        /// <summary>Shared paged renderer (board, parts stage, mech stage): content
+        /// entries first, the always-visible Leave last, ring pagination when the
+        /// popup pool (MAX_BUTTONS) cannot hold everything — staging lists CAN
+        /// exceed it (variant count + footer), which crashed the unpaged renderers
+        /// (field bug 22.09: ArgumentOutOfRangeException after staging [+1]).</summary>
+        private static void RenderEntries(SGEventPanel sgEventPanel, List<OptionEntry> content,
+            OptionEntry leaveEntry, Action<SGEventPanel> rerender)
+        {
+            // Leave is always the last button; on multi-page views the
+            // "Switch page" navigation takes one slot, leaving MAX_BUTTONS - 2 content buttons
             const int fullPage = MAX_BUTTONS - 2;
-            int pageCount = entries.Count <= MAX_BUTTONS - 1
+            int pageCount = content.Count <= MAX_BUTTONS - 1
                 ? 1
-                : (entries.Count + fullPage - 1) / fullPage;
+                : (content.Count + fullPage - 1) / fullPage;
             if (currentPage >= pageCount) currentPage = 0;
             int pageSize = pageCount == 1 ? MAX_BUTTONS - 1 : fullPage;
             int start = currentPage * pageSize;
 
             var optionsList = sgEventPanel.optionsList;
             var index = 0;
-            for (int i = start; i < entries.Count && i < start + pageSize; i++)
-                SetOption(optionsList[index++], entries[i]);
+            for (int i = start; i < content.Count && i < start + pageSize; i++)
+                SetOption(optionsList[index++], content[i]);
 
             if (pageCount > 1)
             {
@@ -418,11 +431,11 @@ namespace BTCantinaMissions.UI
                     $"Switch page ({currentPage + 1} of {pageCount})", true, arg =>
                 {
                     currentPage = (currentPage + 1) % pageCount;
-                    MakeOptions(sgEventPanel);
+                    rerender(sgEventPanel);
                 }));
             }
 
-            SetOption(optionsList[index++], new OptionEntry("Leave", true, arg => { stage = null; sgEventPanel.Dismiss(); }));
+            SetOption(optionsList[index++], leaveEntry);
 
             // Hide the leftover stub buttons — their empty frames still stretch the popup
             for (int i = index; i < optionsList.Count; i++)
@@ -458,8 +471,7 @@ namespace BTCantinaMissions.UI
             sb.Append($"Staged: {stage.StagedTotal}/{job.TargetCount}");
             sgEventPanel.eventDescription.SetText(sb.ToString());
 
-            var optionsList = sgEventPanel.optionsList;
-            var index = 0;
+            var content = new List<OptionEntry>();
 
             foreach (var p in parts)
             {
@@ -470,17 +482,17 @@ namespace BTCantinaMissions.UI
                     ? $"{UIColors.Wrap("[+]", UIColor.Blue)} {p.DisplayName} — staged {staged}/{available}"
                     : $"{UIColors.Wrap("[+]", UIColor.Blue)} {p.DisplayName} — {available} in stock";
                 var closure = p.Id;
-                SetOption(optionsList[index++], label, canStage, arg =>
+                content.Add(new OptionEntry(label, canStage, arg =>
                 {
                     stage.StagedParts[closure] = stage.StagedParts.TryGetValue(closure, out var s) ? s + 1 : 1;
                     stage.StagedTotal++;
                     MakeStagingOptions(sgEventPanel);
-                });
+                }));
             }
 
             if (stage.StagedTotal == job.TargetCount)
             {
-                SetOption(optionsList[index++],
+                content.Add(new OptionEntry(
                     $"{UIColors.Wrap("[Deliver]", UIColor.Green)} Hand over {job.TargetCount} part(s) — {PaymentString(job)}",
                     true, arg =>
                     {
@@ -490,31 +502,31 @@ namespace BTCantinaMissions.UI
                         var ok = RewardService.DeliverParts(instanceId, selection);
                         Core.Log($"[Board] Deliver parts: {(ok ? "success" : "failed")}");
                         if (ok) MakeOptions(sgEventPanel);
-                    });
+                    }));
             }
             else if (stage.StagedTotal > 0)
             {
-                SetOption(optionsList[index++], "Reset staging", true, arg =>
+                content.Add(new OptionEntry("Reset staging", true, arg =>
                 {
                     stage.StagedParts.Clear();
                     stage.StagedTotal = 0;
                     MakeStagingOptions(sgEventPanel);
-                });
+                }));
             }
 
-            // staging is a mode of the board, not a separate screen — Leave stays
-            // the last button; Back returns to the board view without paging state
-            SetOption(optionsList[index++], new OptionEntry("Back", true, arg =>
+            // staging is a mode of the board, not a separate screen — Back
+            // returns to the board view; Leave stays always-visible via the
+            // paged renderer even when the variant list overflows the pool
+            content.Add(new OptionEntry("Back", true, arg =>
             {
                 stage = null;
                 currentPage = 0;
                 MakeOptions(sgEventPanel);
             }));
 
-            SetOption(optionsList[index++], new OptionEntry("Leave", true, arg => { stage = null; sgEventPanel.Dismiss(); }));
-
-            for (int i = index; i < optionsList.Count; i++)
-                optionsList[i].gameObject.SetActive(false);
+            RenderEntries(sgEventPanel, content,
+                new OptionEntry("Leave", true, arg => { stage = null; sgEventPanel.Dismiss(); }),
+                MakeStagingOptions);
         }
 
         private static void MakeMechStageOptions(SGEventPanel sgEventPanel)
@@ -546,26 +558,25 @@ namespace BTCantinaMissions.UI
             sb.Append($"Payment: {PaymentString(job)}");
             sgEventPanel.eventDescription.SetText(sb.ToString());
 
-            var optionsList = sgEventPanel.optionsList;
-            var index = 0;
+            var content = new List<OptionEntry>();
 
             foreach (var u in units)
             {
                 var closure = u.Key;
                 var label = $"{UIColors.Wrap("[Deliver]", UIColor.Green)} {u.DisplayName}";
-                SetOption(optionsList[index++], label, true, arg => ConfirmMechDelivery(sgEventPanel, job, closure, u.DisplayName));
+                content.Add(new OptionEntry(label, true, arg => ConfirmMechDelivery(sgEventPanel, job, closure, u.DisplayName)));
             }
 
-            SetOption(optionsList[index++], new OptionEntry("Back", true, arg =>
+            content.Add(new OptionEntry("Back", true, arg =>
             {
                 stage = null;
                 currentPage = 0;
                 MakeOptions(sgEventPanel);
             }));
-            SetOption(optionsList[index++], new OptionEntry("Leave", true, arg => { stage = null; sgEventPanel.Dismiss(); }));
 
-            for (int i = index; i < optionsList.Count; i++)
-                optionsList[i].gameObject.SetActive(false);
+            RenderEntries(sgEventPanel, content,
+                new OptionEntry("Leave", true, arg => { stage = null; sgEventPanel.Dismiss(); }),
+                MakeStagingOptions);
         }
 
         /// <summary>Final yes/no for a whole-unit delivery — the unit leaves the
