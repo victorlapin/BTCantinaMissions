@@ -94,16 +94,12 @@ namespace BTCantinaMissions.Patches
                 if (def?.ObjectiveType != ObjectiveType.CollectMech) continue;
                 if (!ChassisFamilyResolver.MatchesFamily(mech, job.ResolvedTarget)) continue;
 
-                if (def.ItemMode == ItemModeType.Deliver)
-                {
-                    // v0.7: mirror — recount the hangar instead of a delta, so
-                    // store→ready→active transitions never double-count
-                    job.SyncProgress(FamilyInventory.CountUnits(UnityGameInstance.BattleTechGame.Simulation, job.ResolvedTarget));
-                }
-                else
-                {
-                    job.AddProgress(1);
-                }
+                // Delta on entry, mirror on exit: with displayMechPopup the bay
+                // placement is deferred to the popup's Continue callback, so a
+                // recount at hook time sees an empty hangar (field bug 22.09:
+                // "(0/1)" right after AddMech). Exit paths (scrap) and the load
+                // sync are synchronous and keep the mirror honest.
+                job.AddProgress(1);
                 Core.Log($"[H4] CollectMech progress: {job.ResolvedName} ({job.Progress}/{job.TargetCount})");
                 Notifications.OnProgress(job);
             }
