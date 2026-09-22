@@ -309,3 +309,13 @@ queried the MechDef store with every salvage item's id, and non-mech ids
 (e.g. gear) threw KeyNotFoundException out of the list-population hook.
 Non-mechdef ids are now filtered before lookup and the store is queried via
 TryGet.
+
+v0.7 — Deliver for units and parts: the Collect 'Mech / 'Mech parts / vehicle
+jobs now hand the goods over (Acquire → Deliver). A staged picker on the cantina
+board selects which family variants (parts) or which unit (bay / storage) to
+deliver; active 'Mechs are stripped first, so equipment always returns to your
+inventory. Progress mirrors the live hangar: selling, scrapping, feeding parts
+into an assembly, or readying a 'Mech keeps the counters honest in both
+directions, and old saves re-sync on load. Vehicle delivery rewards were
+rebalanced to a trade anchor (shop-sell value × ~1.5) — mech rewards already
+cleared it and are unchanged.
