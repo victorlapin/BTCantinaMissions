@@ -67,7 +67,16 @@ namespace BTCantinaMissions.Patches
 
             // environmental/self-inflicted deaths carry no attacker — not our work either
             var killer = string.IsNullOrEmpty(attackerGUID) ? null : combat.FindActorByGUID(attackerGUID);
-            if (killer == null || killer.team != playerTeam) return;
+            if (killer == null || killer.team != playerTeam)
+            {
+                // rejection diagnostics: a kill the player THOUGHT they made shows up
+                // missing at H6 — this line names the reason (ally finish, environmental)
+                var reason = killer == null
+                    ? "no attacker (environmental/self-inflicted)"
+                    : $"{killer.Description.Name} (team {killer.team.Name}, not player)";
+                Core.Debug($"[H5] Kill NOT attributed: {__instance.Description.Name} — {reason}");
+                return;
+            }
             if (!playerTeam.IsEnemy(__instance.team)) return;
 
             PlayerKillTracker.Kills.Add(__instance);
