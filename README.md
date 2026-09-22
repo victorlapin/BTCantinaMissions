@@ -43,9 +43,10 @@ Two settings change how you get in:
 - `CantinaHotkey` (e.g. `"F7"`) opens the board/ledger with a key press from the
   ship room view (the same scope where the location bar lives) — independent of
   the button.
-Inside the board: small jobs — destroy specific units, collect items, acquire
-mechs or salvage parts. Take a job, do the work out in the field, come back and
-deliver it for C-Bills (and bonus items). The board refreshes monthly.
+Inside the board: small jobs — destroy specific units, collect and hand over
+items, mechs, salvage parts or vehicles. Take a job, do the work out in the
+field, come back and deliver it for C-Bills (and bonus items). The board
+refreshes monthly.
 
 ## Requirements
 
@@ -94,9 +95,22 @@ instead of crashing.
     save load. Stock above the target shows as "· N in stock" — selling from a
     surplus keeps the job ready; dropping below the target sets it back with a
     red toast.
-  - **CollectMech** — bring in a unit of the given chassis family (e.g. any Locust;
+  - **CollectMech** — a unit of the given chassis family (e.g. any Locust;
     with LewdableTanks this includes vehicles — any Scimitar, Saracen, VTOL...).
-  - **CollectMechParts** — collect N salvage parts of the family (mech or vehicle).
+    `Acquire` mode: keep the unit, the reward pays for reaching the goal.
+    `Deliver` mode (the shipped packs): progress mirrors the live hangar —
+    counted are active bays, stored chassis and units going through the refit
+    queue, and selling, scrapping or readying keeps the counter honest in both
+    directions (old saves re-sync on load). Delivery opens a unit picker on the
+    board: choose a bay 'Mech or a stored chassis. Active 'Mechs are stripped
+    first — **equipment always returns to your inventory**, the buyer takes the
+    bare chassis. Units mid-refit count toward progress but cannot be handed
+    over until the work order completes.
+  - **CollectMechParts** — collect N salvage parts of the family (mech or
+    vehicle). In `Deliver` mode the parts are consumed: delivery opens a staged
+    picker where you mark parts variant by variant (mixed variants are fine —
+    three parts of a Griffon need not share a variant), undamaged parts are
+    taken first.
 - Rewards: a base C-Bill amount (from the job def) plus an optional item
   collection roll, shown in a reward popup with a full breakdown. At payout
   time the C-Bill base is multiplied by the career's **Contract Payment**
@@ -182,7 +196,10 @@ They are registered as a ModTek `CustomResourceTypes` entry in the pack's
 
   "MinTargetCount": 5,              // random count range per instance
   "MaxTargetCount": 10,
-  "ItemMode": "Acquire",            // Acquire | Deliver (CollectItems only)
+  "ItemMode": "Acquire",            // Acquire | Deliver — Deliver consumes the
+                                    //   target on handover; since v0.7 it applies
+                                    //   to CollectItems, CollectMech and
+                                    //   CollectMechParts alike
 
   "Reward": {
     "CBills": 150000,                        // fixed payout
@@ -246,10 +263,11 @@ set `PlanetTag` to a custom tag and add it to the chosen star system definitions
 
 ## Known limitations
 
-- **Deliver mode** is only supported for `CollectItems`. `CollectMech` /
-  `CollectMechParts` always behave as `Acquire` (nothing is removed): picking the
-  exact mech out of a family, or splitting parts across variants, needs a
-  selection UI that does not exist yet.
+- **Deliver staging** is minimal on purpose: parts are staged one click at a
+  time (no "stage all" button), and **Esc** closes the whole board from the
+  staging view — **Back** is the in-flow way out. Units going through a refit
+  (readying) count toward CollectMech progress but cannot be delivered until
+  the work order completes.
 - **Destroy targets** are limited to traits the player can identify in combat
   (unit type, weight class, recognizable archetypes such as carriers) — by
   design; see the note for modders above.
