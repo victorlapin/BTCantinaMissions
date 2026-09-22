@@ -149,7 +149,7 @@ namespace BTCantinaMissions.Domain
                 job.SyncProgress(FamilyInventory.CountUnits(sim, job.ResolvedTarget));
 
                 if (job.Progress != before)
-                    Core.Log($"[H7] CollectMech mirror: {job.ResolvedName} ({job.Progress}/{job.TargetCount})");
+                    Core.Log($"[H9] CollectMech mirror: {job.ResolvedName} ({job.Progress}/{job.TargetCount})");
                 if (wasReady && job.State == JobState.Taken && Core.Settings.NotifyOnReady)
                     Notifications.OnReverted(job);
             }
