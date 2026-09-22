@@ -183,20 +183,42 @@ namespace BTCantinaMissions.Domain
         private static string PartDisplayName(string rawId)
         {
             var dm = UnityGameInstance.BattleTechGame?.Simulation?.DataManager;
-            string defId;
-            if (rawId.StartsWith("chassisdef_", StringComparison.Ordinal))
-                defId = "mechdef_" + rawId.Substring("chassisdef_".Length);
-            else if (rawId.StartsWith("vehiclechassisdef_", StringComparison.Ordinal))
-                defId = "vehicledef_" + rawId.Substring("vehiclechassisdef_".Length);
-            else
-                defId = rawId;
 
-            if (dm?.MechDefs != null && dm.MechDefs.TryGet(defId, out MechDef mechDef))
+            // mechdef-keyed parts (CustomSalvage) resolve directly; LT fake
+            // vehicles live in MechDefs under their vehicledef id
+            if (dm?.MechDefs != null && dm.MechDefs.TryGet(rawId, out MechDef mechDef))
             {
                 var name = mechDef.Description.UIName;
                 if (!string.IsNullOrEmpty(name)) return name;
             }
+
+            // chassisdef-keyed parts (vanilla fallback): mechdef-style notation
+            // straight from the chassis — no sibling-mechdef lookup needed
+            if (rawId.StartsWith("chassisdef_", StringComparison.Ordinal) &&
+                dm?.ChassisDefs != null && dm.ChassisDefs.TryGet(rawId, out ChassisDef chassis))
+            {
+                var name = ChassisStyleName(chassis);
+                if (!string.IsNullOrEmpty(name)) return name;
+            }
+
+            if (rawId.StartsWith("vehiclechassisdef_", StringComparison.Ordinal))
+            {
+                var defId = "vehicledef_" + rawId.Substring("vehiclechassisdef_".Length);
+                if (dm?.MechDefs != null && dm.MechDefs.TryGet(defId, out mechDef))
+                {
+                    var name = mechDef.Description.UIName;
+                    if (!string.IsNullOrEmpty(name)) return name;
+                }
+            }
             return rawId;
+        }
+
+        /// <summary>Mechdef-style display: UIName + VariantName ("Panther PNT-9R").</summary>
+        private static string ChassisStyleName(ChassisDef chassis)
+        {
+            if (!string.IsNullOrEmpty(chassis.VariantName))
+                return chassis.Description.UIName + " " + chassis.VariantName;
+            return chassis.Description.UIName;
         }
 
         private static string StoredMechName(string rawId)
@@ -207,12 +229,13 @@ namespace BTCantinaMissions.Domain
                 var name = mechDef.Description.UIName;
                 if (!string.IsNullOrEmpty(name)) return name;
             }
-            // UnreadyMech stores under the chassisdef id — no unique mechdef,
-            // but the chassis display name is exactly what the mech bay shows
+
+            // UnreadyMech stores under the chassisdef id — the variant code
+            // lives right on the chassis (VariantName), no mechdef lookup needed
             if (rawId.StartsWith("chassisdef_", StringComparison.Ordinal) &&
                 dm?.ChassisDefs != null && dm.ChassisDefs.TryGet(rawId, out ChassisDef chassis))
             {
-                var name = chassis.Description.UIName;
+                var name = ChassisStyleName(chassis);
                 if (!string.IsNullOrEmpty(name)) return name;
             }
             return rawId;
