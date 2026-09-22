@@ -40,4 +40,47 @@ namespace BTCantinaMissions.Patches
             InventoryTracking.TrackPartChanged(id.Replace("chassisdef", "mechdef"));
         }
     }
+
+    /// <summary>H7a: readying a stored mech. Suppresses the units mirror for the
+    /// whole call — vanilla's ReadyMech scrap-removes the stored stat first and
+    /// only then populates ReadyingMechs, so an in-between recount would drop
+    /// the unit (field bug 22.09: "readying mech leaves the tracker"). The
+    /// finalizer recounts once with the mech safely in ReadyingMechs.</summary>
+    [HarmonyPatch(typeof(SimGameState), nameof(SimGameState.ReadyMech))]
+    public static class ReadyMechPatch
+    {
+        public static void Prefix()
+        {
+            InventoryTracking.SuppressUnitsMirror = true;
+        }
+
+        public static void Finalizer()
+        {
+            InventoryTracking.SuppressUnitsMirror = false;
+            InventoryTracking.TrackUnitsChanged();
+        }
+    }
+
+    /// <summary>H7b: ready completion — ReadyingMechs → ActiveMechs happens
+    /// inside ML_ReadyMech without AddMech or scrap, so nothing else fires.
+    /// Postfix recounts and the tracker regains the unit.</summary>
+    [HarmonyPatch(typeof(SimGameState), "ML_ReadyMech")]
+    public static class ML_ReadyMechPatch
+    {
+        public static void Postfix()
+        {
+            InventoryTracking.TrackUnitsChanged();
+        }
+    }
+
+    /// <summary>H7c: cancelling a ready order returns the unit to storage
+    /// through refund paths no other hook sees — a cheap catch-all recount.</summary>
+    [HarmonyPatch(typeof(SimGameState), nameof(SimGameState.CancelWorkOrder))]
+    public static class CancelWorkOrderPatch
+    {
+        public static void Postfix()
+        {
+            InventoryTracking.TrackUnitsChanged();
+        }
+    }
 }

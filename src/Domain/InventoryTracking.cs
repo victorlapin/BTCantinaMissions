@@ -122,10 +122,18 @@ namespace BTCantinaMissions.Domain
             }
         }
 
-        /// <summary>v0.7: hangar composition changed (AddMech / scrap) —
-        /// Deliver-mode CollectMech jobs re-mirror from the live unit count.</summary>
+        /// <summary>Set while SimGameState.ReadyMech runs: vanilla removes the
+        /// stored stat via ScrapInactiveMech BEFORE populating ReadyingMechs, so
+        /// the H7 recount in that gap would see the mech nowhere and wrongly
+        /// reverse Deliver jobs. ReadyMech's finalizer clears it and recounts.</summary>
+        internal static bool SuppressUnitsMirror;
+
+        /// <summary>v0.7: hangar composition changed (AddMech / scrap / ready
+        /// transitions) — Deliver-mode CollectMech jobs re-mirror from the live
+        /// unit count.</summary>
         internal static void TrackUnitsChanged()
         {
+            if (SuppressUnitsMirror) return;
             var jobs = Core.State.ActiveJobs;
             if (jobs.Count == 0) return;
 
