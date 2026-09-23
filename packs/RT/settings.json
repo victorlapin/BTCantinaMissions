@@ -15,5 +15,9 @@
   },
   "CombatFloaties": true,
   "SalvageHighlight": true,
-  "MechLabHighlight": false
+  "MechLabHighlight": false,
+  "ExcludedKillTags": [
+    "unit_uav",
+    "unit_battlearmor"
+  ]
 }

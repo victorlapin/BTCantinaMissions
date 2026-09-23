@@ -10,5 +10,6 @@
   "InterceptStoreButton": false,
   "CombatFloaties": false,
   "SalvageHighlight": true,
-  "MechLabHighlight": false
+  "MechLabHighlight": false,
+  "ExcludedKillTags": []
 }

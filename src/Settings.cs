@@ -44,5 +44,13 @@ namespace BTCantinaMissions
             {"unit_legendary", "Legendary unit"},
             {"unit_primitive", "Primitive unit"}
         };
+
+        /// <summary>Units carrying any of these tags never count toward cantina
+        /// kill jobs (DestroyTagged and DestroyChassis alike) — no progress, no
+        /// floaties, no AAR lines. The RT pack ships ["unit_uav", "unit_battlearmor"]
+        /// to keep StrategicOperations drones and battle-armor swarms from farming
+        /// jobs; BTX ships an empty list. Don't target a listed tag in a job —
+        /// the exclusion always wins.</summary>
+        public List<string> ExcludedKillTags = new List<string>();
     }
 }
