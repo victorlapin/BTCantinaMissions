@@ -54,6 +54,7 @@ refreshes monthly.
 |---|---|
 | [ModTek](https://github.com/BattletechModders/ModTek) | required |
 | [JwTweaks](https://github.com/wmtorode/JwTweaks) (CustomSaveBlocks enabled) | **hard dependency** — mod state persists through its custom save blocks |
+| [IRBTModUtils](https://github.com/BattletechModders/IRBTModUtils) | pulled in by JwTweaks — its AAR objective patch renders partial cantina progress as gold `RESULT`; without it those lines would read as red `FAILED` |
 | [IRTweaks](https://github.com/BattletechModders/IRTweaks) (StreamlinedMainMenu enabled) | optional — required for the default store-button takeover (`InterceptStoreButton: true`): its left menu is the store's only remaining entrance. Packs that keep the store vanilla ship `InterceptStoreButton: false` + `CantinaHotkey` instead |
 | [CustomSalvage](https://github.com/BattletechModders/CustomSalvage) | optional — improves chassis-family resolution for mech/part jobs |
 | [LewdableTanks](https://github.com/BattletechModders/LewdableTanks) | optional — vehicles enter the hooks as fake mechs; enables chassis-family resolution for them (`VAssemblyVariant`) |
@@ -125,9 +126,11 @@ instead of crashing.
 - Toast notifications for progress, READY state and rewards (toggle in settings).
 - **Combat feedback**: killing a cantina target shows a cyan floatie over the
   unit (`Cantina: Destroy VTOLs 3/5`, green `COMPLETE!` when done). After the
-  mission, cantina results appear in the After Action Report's **Other Results**
-  panel alongside payment and reputation lines. Floaties can be disabled with
-  `CombatFloaties: false` — tracking and AAR lines are unaffected.
+  mission, cantina results appear in the After Action Report's **objectives**
+  list: completed jobs as green `SUCCESS`, partial progress as gold `RESULT`
+  (the same styling DropCostsEnhanced uses for its cost lines). Floaties can
+  be disabled with `CombatFloaties: false` — tracking and AAR lines are
+  unaffected.
 - **Salvage highlight**: collect-type job targets get a cyan outline on the
   salvage screen — making it obvious what to pick up. Works on initial salvage
   and on items added after CustomSalvage disassembly (full mech → parts).
@@ -337,3 +340,12 @@ into an assembly, or readying a 'Mech keeps the counters honest in both
 directions, and old saves re-sync on load. Vehicle delivery rewards were
 rebalanced to a trade anchor (shop-sell value × ~1.5) — mech rewards already
 cleared it and are unchanged.
+
+v0.7.1 — AAR fix: cantina results now show after **every** contract. They used
+to appear only on flashpoint end screens — the Other Results panel the old hook
+wrote to is dormant on contract reports (activating it yields an empty panel).
+Entries are now appended to the report's objectives list through the same
+mechanism DropCostsEnhanced uses; partial progress renders as gold `RESULT` —
+a recolor provided by IRBTModUtils, which JwTweaks already depends on (install
+requirements are unchanged). Flashpoint end screens no longer repeat the last
+battle's cantina lines.
