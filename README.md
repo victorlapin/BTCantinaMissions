@@ -87,6 +87,9 @@ instead of crashing.
     allies, base turrets) finishing your targets do not advance the job. Forcing a
     pilot to eject (including PanicSystem panic ejections) counts as a kill. Works in
     any **campaign** contract, regardless of mission outcome; skirmish never counts.
+    Kill counting honors `ExcludedKillTags` (settings): units carrying a listed
+    tag never count — the RT pack excludes UAV drones and battle armor, so cheap
+    filler cannot farm jobs.
   - **CollectItems** — obtain N of a specific component.
     `Acquire` mode: keep them, the reward pays for reaching the goal.
     `Deliver` mode: the items are removed from your inventory on delivery.
@@ -168,6 +171,11 @@ overwritten afterwards — local tweaks survive updates.
     "unit_vtol": "VTOL",               // replaces the whole dictionary when present —
     "unit_legendary": "Legendary unit",  // include the defaults you want to keep;
     "unit_primitive": "Primitive unit"  // unlisted tags fall back to humanization
+  },
+  "ExcludedKillTags": [                // units carrying these tags never count toward
+    "unit_uav",                        //   kill jobs — no progress, floaties or AAR
+    "unit_battlearmor"                 //   lines (RT default: drones and battle armor;
+                                       //   BTX ships [])
   }
 }
 ```
@@ -234,7 +242,8 @@ to map any specific tag to a proper human-readable name (unlisted tags fall back
 to automatic humanization of the tag id). That fixes what the **board** says — but
 the player still has to recognize the target on the field, so purely internal
 spawn markers such as `unit_indirectFire` remain frustrating targets even with a
-pretty name.
+pretty name. One hard rule: never list a tag in `ExcludedKillTags` that a job
+targets — the exclusion always wins over job matching, silently.
 
 Reward collections are vanilla `ItemCollectionDef` CSVs (`packs/<Pack>/rewards/`;
 `rewards/` in the installed mod) — `id, type, count, weight`. A roll grants one weighted-random entry per
@@ -348,4 +357,7 @@ Entries are now appended to the report's objectives list through the same
 mechanism DropCostsEnhanced uses; partial progress renders as gold `RESULT` —
 a recolor provided by IRBTModUtils, which JwTweaks already depends on (install
 requirements are unchanged). Flashpoint end screens no longer repeat the last
-battle's cantina lines.
+battle's cantina lines. Also new: the `ExcludedKillTags` setting — units carrying
+a listed tag never count toward kill jobs (no progress, no floaties, no AAR
+lines); the RT pack defaults exclude UAV drones and battle armor, BTX ships an
+empty list.

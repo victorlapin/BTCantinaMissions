@@ -169,6 +169,7 @@ namespace BTCantinaMissions.Patches
                     var tags = new TagSet();
                     foreach (var t in mech.MechDef.Chassis.ChassisTags) tags.Add(t);
                     foreach (var t in mech.MechDef.MechTags) tags.Add(t);
+                    if (CombatFeedback.IsExcluded(tags)) continue;
                     deadTags.Add(tags);
                     // chassis family for DestroyChassis (fake vehicles resolve here too)
                     deadFamilies.Add(ChassisFamilyResolver.GetFamily(mech.MechDef));
@@ -178,6 +179,7 @@ namespace BTCantinaMissions.Patches
                     Core.Debug($"[H6] Destroyed by player: {vehicle.VehicleDef.Chassis.Description.Name} ({vehicle.VehicleDef.Description.Id})");
                     var tags = new TagSet();
                     foreach (var t in vehicle.VehicleDef.VehicleTags) tags.Add(t);
+                    if (CombatFeedback.IsExcluded(tags)) continue;
                     deadTags.Add(tags);
                     deadFamilies.Add(null); // no MechDef → no family (safety branch, LT vehicles are fake mechs)
                 }
@@ -186,6 +188,7 @@ namespace BTCantinaMissions.Patches
                     Core.Debug($"[H6] Destroyed by player: {turret.TurretDef.Description.Name} ({turret.TurretDef.Description.Id})");
                     var tags = new TagSet();
                     foreach (var t in turret.TurretDef.TurretTags) tags.Add(t);
+                    if (CombatFeedback.IsExcluded(tags)) continue;
                     deadTags.Add(tags);
                     deadFamilies.Add(null); // turrets have no chassis family
                 }

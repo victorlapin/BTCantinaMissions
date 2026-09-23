@@ -64,6 +64,14 @@ namespace BTCantinaMissions.UI
             var family = BuildFamily(victim);
             if (tags == null && family == null) return;
 
+            // excluded filler (drones, battle armor...) stays invisible: no
+            // floatie, no session counter — H6 skips it for progress too
+            if (IsExcluded(tags))
+            {
+                Core.Debug($"[CombatFeedback] {victim.Description.Name} skipped: excluded tag");
+                return;
+            }
+
             foreach (var job in Core.State.ActiveJobs)
             {
                 var def = JobCatalog.GetDef(job.DefId);
@@ -193,6 +201,18 @@ namespace BTCantinaMissions.UI
         {
             var mech = actor as Mech;
             return mech?.MechDef != null ? ChassisFamilyResolver.GetFamily(mech.MechDef) : null;
+        }
+
+        /// <summary>True when the unit's tags hit ExcludedKillTags — such kills
+        /// never count for cantina (no progress, no floatie, no AAR line).
+        /// Shared by OnKill here and H6's application loop.</summary>
+        internal static bool IsExcluded(TagSet tags)
+        {
+            var excluded = Core.Settings?.ExcludedKillTags;
+            if (tags == null || excluded == null || excluded.Count == 0) return false;
+            foreach (var tag in excluded)
+                if (tags.Contains(tag)) return true;
+            return false;
         }
     }
 }
