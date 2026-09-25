@@ -122,7 +122,7 @@ namespace BTCantinaMissions.UI
                 var total = baseline + kills;
                 lines.Add(total >= job.TargetCount
                     ? UIColors.Wrap($"  {job.ResolvedName}: COMPLETE ({total}/{job.TargetCount})", UIColor.Green)
-                    : $"  {job.ResolvedName}: +{kills} → {total}/{job.TargetCount}");
+                    : $"  {job.ResolvedName}: +{kills} ({total}/{job.TargetCount})");
             }
 
             if (lines.Count == 0) return null;
@@ -145,8 +145,8 @@ namespace BTCantinaMissions.UI
                 {
                     JobInstanceId = job.InstanceId,
                     Title = total >= job.TargetCount
-                        ? $"{job.ResolvedName} — COMPLETE ({total}/{job.TargetCount})"
-                        : $"{job.ResolvedName} progress: +{kills} → {total}/{job.TargetCount}",
+                        ? $"{job.ResolvedName} - COMPLETE ({total}/{job.TargetCount})"
+                        : $"{job.ResolvedName} progress: +{kills} ({total}/{job.TargetCount})",
                     Completed = total >= job.TargetCount
                 });
             }
