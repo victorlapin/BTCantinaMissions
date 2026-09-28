@@ -11,6 +11,11 @@ namespace BTCantinaMissions.Patches
     {
         public static void Postfix(SimGameState __instance)
         {
+            // New-career init fires OnNewQuarterBegin from InitCompanyStats, before
+            // the sim has a CurSystem (and before our state settles) — nothing to
+            // refresh then (field bug 25.09: NRE at career creation)
+            if (Core.State == null || __instance.CurSystem == null) return;
+
             // The financial report can fire mid-flight — CurSystem is not a meaningful
             // "local planet" then, so skip the refresh; the next cantina arrival regenerates
             if (__instance.TravelState != SimGameTravelStatus.IN_SYSTEM)
