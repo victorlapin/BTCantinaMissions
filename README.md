@@ -361,3 +361,12 @@ battle's cantina lines. Also new: the `ExcludedKillTags` setting — units carry
 a listed tag never count toward kill jobs (no progress, no floaties, no AAR
 lines); the RT pack defaults exclude UAV drones and battle armor, BTX ships an
 empty list.
+
+v0.7.2 — two post-release fixes. Glyphs: the progress arrow and long dash in
+cantina AAR lines and the post-combat summary toast rendered as a missing-glyph
+box (the game's font subset carries neither character) — progress now reads
+`+2 (2/7)` and completions use a plain hyphen. Crash on init: vanilla fires
+`OnNewQuarterBegin` from `InitCompanyStats` while a new career — or the prewarm
+sim built at every game boot — is still being assembled, before the current
+system exists; the month-boundary hook now bails out until the sim is complete
+instead of throwing a NullReferenceException.
