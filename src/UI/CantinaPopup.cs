@@ -311,6 +311,17 @@ namespace BTCantinaMissions.UI
                     sb.AppendLine("  No jobs available.");
                 }
 
+                // v0.8: active boosts info line
+                var sim = UnityGameInstance.BattleTechGame.Simulation;
+                if (sim?.TemporaryResultTracker != null)
+                {
+                    foreach (var kvp in Core.Settings?.Services ?? new Dictionary<string, ServiceConfig>())
+                    {
+                        if (RewardService.IsServiceActive(sim, kvp.Key))
+                            sb.AppendLine($"  [{kvp.Value?.DisplayName} crew: {kvp.Value?.DurationDays} days active]");
+                    }
+                }
+
                 sb.AppendLine();
                 sb.AppendLine();
             }
@@ -383,6 +394,24 @@ namespace BTCantinaMissions.UI
                     }
                 }));
             }
+            // Contractor services (v0.8) — cantina worlds only, after board offers
+            if (currentIsCantina && state.Board?.ServiceSlots != null)
+            {
+                foreach (var svc in state.Board.ServiceSlots)
+                {
+                    var entry = svc; // closure capture
+                    var cfg = entry.GetConfig();
+                    if (cfg == null) continue;
+                    entries.Add(new OptionEntry(
+                        $"{UIColors.Wrap("[Hire]", UIColor.Gold)} {cfg.DisplayName} Crew ({cfg.DurationDays} days) — {SimGameState.GetCBillString(cfg.Cost)}",
+                        !inTransit, arg =>
+                    {
+                        ConfirmHireService(sgEventPanel, entry);
+                    }));
+                }
+            }
+
+            // Active jobs: Deliver for completed, Abandon for in-progress
             foreach (var job in state.ActiveJobs)
             {
                 if (job.State == JobState.ReadyToDeliver)
@@ -693,6 +722,31 @@ namespace BTCantinaMissions.UI
             var ok = Core.State.Abandon(job.InstanceId);
             Core.Log($"[Board] Abandon: {(ok ? "success" : "failed")}");
             if (ok) MakeOptions(sgEventPanel);
+        }
+
+        /// <summary>v0.8: confirm dialog for hiring a contractor crew.</summary>
+        private static void ConfirmHireService(SGEventPanel sgEventPanel, ServiceEntry entry)
+        {
+            var cfg = entry.GetConfig();
+            if (cfg == null) return;
+
+            var sb = new StringBuilder();
+            sb.AppendLine($"Hire a {cfg.DisplayName} crew for {cfg.DurationDays} days?");
+            sb.AppendLine();
+            sb.AppendLine($"  {cfg.StatName} +{cfg.Bonus}");
+            sb.AppendLine($"  Cost: {SimGameState.GetCBillString(cfg.Cost)}");
+
+            GenericPopupBuilder.Create("Hire crew", sb.ToString())
+                .AddButton("Cancel", null)
+                .AddButton("Hire", () =>
+                {
+                    var ok = RewardService.HireService(entry.ServiceId);
+                    Core.Log($"[Service] Hire: {(ok ? "success" : "failed")}");
+                    if (ok) MakeOptions(sgEventPanel);
+                })
+                .CancelOnEscape()
+                .IsNestedPopupWithBuiltInFader()
+                .Render();
         }
 
         /// <summary>Wires the single Continue button of the reward popup.

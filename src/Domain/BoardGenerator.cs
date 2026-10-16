@@ -59,7 +59,41 @@ namespace BTCantinaMissions.Domain
                 Core.Debug($"[BoardGenerator]   + {instance.DisplayString()}");
             }
 
-            Core.Log($"[BoardGenerator] Board for {system.Name}: {Core.State.Board.Slots.Count} slot(s)");
+            Core.Log($"[BoardGenerator] Board for {system.Name}: {Core.State.Board.Slots.Count} job slot(s)");
+
+            RollServices(system);
+        }
+
+        /// <summary>v0.8: rolls contractor crew availability. Each configured
+        /// service type gets an independent BoardChance roll; if it succeeds and
+        /// the boost isn't already active, a ServiceEntry is added to the board.
+        /// Services don't consume job slots — they're additive, but still compete
+        /// for the player's C-Bills and attention.</summary>
+        private static void RollServices(StarSystem system)
+        {
+            var sim = system.Sim;
+            if (Core.Settings?.Services == null) return;
+
+            foreach (var kvp in Core.Settings.Services)
+            {
+                var type = kvp.Key;
+                var cfg = kvp.Value;
+                if (cfg == null || cfg.BoardChance <= 0) continue;
+
+                // skip if boost is already active
+                if (RewardService.IsServiceActive(sim, type))
+                {
+                    Core.Debug($"[BoardGenerator] Service {type}: boost active, skipped");
+                    continue;
+                }
+
+                if (random.NextDouble() < cfg.BoardChance)
+                {
+                    var entry = new ServiceEntry(type);
+                    Core.State.Board.ServiceSlots.Add(entry);
+                    Core.Log($"[BoardGenerator] Service offered: {cfg.DisplayName} ({SimGameState.GetCBillString(cfg.Cost)})");
+                }
+            }
         }
 
         /// <summary>Filters defs by system difficulty and required tags.</summary>

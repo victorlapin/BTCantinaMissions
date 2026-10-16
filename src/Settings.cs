@@ -52,5 +52,52 @@ namespace BTCantinaMissions
         /// jobs; BTX ships an empty list. Don't target a listed tag in a job —
         /// the exclusion always wins.</summary>
         public List<string> ExcludedKillTags = new List<string>();
+
+        /// <summary>Contractor crew services on the cantina board (v0.8).
+        /// Each type appears as a board entry when its BoardChance roll succeeds
+        /// at refresh time, competing with jobs for slots. Hiring applies a
+        /// native TemporarySimGameResult boost; while active, that type doesn't
+        /// roll again.</summary>
+        public Dictionary<string, ServiceConfig> Services = new Dictionary<string, ServiceConfig>
+        {
+            {"MechTech", new ServiceConfig
+            {
+                DisplayName = "MechTech",
+                StatName = "MechTechSkill",
+                Bonus = 10,
+                DurationDays = 15,
+                Cost = 450000,
+                BoardChance = 0.4
+            }},
+            {"MedTech", new ServiceConfig
+            {
+                DisplayName = "MedTech",
+                StatName = "MedTechSkill",
+                Bonus = 5,
+                DurationDays = 15,
+                Cost = 250000,
+                BoardChance = 0.3
+            }}
+        };
+    }
+
+    /// <summary>Per-type contractor configuration. StatName is a game constant,
+    /// not a user-facing setting.</summary>
+    public class ServiceConfig
+    {
+        public string DisplayName = "MechTech";
+        public string StatName = "MechTechSkill";
+        public int Bonus = 10;
+        public int DurationDays = 15;
+        public int Cost = 450000;
+        /// <summary>Chance [0..1] for this service to appear at each board refresh.</summary>
+        public double BoardChance = 0.4;
+
+        internal static ServiceConfig For(string serviceType)
+        {
+            ServiceConfig cfg = null;
+            Core.Settings?.Services?.TryGetValue(serviceType, out cfg);
+            return cfg;
+        }
     }
 }

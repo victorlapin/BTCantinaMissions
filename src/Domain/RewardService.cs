@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using BattleTech;
 using BTCantinaMissions.UI;
@@ -266,6 +267,82 @@ namespace BTCantinaMissions.Domain
                 sim.RemoveItemStat(id, type, false);
             for (var i = clean; i < job.TargetCount; i++)
                 sim.RemoveItemStat(id, type, true);
+        }
+
+        // ─── v0.8: Contractor services ──────────────────────────────────
+
+        /// <summary>Hires a contractor crew: deducts C-Bills, applies a native
+        /// TemporarySimGameResult boost, removes the board entry. Returns false
+        /// (with a toast) when funds are insufficient or the crew is gone.</summary>
+        public static bool HireService(string serviceId)
+        {
+            var sim = UnityGameInstance.BattleTechGame.Simulation;
+            if (sim == null || Core.State.Board == null) return false;
+
+            var entry = Core.State.Board.ServiceSlots?
+                .FirstOrDefault(t => t.ServiceId == serviceId);
+            if (entry == null)
+            {
+                Core.LogWarning($"[Service] Not on board: {serviceId}");
+                return false;
+            }
+
+            var cfg = entry.GetConfig();
+            if (cfg == null)
+            {
+                Core.LogWarning($"[Service] No config for '{entry.ServiceType}'");
+                return false;
+            }
+
+            // funds check
+            if (sim.Funds < cfg.Cost)
+            {
+                Notifications.Show(
+                    $"Insufficient funds: need {SimGameState.GetCBillString(cfg.Cost)}");
+                return false;
+            }
+
+            // already active? (shouldn't happen — board roll skips active types)
+            if (IsServiceActive(sim, entry.ServiceType))
+            {
+                Notifications.Show($"A {cfg.DisplayName} crew is already working for you");
+                return false;
+            }
+
+            // pay
+            sim.AddFunds(-cfg.Cost);
+
+            // build a native TemporarySimGameResult
+            var result = new SimGameEventResult
+            {
+                Scope = EventScope.Company,
+                Stats = new[]
+                {
+                    new SimGameStat(cfg.StatName, cfg.Bonus)
+                },
+                TemporaryResult = true,
+                ResultDuration = cfg.DurationDays
+            };
+            var tempResult = new TemporarySimGameResult((Pilot)null, result);
+            sim.TemporaryResultTracker.Add(tempResult);
+
+            // remove from board
+            Core.State.Board.RemoveService(serviceId);
+
+            Core.Log($"[Service] Hired {cfg.DisplayName} crew: +{cfg.Bonus} {cfg.StatName} for {cfg.DurationDays} days ({SimGameState.GetCBillString(cfg.Cost)})");
+            Notifications.Show(
+                $"{cfg.DisplayName} crew hired: +{cfg.Bonus} for {cfg.DurationDays} days");
+            return true;
+        }
+
+        /// <summary>True when a TemporarySimGameResult for this service type is
+        /// currently tracked (boost active). Used by the board roll to skip.</summary>
+        internal static bool IsServiceActive(SimGameState sim, string serviceType)
+        {
+            var cfg = ServiceConfig.For(serviceType);
+            if (cfg == null || sim?.TemporaryResultTracker == null) return false;
+            return sim.TemporaryResultTracker.Any(t =>
+                t.Stats != null && t.Stats.Any(s => s.name == cfg.StatName));
         }
     }
 }

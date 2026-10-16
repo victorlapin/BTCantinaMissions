@@ -139,6 +139,14 @@ instead of crashing.
   and on items added after CustomSalvage disassembly (full mech → parts).
   With `MechLabHighlight: true` the same outline appears in the **MechLab** —
   a visual reminder not to sell or install items the cantina wants.
+- **Contractor crews** (v0.8): MechTech and MedTech teams occasionally appear
+  on the cantina board as service entries. Each board refresh rolls
+  independently for each crew type — sometimes they're there, sometimes not.
+  Hiring pays a one-time C-Bill fee and applies a timed boost through the
+  game's native `TemporarySimGameResult` system: repair/refit speed for
+  MechTechs, pilot healing for MedTechs. While a boost is active, that crew
+  type won't appear on boards again. The boost timer runs in real game days
+  and is highlighted natively in the Argos UI (colored stat numbers).
 
 ## Settings (`settings.json`)
 
@@ -176,6 +184,20 @@ overwritten afterwards — local tweaks survive updates.
     "unit_uav",                        //   kill jobs — no progress, floaties or AAR
     "unit_battlearmor"                 //   lines (RT default: drones and battle armor;
                                        //   BTX ships [])
+  },
+  "Services": {                        // v0.8: contractor crews on the board;
+    "MechTech": {                      //   each type rolls independently at refresh
+      "Bonus": 10,                     //   +10 to repair/refit speed
+      "DurationDays": 15,              //   boost duration in game days
+      "Cost": 450000,                  //   one-time hire fee
+      "BoardChance": 0.4               //   probability of appearing on a refresh
+    },
+    "MedTech": {                       //   +5 to pilot healing speed
+      "Bonus": 5,
+      "DurationDays": 15,
+      "Cost": 250000,
+      "BoardChance": 0.3
+    }
   }
 }
 ```

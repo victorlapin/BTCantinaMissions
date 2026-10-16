@@ -88,18 +88,27 @@ namespace BTCantinaMissions.Domain
         /// <summary>Currently offered (Offered state) jobs on this board.</summary>
         [JsonProperty] public List<JobInstance> Slots { get; internal set; } = new List<JobInstance>();
 
+        /// <summary>Contractor crews offered this refresh (v0.8). Cleared with Slots.</summary>
+        [JsonProperty] public List<ServiceEntry> ServiceSlots { get; internal set; } = new List<ServiceEntry>();
+
         public SystemBoard() { }
 
         /// <summary>Removes all offered slots (monthly refresh).</summary>
         public void ClearSlots()
         {
             Slots.Clear();
+            ServiceSlots.Clear();
         }
 
         /// <summary>Removes a specific job from the board (when taken by player).</summary>
         public bool RemoveSlot(string instanceId)
         {
             return Slots.RemoveAll(t => t.InstanceId == instanceId) > 0;
+        }
+
+        public bool RemoveService(string serviceId)
+        {
+            return ServiceSlots.RemoveAll(t => t.ServiceId == serviceId) > 0;
         }
     }
 
@@ -194,5 +203,43 @@ namespace BTCantinaMissions.Domain
         NotFound,
         LimitReached,
         Duplicate
+    }
+
+    /// <summary>A contractor crew offered on the board (v0.8). Unlike jobs,
+    /// services don't have progress — they're bought outright and the effect
+    /// is applied via a native TemporarySimGameResult.</summary>
+    public class ServiceEntry
+    {
+        [JsonProperty] public string ServiceId { get; internal set; }
+        /// <summary>"MechTech" or "MedTech" — selects the config block.</summary>
+        [JsonProperty] public string ServiceType { get; internal set; }
+
+        public ServiceEntry() { }
+
+        public ServiceEntry(string serviceType)
+        {
+            ServiceId = $"svc_{Guid.NewGuid().ToString("N").Substring(0, 8)}";
+            ServiceType = serviceType;
+        }
+
+        /// <summary>Display: "Hire MechTech Crew (15 days)".</summary>
+        public string DisplayName()
+        {
+            var cfg = GetConfig();
+            if (cfg == null) return ServiceType;
+            return $"Hire {cfg.DisplayName} Crew ({cfg.DurationDays} days)";
+        }
+
+        /// <summary>Cost display: "¢450,000".</summary>
+        public string CostDisplay()
+        {
+            var cfg = GetConfig();
+            return cfg == null ? "?" : BattleTech.SimGameState.GetCBillString(cfg.Cost);
+        }
+
+        internal ServiceConfig GetConfig()
+        {
+            return ServiceConfig.For(ServiceType);
+        }
     }
 }

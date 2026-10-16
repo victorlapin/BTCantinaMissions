@@ -11,5 +11,21 @@
   "CombatFloaties": false,
   "SalvageHighlight": true,
   "MechLabHighlight": false,
-  "ExcludedKillTags": []
+  "ExcludedKillTags": [],
+  "Services": {
+    "MechTech": {
+      "DisplayName": "MechTech",
+      "Bonus": 10,
+      "DurationDays": 15,
+      "Cost": 450000,
+      "BoardChance": 0.4
+    },
+    "MedTech": {
+      "DisplayName": "MedTech",
+      "Bonus": 5,
+      "DurationDays": 15,
+      "Cost": 250000,
+      "BoardChance": 0.3
+    }
+  }
 }

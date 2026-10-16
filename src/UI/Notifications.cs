@@ -54,7 +54,7 @@ namespace BTCantinaMissions.UI
             Show(UIColors.Wrap(summary.ToString(), UIColor.Gold));
         }
 
-        private static void Show(string message)
+        internal static void Show(string message)
         {
             var shipRoom = TryGetShipRoom();
             if (shipRoom == null)
