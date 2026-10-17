@@ -312,7 +312,8 @@ namespace BTCantinaMissions.Domain
             // pay
             sim.AddFunds(-cfg.Cost);
 
-            // build a native TemporarySimGameResult
+            // build a native TemporarySimGameResult, tagged so IsServiceActive
+            // can distinguish OUR boosts from any other source touching the same stat
             var result = new SimGameEventResult
             {
                 Scope = EventScope.Company,
@@ -320,6 +321,7 @@ namespace BTCantinaMissions.Domain
                 {
                     new SimGameStat(cfg.StatName, cfg.Bonus)
                 },
+                AddedTags = new HBS.Collections.TagSet(new[] { ServiceMarker(entry.ServiceType) }),
                 TemporaryResult = true,
                 ResultDuration = cfg.DurationDays
             };
@@ -335,14 +337,20 @@ namespace BTCantinaMissions.Domain
             return true;
         }
 
-        /// <summary>True when a TemporarySimGameResult for this service type is
-        /// currently tracked (boost active). Used by the board roll to skip.</summary>
+        /// <summary>Tag placed on our TemporarySimGameResults — lets IsServiceActive
+        /// find OUR boosts specifically, not any other source touching the same stat
+        /// (vanilla events, other mods).</summary>
+        internal static string ServiceMarker(string serviceType) => $"cantina_service_{serviceType}";
+
+        /// <summary>True when OUR contractor boost for this type is currently
+        /// tracked. Checks the marker tag, NOT the stat name — external temporary
+        /// results on the same stat don't block our board roll.</summary>
         internal static bool IsServiceActive(SimGameState sim, string serviceType)
         {
-            var cfg = ServiceConfig.For(serviceType);
-            if (cfg == null || sim?.TemporaryResultTracker == null) return false;
-            return sim.TemporaryResultTracker.Any(t =>
-                t.Stats != null && t.Stats.Any(s => s.name == cfg.StatName));
+            var marker = ServiceMarker(serviceType);
+            return sim?.TemporaryResultTracker != null
+                && sim.TemporaryResultTracker.Any(t =>
+                    t.AddedTags != null && t.AddedTags.Contains(marker));
         }
     }
 }
