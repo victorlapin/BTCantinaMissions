@@ -310,7 +310,9 @@ namespace BTCantinaMissions.Domain
             }
 
             // pay
-            sim.AddFunds(-cfg.Cost);
+            int fundsBefore = sim.Funds;
+            sim.AddFunds(-cfg.Cost, "CantinaContractor", true, false);
+            Core.Debug($"[Service] Funds: {fundsBefore} -> {sim.Funds} (paid {SimGameState.GetCBillString(cfg.Cost)})");
 
             // build a native TemporarySimGameResult, tagged so IsServiceActive
             // can distinguish OUR boosts from any other source touching the same stat
