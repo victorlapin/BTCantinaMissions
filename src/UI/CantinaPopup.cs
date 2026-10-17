@@ -311,6 +311,18 @@ namespace BTCantinaMissions.UI
                     sb.AppendLine("  No jobs available.");
                 }
 
+                // v0.8: offered services listed alongside jobs
+                if (state.Board?.ServiceSlots != null && state.Board.ServiceSlots.Count > 0)
+                {
+                    sb.AppendLine();
+                    foreach (var svc in state.Board.ServiceSlots)
+                    {
+                        var cfg = svc.GetConfig();
+                        if (cfg != null)
+                            sb.AppendLine($"  {cfg.DisplayName} crew available ({cfg.DurationDays} days, {SimGameState.GetCBillString(cfg.Cost)})");
+                    }
+                }
+
                 // v0.8: active boosts info line
                 var sim = UnityGameInstance.BattleTechGame.Simulation;
                 if (sim?.TemporaryResultTracker != null)

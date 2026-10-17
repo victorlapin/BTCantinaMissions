@@ -27,6 +27,9 @@ namespace BTCantinaMissions.Domain
 
             Core.State.Board.ClearSlots();
 
+            // Roll services FIRST — each success consumes one board slot
+            int serviceCount = RollServices(system);
+
             var eligible = FilterEligible(system);
             if (eligible.Count == 0)
             {
@@ -37,7 +40,7 @@ namespace BTCantinaMissions.Domain
             // Track used (defId, target) pairs to ensure variety on this board
             var usedOnBoard = new HashSet<string>();
 
-            for (int slot = 0; slot < Core.Settings.JobsPerBoard; slot++)
+            for (int slot = 0; slot < Core.Settings.JobsPerBoard - serviceCount; slot++)
             {
                 var def = WeightedPick(eligible);
                 if (def == null) break;
@@ -59,20 +62,19 @@ namespace BTCantinaMissions.Domain
                 Core.Debug($"[BoardGenerator]   + {instance.DisplayString()}");
             }
 
-            Core.Log($"[BoardGenerator] Board for {system.Name}: {Core.State.Board.Slots.Count} job slot(s)");
-
-            RollServices(system);
+            Core.Log($"[BoardGenerator] Board for {system.Name}: {Core.State.Board.Slots.Count} job(s) + {serviceCount} service(s)");
         }
 
         /// <summary>v0.8: rolls contractor crew availability. Each configured
         /// service type gets an independent BoardChance roll; if it succeeds and
         /// the boost isn't already active, a ServiceEntry is added to the board.
-        /// Services don't consume job slots — they're additive, but still compete
-        /// for the player's C-Bills and attention.</summary>
-        private static void RollServices(StarSystem system)
+        /// Each success consumes one of the JobsPerBoard slots (contractors
+        /// compete with jobs for the player's attention). Returns service count.</summary>
+        private static int RollServices(StarSystem system)
         {
             var sim = system.Sim;
-            if (Core.Settings?.Services == null) return;
+            if (Core.Settings?.Services == null) return 0;
+            int count = 0;
 
             foreach (var kvp in Core.Settings.Services)
             {
@@ -89,11 +91,12 @@ namespace BTCantinaMissions.Domain
 
                 if (random.NextDouble() < cfg.BoardChance)
                 {
-                    var entry = new ServiceEntry(type);
-                    Core.State.Board.ServiceSlots.Add(entry);
+                    Core.State.Board.ServiceSlots.Add(new ServiceEntry(type));
+                    count++;
                     Core.Log($"[BoardGenerator] Service offered: {cfg.DisplayName} ({SimGameState.GetCBillString(cfg.Cost)})");
                 }
             }
+            return count;
         }
 
         /// <summary>Filters defs by system difficulty and required tags.</summary>
