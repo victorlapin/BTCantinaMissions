@@ -392,3 +392,22 @@ box (the game's font subset carries neither character) — progress now reads
 sim built at every game boot — is still being assembled, before the current
 system exists; the month-boundary hook now bails out until the sim is complete
 instead of throwing a NullReferenceException.
+
+v0.8 — contractor crews. MechTech and MedTech teams occasionally appear on the
+cantina board as service entries, competing with jobs for board slots (each
+successful roll takes one of the `JobsPerBoard` positions). Each crew type
+rolls independently at every board refresh — sometimes both are there,
+sometimes neither. Hiring pays a one-time C-Bill fee and applies a timed boost
+through the game's native `TemporarySimGameResult` system (+10 repair/refit
+speed for MechTechs, +5 pilot healing for MedTechs, 15 days). The boost timer
+runs in real game days, persists through saves, and is highlighted natively
+in the Argos UI (colored stat numbers). While a crew is working, that type
+won't appear on boards again until the contract expires. Only offered on
+cantina planets; the ledger (non-cantina worlds) shows active boosts but no
+hire buttons.
+
+**Disabling contractors**: if you don't want this feature, remove or empty
+the `Services` section in `settings.json`. Setting `BoardChance` to `0` for
+a specific type disables just that crew (e.g. keep MechTechs, drop MedTechs).
+An already-hired boost runs its course regardless — it lives in the game's
+native timer, not in the mod's state.
