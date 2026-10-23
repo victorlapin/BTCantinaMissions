@@ -99,10 +99,17 @@ namespace BTCantinaMissions.UI
             stage = null;      // stale staging never survives a reopen
 
             // ── Option stubs ──────────────────────────────
-            // No more stubs than the popup can display: pagination renders at most MAX_BUTTONS
+            // No more stubs than the popup can display: pagination renders at most
+            // MAX_BUTTONS. Service hire buttons occupy the pool exactly like job
+            // offers — forgetting them undersized the pool and pushed Leave out of
+            // the visible buttons (field bug: Leave unavailable until both crews
+            // were hired and the content shrank to fit).
             var slots = currentIsCantina ? state.Board.Slots.Count : 0;
+            var services = currentIsCantina && state.Board?.ServiceSlots != null
+                ? state.Board.ServiceSlots.Count
+                : 0;
             var optionsCount = Math.Min(
-                slots + state.ActiveJobs.Count + 1,
+                slots + services + state.ActiveJobs.Count + 1,
                 MAX_BUTTONS);
             var options = new SimGameEventOption[optionsCount];
             for (int i = 0; i < optionsCount; i++)
@@ -452,16 +459,18 @@ namespace BTCantinaMissions.UI
             OptionEntry leaveEntry, Action<SGEventPanel> rerender)
         {
             // Leave is always the last button; on multi-page views the
-            // "Switch page" navigation takes one slot, leaving MAX_BUTTONS - 2 content buttons
-            const int fullPage = MAX_BUTTONS - 2;
-            int pageCount = content.Count <= MAX_BUTTONS - 1
+            // "Switch page" navigation takes one slot, leaving pool - 2 content
+            // buttons. Page capacity comes from the ACTUAL option pool — the
+            // panel may hold fewer buttons than MAX_BUTTONS.
+            var optionsList = sgEventPanel.optionsList;
+            int pool = optionsList.Count;
+            int fullPage = pool - 2;
+            int pageCount = content.Count <= pool - 1
                 ? 1
                 : (content.Count + fullPage - 1) / fullPage;
             if (currentPage >= pageCount) currentPage = 0;
-            int pageSize = pageCount == 1 ? MAX_BUTTONS - 1 : fullPage;
+            int pageSize = pageCount == 1 ? pool - 1 : fullPage;
             int start = currentPage * pageSize;
-
-            var optionsList = sgEventPanel.optionsList;
             var index = 0;
             for (int i = start; i < content.Count && i < start + pageSize; i++)
                 SetOption(optionsList[index++], content[i]);
