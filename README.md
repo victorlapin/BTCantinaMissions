@@ -411,3 +411,16 @@ the `Services` section in `settings.json`. Setting `BoardChance` to `0` for
 a specific type disables just that crew (e.g. keep MechTechs, drop MedTechs).
 An already-hired boost runs its course regardless — it lives in the game's
 native timer, not in the mod's state.
+
+
+v0.8.1 — field fix: the Leave button could vanish from the cantina board while
+contractor crews were offered. The popup's button pool is sized when the board
+opens; the formula counted job offers and active jobs but not service hire
+buttons (which displace job offers from their slots), so the pool came up
+short — and the option-paging renderer laid entries out against the fixed
+maximum button count instead of the actual pool, writing the page switch and
+the Leave button past the end of the pool. On a board with both crews and two
+jobs only three content buttons were visible and none of them was Leave;
+hiring both crews shrank the content back into the pool and Leave reappeared.
+The pool formula now counts service entries, and the paginator derives page
+capacity from the real pool size.
