@@ -424,3 +424,14 @@ jobs only three content buttons were visible and none of them was Leave;
 hiring both crews shrank the content back into the pool and Leave reappeared.
 The pool formula now counts service entries, and the paginator derives page
 capacity from the real pool size.
+
+
+v0.8.2 — field fix: a fresh career starting on a cantina world crashed at
+sim attach. The game assigns the initial system via SetCurrentSystem(CurSystem,
+force: true) — a forced self-set that bypasses the game's own no-op guard, so
+the arrival hook ran in full during _OnAttachUXComplete and the "new jobs"
+toast hit the ship room's not-yet-wired toast stack (NullReferenceException;
+save loads were unaffected — their self-set is unforced). The hook now
+classifies calls into normal arrivals (board + toast), unforced self-sets
+(save load — keep the persisted board), and the initial forced self-set:
+board is still generated for the starting cantina, the toast is skipped.
