@@ -73,6 +73,16 @@ namespace BTCantinaMissions.Domain
                                 "has no inventory store (expected Weapon | AmmunitionBox | HeatSink | JumpJet | Upgrade)");
                     }
                 }
+                if (def.ObjectiveType == ObjectiveType.DestroyFaction && def.FactionPool != null)
+                {
+                    foreach (var factionId in def.FactionPool)
+                    {
+                        var fv = FactionEnumeration.GetFactionByName(factionId);
+                        if (fv == null || !fv.IsRealFaction)
+                            Core.LogWarning($"[{nameof(JobCatalog)}] FactionPool id '{factionId}' in {path} " +
+                                "does not resolve to a real faction — it will never be offered");
+                    }
+                }
                 defs.Add(def.Description.Id, def);
                 Core.Debug($"[{nameof(JobCatalog)}]   {def.Description.Id}: {def.Description.Name} ({def.ObjectiveType})");
             }

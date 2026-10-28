@@ -153,6 +153,7 @@ namespace BTCantinaMissions.Patches
 
             var deadTags = new List<TagSet>();
             var deadFamilies = new List<string>();
+            var deadFactions = new List<string>();
             foreach (var actor in PlayerKillTracker.Kills)
             {
                 // only kills from THIS combat: the tracker is static and may still
@@ -162,6 +163,12 @@ namespace BTCantinaMissions.Patches
                 var mech = actor as Mech;
                 var vehicle = actor as Vehicle;
                 var turret = actor as Turret;
+
+                // DestroyFaction key — the team the unit fought for. Teams cannot
+                // change after death, so reading the reference here is the same
+                // as capturing it at HandleDeath time (H5 already guarantees all
+                // tracker entries died hostile to the player).
+                var faction = actor.team?.FactionValue?.FactionDefID;
 
                 if (mech?.MechDef?.Chassis != null)
                 {
@@ -173,6 +180,7 @@ namespace BTCantinaMissions.Patches
                     deadTags.Add(tags);
                     // chassis family for DestroyChassis (fake vehicles resolve here too)
                     deadFamilies.Add(ChassisFamilyResolver.GetFamily(mech.MechDef));
+                    deadFactions.Add(faction);
                 }
                 else if (vehicle?.VehicleDef != null)
                 {
@@ -182,6 +190,7 @@ namespace BTCantinaMissions.Patches
                     if (CombatFeedback.IsExcluded(tags)) continue;
                     deadTags.Add(tags);
                     deadFamilies.Add(null); // no MechDef → no family (safety branch, LT vehicles are fake mechs)
+                    deadFactions.Add(faction);
                 }
                 else if (turret?.TurretDef != null)
                 {
@@ -191,6 +200,7 @@ namespace BTCantinaMissions.Patches
                     if (CombatFeedback.IsExcluded(tags)) continue;
                     deadTags.Add(tags);
                     deadFamilies.Add(null); // turrets have no chassis family
+                    deadFactions.Add(faction); // base defenses count for the owning faction
                 }
             }
 
@@ -220,6 +230,14 @@ namespace BTCantinaMissions.Patches
                     foreach (var family in deadFamilies)
                     {
                         if (string.Equals(family, job.ResolvedTarget, StringComparison.OrdinalIgnoreCase))
+                            count++;
+                    }
+                }
+                else if (def?.ObjectiveType == ObjectiveType.DestroyFaction)
+                {
+                    foreach (var faction in deadFactions)
+                    {
+                        if (string.Equals(faction, job.ResolvedTarget, StringComparison.OrdinalIgnoreCase))
                             count++;
                     }
                 }

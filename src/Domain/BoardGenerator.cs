@@ -45,7 +45,7 @@ namespace BTCantinaMissions.Domain
                 var def = WeightedPick(eligible);
                 if (def == null) break;
 
-                var instance = CreateInstance(def, system.ID, usedOnBoard);
+                var instance = CreateInstance(def, system.ID, system, usedOnBoard);
                 if (instance == null)
                 {
                     // All targets of this def exhausted on this board — try another def
@@ -53,7 +53,7 @@ namespace BTCantinaMissions.Domain
                     if (alternatives.Count == 0) break;
                     def = WeightedPick(alternatives);
                     if (def == null) break;
-                    instance = CreateInstance(def, system.ID, usedOnBoard);
+                    instance = CreateInstance(def, system.ID, system, usedOnBoard);
                     if (instance == null) continue;
                 }
 
@@ -137,9 +137,10 @@ namespace BTCantinaMissions.Domain
 
         /// <summary>Creates a JobInstance, resolving a target from pools.
         /// Skips targets already used on this board to ensure variety.</summary>
-        private static JobInstance CreateInstance(CantinaJobDef def, string systemId, HashSet<string> usedOnBoard)
+        private static JobInstance CreateInstance(CantinaJobDef def, string systemId,
+            StarSystem system, HashSet<string> usedOnBoard)
         {
-            var pool = def.GetTargetPool();
+            var pool = ResolveTargetPool(def, system);
             string target = null;
 
             if (pool != null && pool.Count > 0)
@@ -160,6 +161,69 @@ namespace BTCantinaMissions.Domain
             var targetCount = random.Next(def.MinTargetCount, def.MaxTargetCount + 1);
 
             return new JobInstance(def.Id, target, name, targetCount, systemId);
+        }
+
+        /// <summary>Effective target pool for a def on a given system.
+        /// DestroyFaction with FactionSource=OwnerEnemies derives candidates from
+        /// the system owner's Enemies list (FactionDef.Enemies — exactly the
+        /// factions whose contracts spawn in this region); FactionPool is the
+        /// fallback for owners with no eligible enemies. All faction targets are
+        /// filtered: must resolve to a real faction, must not be on the pack's
+        /// ExcludedFactions blacklist. Everything else uses the def's static
+        /// pools unchanged.</summary>
+        private static List<string> ResolveTargetPool(CantinaJobDef def, StarSystem system)
+        {
+            var pool = def.GetTargetPool();
+            if (def.ObjectiveType != ObjectiveType.DestroyFaction)
+                return pool;
+
+            if (def.FactionSource == FactionSourceType.OwnerEnemies)
+            {
+                var ownerDef = system?.OwnerValue?.FactionDef;
+                if (ownerDef?.Enemies != null && ownerDef.Enemies.Length > 0)
+                {
+                    var candidates = new List<string>();
+                    foreach (var enemy in ownerDef.Enemies)
+                    {
+                        if (!candidates.Contains(enemy))
+                            candidates.Add(enemy);
+                    }
+                    if (candidates.Count > 0)
+                    {
+                        Core.Debug($"[BoardGenerator] OwnerEnemies: {system.Name} owner {ownerDef.Name}, " +
+                                   $"{candidates.Count} raw candidate(s)");
+                        pool = candidates;
+                    }
+                }
+            }
+
+            return FilterFactions(pool);
+        }
+
+        /// <summary>Drops faction ids that don't resolve to a real faction or are
+        /// blacklisted in settings. Keeps the pool null-safe.</summary>
+        private static List<string> FilterFactions(List<string> pool)
+        {
+            if (pool == null || pool.Count == 0) return pool;
+
+            var excluded = Core.Settings?.ExcludedFactions;
+            var result = new List<string>();
+            foreach (var id in pool)
+            {
+                var fv = FactionEnumeration.GetFactionByName(id);
+                if (fv == null || !fv.IsRealFaction)
+                {
+                    Core.Debug($"[BoardGenerator] Faction '{id}' is not a real faction, dropped");
+                    continue;
+                }
+                if (excluded != null && excluded.Contains(id))
+                {
+                    Core.Debug($"[BoardGenerator] Faction '{id}' is excluded by settings, dropped");
+                    continue;
+                }
+                result.Add(id);
+            }
+            return result;
         }
 
         /// <summary>Re-resolves display names for all persisted jobs (active list +
@@ -226,6 +290,16 @@ namespace BTCantinaMissions.Domain
                         // "unit_vtol" → strip prefix, capitalize
                         if (target.StartsWith("unit_"))
                             return FallbackHumanize(target);
+                        break;
+                    }
+                case ObjectiveType.DestroyFaction:
+                    {
+                        // "Kurita" → "Kuritan" (demonym) → "Draconis Combine" (Name)
+                        var factionDef = FactionEnumeration.GetFactionByName(target)?.FactionDef;
+                        var demonym = factionDef?.CapitalizedDemonym;
+                        if (!string.IsNullOrEmpty(demonym)) return demonym;
+                        var factionName = factionDef?.Name;
+                        if (!string.IsNullOrEmpty(factionName)) return factionName;
                         break;
                     }
             }

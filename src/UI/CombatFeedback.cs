@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using BattleTech;
-using BattleTech.Framework;
 using BattleTech.UI;
 using BTCantinaMissions.Domain;
 using HBS.Collections;
@@ -62,7 +61,8 @@ namespace BTCantinaMissions.UI
 
             var tags = BuildTagSet(victim);
             var family = BuildFamily(victim);
-            if (tags == null && family == null) return;
+            var faction = victim.team?.FactionValue?.FactionDefID;
+            if (tags == null && family == null && faction == null) return;
 
             // excluded filler (drones, battle armor...) stays invisible: no
             // floatie, no session counter — H6 skips it for progress too
@@ -85,6 +85,10 @@ namespace BTCantinaMissions.UI
                 else if (def.ObjectiveType == ObjectiveType.DestroyChassis && family != null)
                 {
                     isMatch = string.Equals(family, job.ResolvedTarget, System.StringComparison.OrdinalIgnoreCase);
+                }
+                else if (def.ObjectiveType == ObjectiveType.DestroyFaction && faction != null)
+                {
+                    isMatch = string.Equals(faction, job.ResolvedTarget, System.StringComparison.OrdinalIgnoreCase);
                 }
 
                 if (!isMatch) continue;

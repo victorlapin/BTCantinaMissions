@@ -53,6 +53,13 @@ namespace BTCantinaMissions
         /// the exclusion always wins.</summary>
         public List<string> ExcludedKillTags = new List<string>();
 
+        /// <summary>Faction ids never offered as DestroyFaction targets. Applied to
+        /// both FactionSource modes (OwnerEnemies candidates and static FactionPool
+        /// entries); non-real factions (Unknown, NoFaction...) are always dropped
+        /// regardless. Packs list ids that are technically real but unwanted on
+        /// cantina boards (e.g. "Locals").</summary>
+        public List<string> ExcludedFactions = new List<string>();
+
         /// <summary>Contractor crew services on the cantina board (v0.8).
         /// Each type appears as a board entry when its BoardChance roll succeeds
         /// at refresh time, competing with jobs for slots. Hiring applies a

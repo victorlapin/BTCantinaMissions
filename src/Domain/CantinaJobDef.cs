@@ -11,13 +11,24 @@ namespace BTCantinaMissions.Domain
         DestroyChassis,
         CollectItems,
         CollectMech,
-        CollectMechParts
+        CollectMechParts,
+        DestroyFaction
     }
 
     public enum ItemModeType
     {
         Acquire,
         Deliver
+    }
+
+    public enum FactionSourceType
+    {
+        /// <summary>Target picked from the def's FactionPool.</summary>
+        Static,
+        /// <summary>Target picked from the current system owner's Enemies list
+        /// (the factions whose contracts spawn in this region), falling back to
+        /// FactionPool when the owner has no eligible enemies.</summary>
+        OwnerEnemies
     }
 
     /// <summary>An item target: the modder explicitly names the catalog to search in —
@@ -40,7 +51,10 @@ namespace BTCantinaMissions.Domain
         // Single-element pool = static target.
         public List<string> UnitTagPool;            // DestroyTagged: unit tags ("unit_vtol")
         public List<string> ChassisPool;            // CollectMech/Parts: chassis families ("locust")
+        public List<string> FactionPool;            // DestroyFaction: faction ids ("Kurita")
         public List<TargetItemDef> ItemPool;        // CollectItems: explicit id + catalog
+
+        public FactionSourceType FactionSource = FactionSourceType.Static; // DestroyFaction only
 
         public int MinTargetCount;
         public int MaxTargetCount;
@@ -61,6 +75,7 @@ namespace BTCantinaMissions.Domain
         {
             if (UnitTagPool != null && UnitTagPool.Count > 0) return UnitTagPool;
             if (ChassisPool != null && ChassisPool.Count > 0) return ChassisPool;
+            if (FactionPool != null && FactionPool.Count > 0) return FactionPool;
             if (ItemPool != null && ItemPool.Count > 0)
                 return ItemPool.Select(t => t.Id).ToList();
             return null;
