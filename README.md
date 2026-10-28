@@ -90,6 +90,17 @@ instead of crashing.
     Kill counting honors `ExcludedKillTags` (settings): units carrying a listed
     tag never count — the RT pack excludes UAV drones and battle armor, so cheap
     filler cannot farm jobs.
+  - **DestroyFaction** (v0.9) — kill N units of a specific faction ("Destroy 6
+    Kuritan units"). Attribution is by the **team the unit fought for** in the
+    contract (the faction that fielded it), not by def tags — a unit eligible for
+    several factions' spawn pools belongs to whichever side dropped it. Turrets
+    count toward the faction of the base owner. The same player-lance-only rule,
+    `ExcludedKillTags` filtering and any-contract scope apply as above. The target
+    faction is picked per board from the **enemies of the system's owner**
+    (`FactionSource: "OwnerEnemies"` — the same factions the game generates local
+    contracts against, so the job is always completable where it is offered);
+    packs can exclude factions via `ExcludedFactions` (both shipped packs exclude
+    `Locals`).
   - **CollectItems** — obtain N of a specific component.
     `Acquire` mode: keep them, the reward pays for reaching the goal.
     `Deliver` mode: the items are removed from your inventory on delivery.
@@ -185,6 +196,10 @@ overwritten afterwards — local tweaks survive updates.
     "unit_battlearmor"                 //   lines (RT default: drones and battle armor;
                                        //   BTX ships [])
   },
+  "ExcludedFactions": [                // faction ids never offered as DestroyFaction
+    "Locals"                           //   targets (both shipped packs exclude Locals;
+                                       //   non-real factions are always dropped)
+  },
   "Services": {                        // v0.8: contractor crews on the board;
     "MechTech": {                      //   each type rolls independently at refresh
       "Bonus": 10,                     //   +10 to repair/refit speed
@@ -216,7 +231,8 @@ They are registered as a ModTek `CustomResourceTypes` entry in the pack's
     "Name": "Collect {target}",     // {target} is substituted from the pool
     "Icon": ""
   },
-  "ObjectiveType": "CollectItems",  // DestroyTagged | DestroyChassis | CollectItems | CollectMech | CollectMechParts
+  "ObjectiveType": "CollectItems",  // DestroyTagged | DestroyChassis | DestroyFaction |
+                                    //   CollectItems | CollectMech | CollectMechParts
 
   // Target pool — the generator picks one random entry per board slot.
   // Use the pool matching the objective type; single-entry pool = fixed target.
@@ -226,6 +242,11 @@ They are registered as a ModTek `CustomResourceTypes` entry in the pack's
     { "Id": "Weapon_Laser_Medium", "ItemType": "Weapon" },     //   the ID prefix alone is not
     { "Id": "Gear_Engine_XL", "ItemType": "HeatSink" }         //   reliable for modded items
   ],
+  "FactionSource": "OwnerEnemies",  // DestroyFaction only: "Static" (pick from FactionPool)
+                                    //   or "OwnerEnemies" (pick from the system owner's
+                                    //   enemies — local, always completable; FactionPool
+                                    //   becomes the fallback)
+  "FactionPool": ["Kurita"],        // DestroyFaction: static faction ids ("Kurita")
 
   "MinTargetCount": 5,              // random count range per instance
   "MaxTargetCount": 10,
@@ -435,3 +456,16 @@ save loads were unaffected — their self-set is unforced). The hook now
 classifies calls into normal arrivals (board + toast), unforced self-sets
 (save load — keep the persisted board), and the initial forced self-set:
 board is still generated for the starting cantina, the toast is skipped.
+
+v0.9 — faction kill jobs (**DestroyFaction**). "Destroy 6 Kuritan units":
+kills are attributed by the team the unit fought for in the contract (not by
+its def's faction tags — a unit in several factions' spawn pools belongs to
+whoever fielded it; turrets count for the base owner's faction), with the
+same player-lance-only rule and `ExcludedKillTags` filtering as the other
+kill jobs. The target faction is picked per board from the enemies of the
+cantina system's owner (`FactionSource: "OwnerEnemies"` — the same factions
+local contracts spawn against, so the job is completable where it's offered,
+and the board reflects the region's politics); a def may instead ship a
+static `FactionPool`. New `ExcludedFactions` setting (both shipped packs
+exclude `Locals`; non-real factions are dropped automatically). The board
+shows the faction's demonym ("Kuritan").
