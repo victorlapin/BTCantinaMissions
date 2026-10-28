@@ -27,5 +27,12 @@
       "Cost": 250000,
       "BoardChance": 0.3
     }
-  }
+  },
+  "ExcludedFactions": [
+    "Unknown",
+    "NoFaction",
+    "Locals",
+    "AuriganMercenaries",
+    "HostileMercenaries"
+  ]
 }

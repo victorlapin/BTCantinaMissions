@@ -1,0 +1,19 @@
+{
+  "Description": {
+    "Id": "cantinaJob_destroyFaction",
+    "Name": "Destroy {target} units",
+    "Icon": ""
+  },
+  "ObjectiveType": "DestroyFaction",
+  "FactionSource": "OwnerEnemies",
+  "MinTargetCount": 6,
+  "MaxTargetCount": 12,
+  "Reward": {
+    "CBills": 300000,
+    "ItemCollection": "CantinaReward_Tier1",
+    "ItemCount": 1
+  },
+  "MinSystemDifficulty": 1,
+  "MaxSystemDifficulty": 10,
+  "Weight": 8
+}

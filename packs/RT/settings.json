@@ -35,5 +35,16 @@
       "Cost": 250000,
       "BoardChance": 0.3
     }
-  }
+  },
+  "ExcludedFactions": [
+    "Unknown",
+    "NoFaction",
+    "Locals",
+    "AuriganDirectorate",
+    "AuriganMercenaries",
+    "HostileMercenaries",
+    "ClansGeneric",
+    "Solaris7",
+    "DarkCaste"
+  ]
 }
