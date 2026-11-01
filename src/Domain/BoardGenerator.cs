@@ -188,12 +188,32 @@ namespace BTCantinaMissions.Domain
                         if (!candidates.Contains(enemy))
                             candidates.Add(enemy);
                     }
-                    if (candidates.Count > 0)
+
+                    // Narrowing: keep only enemies this system can actually field as
+                    // contract targets. A bare Enemies list is map-wide lore (far
+                    // broader than the region); ContractTargetIDList is the live
+                    // "who fights here" list the game generates contracts against —
+                    // and WarTechIIC rewrites it on ownership flips, so the board
+                    // follows the war. Empty intersection falls back to full Enemies.
+                    var targets = system?.Def?.ContractTargetIDList;
+                    if (targets != null && targets.Count > 0)
                     {
-                        Core.Debug($"[BoardGenerator] OwnerEnemies: {system.Name} owner {ownerDef.Name}, " +
-                                   $"{candidates.Count} raw candidate(s)");
-                        pool = candidates;
+                        var local = candidates.Where(c => targets.Contains(c)).ToList();
+                        if (local.Count > 0)
+                        {
+                            Core.Debug($"[BoardGenerator] OwnerEnemies: {system.Name} owner {ownerDef.Name}: " +
+                                       $"{candidates.Count} enemies, {targets.Count} local contract targets -> {local.Count} candidate(s)");
+                            candidates = local;
+                        }
+                        else
+                        {
+                            Core.Debug($"[BoardGenerator] OwnerEnemies: {system.Name} intersection with local " +
+                                       $"targets empty, keeping full Enemies list ({candidates.Count})");
+                        }
                     }
+
+                    if (candidates.Count > 0)
+                        pool = candidates;
                 }
             }
 
