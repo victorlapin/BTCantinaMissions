@@ -96,11 +96,12 @@ instead of crashing.
     several factions' spawn pools belongs to whichever side dropped it. Turrets
     count toward the faction of the base owner. The same player-lance-only rule,
     `ExcludedKillTags` filtering and any-contract scope apply as above. The target
-    faction is picked per board from the **enemies of the system's owner**
-    (`FactionSource: "OwnerEnemies"` — the same factions the game generates local
-    contracts against, so the job is always completable where it is offered);
-    packs can exclude factions via `ExcludedFactions` (both shipped packs exclude
-    `Locals`).
+    faction is picked per board from the **enemies of the system's owner that the
+    system itself can field as contract targets** (`FactionSource: "OwnerEnemies"`
+    — the Enemies list intersected with the live `ContractTargetIDList`, so the
+    job is always completable where it is offered and follows ownership flips:
+    WarTechIIC rewrites those lists as the war moves borders); packs can exclude
+    factions via `ExcludedFactions` (both shipped packs exclude `Locals`).
   - **CollectItems** — obtain N of a specific component.
     `Acquire` mode: keep them, the reward pays for reaching the goal.
     `Deliver` mode: the items are removed from your inventory on delivery.
@@ -463,9 +464,9 @@ its def's faction tags — a unit in several factions' spawn pools belongs to
 whoever fielded it; turrets count for the base owner's faction), with the
 same player-lance-only rule and `ExcludedKillTags` filtering as the other
 kill jobs. The target faction is picked per board from the enemies of the
-cantina system's owner (`FactionSource: "OwnerEnemies"` — the same factions
-local contracts spawn against, so the job is completable where it's offered,
-and the board reflects the region's politics); a def may instead ship a
-static `FactionPool`. New `ExcludedFactions` setting (both shipped packs
-exclude `Locals`; non-real factions are dropped automatically). The board
-shows the faction's demonym ("Kuritan").
+cantina system's owner **narrowed to the system's live contract-target list**
+(`FactionSource: "OwnerEnemies"` — guaranteed completable where offered, and
+it follows ownership flips: WarTechIIC rewrites those lists as the war moves
+borders); a def may instead ship a static `FactionPool`. New `ExcludedFactions`
+setting (both shipped packs exclude `Locals`; non-real factions are dropped
+automatically). The board shows the faction's demonym ("Kuritan").
